@@ -89,7 +89,14 @@ export default function LandingPage() {
           </form>
           <p className="text-xs text-slate-400">İlk 100 kişiye sınırsız Premium Deneme hakkı.</p>
         </div>
-
+        <div className="mt-6 flex gap-4">
+  <a 
+    href="/shop" 
+    className="px-6 py-3 rounded-xl bg-slate-100 text-slate-900 font-bold hover:bg-slate-200 transition-colors border border-slate-200"
+  >
+    Simülasyon Mağazasını Gör →
+  </a>
+</div>
         {/* Hero Image / Mockup Placeholder */}
         <div className="flex-1 relative w-full max-w-lg lg:max-w-none">
           <div className="relative z-10 bg-slate-100 rounded-3xl aspect-[9/16] shadow-2xl border-8 border-white overflow-hidden flex items-center justify-center group">
