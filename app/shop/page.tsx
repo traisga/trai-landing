@@ -38,7 +38,6 @@ export default async function ShopPage() {
           <h1 className="text-3xl font-bold text-slate-900">Vitrin (Simülasyon)</h1>
           <p className="mt-4 text-slate-600">
             Bu ürünler şu an <b>Mock Data (Sahte Veri)</b> ile çekilmektedir. 
-            Onay gelince burası gerçek Puma ürünleriyle dolacak.
           </p>
         </div>
 
