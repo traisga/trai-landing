@@ -7,7 +7,12 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'TrAi Style',
   description: 'Yapay Zeka Stil Asistanı',
-};
+  verification: {
+    other: {
+      'verify-admitad': 'c47761a292',
+    },
+  },
+}
 
 export default function RootLayout({
   children,
