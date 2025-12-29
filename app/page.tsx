@@ -50,7 +50,7 @@ export default function LandingPage() {
         <div className="flex-1 text-center lg:text-left space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 border border-violet-100 text-violet-700 text-xs font-semibold uppercase tracking-wide">
             <Sparkles className="w-3 h-3" />
-            Yapay Zeka Destekli Stil Asistanı
+            Sanal Stil Asistanı
           </div>
           <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.1]">
             Dene. Keşfet. <br />
@@ -87,7 +87,7 @@ export default function LandingPage() {
               )}
             </button>
           </form>
-          <p className="text-xs text-slate-400">İlk 1000 kişiye sınırsız Premium Deneme hakkı.</p>
+          <p className="text-xs text-slate-400">İlk 100 kişiye sınırsız Premium Deneme hakkı.</p>
         </div>
 
         {/* Hero Image / Mockup Placeholder */}
@@ -146,4 +146,77 @@ export default function LandingPage() {
             {
               icon: <Shirt className="w-6 h-6 text-violet-600" />,
               title: "Sanal Deneme (VTO)",
-              desc: "Fotoğrafını yükle, seçtiğin kıyafeti saniyeler içinde
+              desc: "Fotoğrafını yükle, seçtiğin kıyafeti saniyeler içinde üzerinde gör. Mağaza kabinlerini telefonuna getirdik."
+            },
+            {
+              icon: <Smartphone className="w-6 h-6 text-violet-600" />,
+              title: "Akıllı Stil Asistanı",
+              desc: "Yapay zeka vücut tipine ve zevkine en uygun kombinleri senin için seçer ve önerir."
+            },
+            {
+              icon: <ShoppingBag className="w-6 h-6 text-violet-600" />,
+              title: "Güvenli Alışveriş",
+              desc: "Beğendiğin ürünleri doğrudan markaların kendi resmi sitelerine yönlendirerek güvenle satın almanı sağlarız."
+            }
+          ].map((feature, i) => (
+            <div key={i} className="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mb-6">
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+              <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* --- FOOTER (Legal Links for Compliance) --- */}
+      <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-8 mb-8">
+          <div className="col-span-1 md:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+               <div className="bg-violet-600 p-1 rounded">
+                <Shirt className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-lg font-bold text-white">TrAi Style</span>
+            </div>
+            <p className="text-sm max-w-xs">
+              Yapay zeka destekli sanal deneme ve stil platformu. 
+              Modayı teknolojiyle buluşturuyoruz.
+            </p>
+          </div>
+          
+          <div>
+            <h4 className="text-white font-semibold mb-4">Kurumsal</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:text-white">Hakkımızda</a></li>
+              <li><a href="#" className="hover:text-white">Basın Kiti</a></li>
+              <li><a href="#" className="hover:text-white">Kariyer</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white font-semibold mb-4">Yasal</h4>
+            <ul className="space-y-2 text-sm">
+              {/* Admitad bu linkleri kontrol eder */}
+              <li><a href="#" className="hover:text-white">Kullanım Koşulları</a></li>
+              <li><a href="#" className="hover:text-white">Gizlilik Politikası</a></li>
+              <li><a href="#" className="hover:text-white">Çerez Politikası</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs">© 2025 TRAİ MODA TEKNOLOJİLERİ A.Ş. Tüm hakları saklıdır.</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-white"><Twitter className="w-4 h-4" /></a>
+            <a href="#" className="hover:text-white"><Instagram className="w-4 h-4" /></a>
+            <a href="mailto:info@trai.style" className="hover:text-white flex items-center gap-1">
+              <Mail className="w-4 h-4" /> info@trai.style
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
