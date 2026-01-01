@@ -1,26 +1,22 @@
 // app/api/gemini/route.js
 // Next.js App Router - Gemini API Proxy
-// API key sunucuda güvende, kullanıcıya görünmez
+// API key is stored in Vercel Environment Variables (GEMINI_API_KEY)
 
 export async function POST(request) {
   try {
     const body = await request.json();
     const { model, contents, generationConfig, safetySettings } = body;
 
-    // Validasyon
     if (!model || !contents) {
-      return Response.json(
-        { error: 'Model ve contents gerekli' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Model ve contents gerekli' }, { status: 400 });
     }
 
-    // Request body oluştur
+    // Build request body
     const requestBody = { contents };
     if (generationConfig) requestBody.generationConfig = generationConfig;
     if (safetySettings) requestBody.safetySettings = safetySettings;
 
-    // Gemini API'ye istek
+    // Call Gemini API with key from environment
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
@@ -54,7 +50,6 @@ export async function POST(request) {
   }
 }
 
-// CORS için OPTIONS handler
 export async function OPTIONS() {
   return new Response(null, {
     status: 200,
