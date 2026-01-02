@@ -44,18 +44,25 @@
 
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body,#root{height:100%;height:100dvh;margin:0;padding:0;overflow:hidden}
+    html,body,#root{height:100%;height:100dvh;height:-webkit-fill-available;margin:0;padding:0;overflow:hidden}
     body{
       font-family:'Inter',sans-serif;
       background:#F5F5F7;
       color:#111111;overflow:hidden;-webkit-font-smoothing:antialiased;
-      position:fixed;width:100%;top:0;left:0
+      position:fixed;width:100%;top:0;left:0;
+      min-height:100vh;min-height:100dvh;min-height:-webkit-fill-available
     }
-    .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom,0px),20px)}
-    .safe-top{padding-top:env(safe-area-inset-top,0)}
+    .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom,0px),16px)}
+    .safe-top{padding-top:max(env(safe-area-inset-top,0px),0px)}
     @supports (-webkit-touch-callout: none) {
-      /* iOS Safari specific - extra padding for toolbar */
+      /* iOS Safari specific */
       .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom,0px),34px)}
+      .safe-top{padding-top:max(env(safe-area-inset-top,0px),20px)}
+    }
+    @supports (padding-top: constant(safe-area-inset-top)) {
+      /* Older iOS versions */
+      .safe-top{padding-top:constant(safe-area-inset-top)}
+      .safe-bottom{padding-bottom:constant(safe-area-inset-bottom)}
     }
     .glass{background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,.06)}
     .glass-dark{background:rgba(255,255,255,.98);backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,.04)}
@@ -3894,23 +3901,37 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         </div>
         
-        {/* Content - Scrollable */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-4 text-center overflow-y-auto min-h-0">
-          <div className="mb-3 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-16 h-16 rounded-2xl shadow-lg shadow-brand/15" /></div>
-          <h1 className="text-2xl font-black tracking-tight mb-1">{CONFIG.name}</h1>
-          <p className="text-sm text-slate-500 mb-4">{t('sloganFull')}</p>
-          <div className="flex gap-4 mb-4">
+        {/* Main Content - Centered */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          {/* Logo & Brand */}
+          <div className="mb-4 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-24 h-24 rounded-3xl shadow-xl shadow-brand/20" /></div>
+          <h1 className="text-4xl font-black tracking-tight mb-2">{CONFIG.name}</h1>
+          
+          {/* BUTTONS - Right after brand name */}
+          <div className="w-full max-w-xs space-y-3 my-6">
+            <button onClick={() => setMode('register')} className="w-full btn-primary py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-brand/30">{t('startFree')}<Icon name="chevronRight" size={20} /></button>
+            <button onClick={() => setMode('login')} className="w-full glass py-3 rounded-2xl font-semibold text-sm text-slate-600">{t('alreadyHaveAccount')}</button>
+          </div>
+          
+          {/* Slogan & Features below buttons */}
+          <p className="text-base text-slate-500 mb-6">{t('sloganFull')}</p>
+          <div className="flex gap-6 mb-6">
             {[{ icon: 'user', label: t('digitalTwin') }, { icon: 'shirt', label: t('virtualTryOn') }, { icon: 'sparkles', label: t('aiStylist') }].map((f, i) => (
-              <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}><div className="w-9 h-9 rounded-lg glass flex items-center justify-center mx-auto mb-1"><Icon name={f.icon} size={14} className="text-brand2" /></div><span className="text-[9px] text-slate-500">{f.label}</span></div>
+              <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                <div className="w-12 h-12 rounded-xl glass flex items-center justify-center mx-auto mb-2">
+                  <Icon name={f.icon} size={20} className="text-brand2" />
+                </div>
+                <span className="text-xs text-slate-500">{f.label}</span>
+              </div>
             ))}
           </div>
-          <div className="flex items-center gap-2 text-slate-400 text-[9px]"><div className="flex items-center gap-1"><Icon name="shield" size={10} /><span>{t('kvkkCompliant')}</span></div><div className="w-1 h-1 rounded-full bg-slate-300" /><div className="flex items-center gap-1"><Icon name="lock" size={10} /><span>{t('sslSecure')}</span></div></div>
-        </div>
-        
-        {/* Buttons - Fixed bottom with extra mobile padding */}
-        <div className="flex-shrink-0 p-4 pb-8 space-y-2 safe-bottom bg-white/95 backdrop-blur-sm border-t border-slate-100">
-          <button onClick={() => setMode('register')} className="w-full btn-primary py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2">{t('startFree')}<Icon name="chevronRight" size={18} /></button>
-          <button onClick={() => setMode('login')} className="w-full btn-ghost py-3 rounded-2xl font-semibold text-sm">{t('alreadyHaveAccount')}</button>
+          
+          {/* Trust badges */}
+          <div className="flex items-center gap-3 text-slate-400 text-xs">
+            <div className="flex items-center gap-1"><Icon name="shield" size={14} /><span>{t('kvkkCompliant')}</span></div>
+            <div className="w-1 h-1 rounded-full bg-slate-300" />
+            <div className="flex items-center gap-1"><Icon name="lock" size={14} /><span>{t('sslSecure')}</span></div>
+          </div>
         </div>
       </div>
     );
@@ -5431,7 +5452,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
   return (
     <div className="h-full flex flex-col">
       {/* Tab Navigation */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200">
+      <div className="flex-shrink-0 px-4 py-2 border-b border-slate-200 safe-top">
         <div className="flex gap-1 bg-slate-100 rounded-2xl p-1">
           {tabs.map(t => (
             <button
@@ -5473,7 +5494,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
           {/* Main Studio Area */}
           <div className="flex-1 flex overflow-hidden">
             {/* Left Panel - Bottoms */}
-            <div className="w-24 lg:w-28 flex-shrink-0 border-r border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
+            <div className="w-28 lg:w-32 flex-shrink-0 border-r border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
               <p className="text-[10px] font-bold text-slate-400 py-2 text-center sticky top-0 bg-slate-50/95 backdrop-blur-sm border-b border-slate-100">👖 ALT</p>
               <div className="p-1.5 space-y-1">
                 {Object.entries(bottomsGrouped).filter(([_, items]) => items.length > 0).map(([subType, items]) => (
@@ -5526,7 +5547,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
             <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
               {/* Avatar Area */}
               <div 
-                className={`relative w-48 h-64 lg:w-56 lg:h-72 rounded-2xl overflow-hidden drop-zone ${
+                className={`relative w-40 h-56 lg:w-48 lg:h-64 rounded-2xl overflow-hidden drop-zone ${
                   loading ? 'opacity-50' : ''
                 }`}
                 style={{ background: 'linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%)' }}
@@ -5639,7 +5660,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
             </div>
 
             {/* Right Panel - Tops */}
-            <div className="w-24 lg:w-28 flex-shrink-0 border-l border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
+            <div className="w-28 lg:w-32 flex-shrink-0 border-l border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
               <p className="text-[10px] font-bold text-slate-400 py-2 text-center sticky top-0 bg-slate-50/95 backdrop-blur-sm border-b border-slate-100">👕 ÜST</p>
               <div className="p-1.5 space-y-1">
                 {Object.entries(topsGrouped).filter(([_, items]) => items.length > 0).map(([subType, items]) => (
@@ -6497,32 +6518,6 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                   )}
                 </button>
               </div>
-              
-              {/* My Custom Clothes List */}
-              {customClothesCount > 0 && (
-                <div>
-                  <h3 className="font-bold mb-3 flex items-center gap-2">
-                    <Icon name="hanger" size={18} />
-                    {t('myClothes')} ({customClothesCount})
-                  </h3>
-                  <div className="grid grid-cols-3 gap-2">
-                    {closet.filter(item => item.isCustom).map(item => (
-                      <div key={item.id} className="relative aspect-[3/4] rounded-xl overflow-hidden glass">
-                        <img src={item.image} className="w-full h-full object-cover" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                          <p className="text-white text-xs font-medium truncate">{item.name}</p>
-                        </div>
-                        <button 
-                          onClick={() => onRemove(item.id)}
-                          className="absolute top-1 right-1 p-1.5 bg-red-500/80 text-white rounded-full"
-                        >
-                          <Icon name="x" size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>
@@ -9745,8 +9740,13 @@ const App = () => {
       setShowSubscription(true);
       return false;
     }
-    setUser(prev => ({ ...prev, tokens: (prev.tokens || 0) - 1 }));
-    setToast({ open: true, type: 'info', title: t('tokenUsed'), message: `${t('tokensRemaining')}: ${currentTokens - 1}` });
+    const newTokens = (user.tokens || 0) - 1;
+    setUser(prev => ({ ...prev, tokens: newTokens }));
+    // Sync to Firestore
+    if (db && authUser?.uid) {
+      db.collection('users').doc(authUser.uid).update({ tokens: newTokens }).catch(() => {});
+    }
+    setToast({ open: true, type: 'info', title: t('tokenUsed'), message: `${t('tokensRemaining')}: ${newTokens}` });
     return true;
   };
 
@@ -9759,17 +9759,32 @@ const App = () => {
       setShowSubscription(true);
       return false;
     }
-    setUser(prev => ({ ...prev, videoTokens: (prev.videoTokens || 0) - 1 }));
-    setToast({ open: true, type: 'info', title: t('videoTokenUsed'), message: `${t('videoTokensRemaining')}: ${currentVideoTokens - 1}` });
+    const newVideoTokens = currentVideoTokens - 1;
+    setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
+    // Sync to Firestore
+    if (db && authUser?.uid) {
+      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens }).catch(() => {});
+    }
+    setToast({ open: true, type: 'info', title: t('videoTokenUsed'), message: `${t('videoTokensRemaining')}: ${newVideoTokens}` });
     return true;
   };
   
   const addTokens = (amount) => {
-    setUser(prev => ({ ...prev, tokens: (prev.tokens || 0) + amount }));
+    const newTokens = (user?.tokens || 0) + amount;
+    setUser(prev => ({ ...prev, tokens: newTokens }));
+    // Sync to Firestore
+    if (db && authUser?.uid) {
+      db.collection('users').doc(authUser.uid).update({ tokens: newTokens }).catch(() => {});
+    }
   };
 
   const addVideoTokens = (amount) => {
-    setUser(prev => ({ ...prev, videoTokens: (prev.videoTokens || 0) + amount }));
+    const newVideoTokens = (user?.videoTokens || 0) + amount;
+    setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
+    // Sync to Firestore
+    if (db && authUser?.uid) {
+      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens }).catch(() => {});
+    }
   };
   
   // Payment simulation
@@ -10071,6 +10086,24 @@ const App = () => {
           
           setUser(updatedUser);
           
+          // Firestore'dan diğer verileri de yükle (cihazlar arası senkronizasyon)
+          if (data.closet && Array.isArray(data.closet)) {
+            setCloset(data.closet);
+            localStorage.setItem(`trai_closet_${userId}`, JSON.stringify(data.closet));
+          }
+          if (data.savedCombos && Array.isArray(data.savedCombos)) {
+            setSavedCombos(data.savedCombos);
+            localStorage.setItem(`trai_combos_${userId}`, JSON.stringify(data.savedCombos));
+          }
+          if (data.favorites && Array.isArray(data.favorites)) {
+            setFavorites(data.favorites);
+            localStorage.setItem(`trai_favorites_${userId}`, JSON.stringify(data.favorites));
+          }
+          if (data.tryHistory && Array.isArray(data.tryHistory)) {
+            setTryHistory(data.tryHistory);
+            localStorage.setItem(`trai_history_${userId}`, JSON.stringify(data.tryHistory));
+          }
+          
           // Avatar yeni yüklendiyse bildir
           if (baseAvatarDataUrl && !userWithUsername?.baseAvatar) {
             setToast({ open: true, type: 'success', title: 'Hoş geldin', message: 'Avatarın yüklendi!' });
@@ -10173,10 +10206,14 @@ const App = () => {
     }
   }, [user, authUser]);
 
-  // Save closet to localStorage (user-specific) - only after initial load
+  // Save closet to localStorage AND Firestore (user-specific) - only after initial load
   useEffect(() => {
     if (authUser && dataLoaded) {
       localStorage.setItem(`trai_closet_${authUser.uid}`, JSON.stringify(closet));
+      // Sync to Firestore for cross-device
+      if (db) {
+        db.collection('users').doc(authUser.uid).update({ closet }).catch(() => {});
+      }
     }
   }, [closet, authUser, dataLoaded]);
 
@@ -10201,24 +10238,36 @@ const App = () => {
     }
   }, [settings, authUser, dataLoaded]);
 
-  // Save savedCombos to localStorage (user-specific) - only after initial load
+  // Save savedCombos to localStorage AND Firestore (user-specific) - only after initial load
   useEffect(() => {
     if (authUser && dataLoaded) {
       localStorage.setItem(`trai_combos_${authUser.uid}`, JSON.stringify(savedCombos));
+      // Sync to Firestore for cross-device
+      if (db) {
+        db.collection('users').doc(authUser.uid).update({ savedCombos }).catch(() => {});
+      }
     }
   }, [savedCombos, authUser, dataLoaded]);
 
-  // Save favorites to localStorage (user-specific) - only after initial load
+  // Save favorites to localStorage AND Firestore (user-specific) - only after initial load
   useEffect(() => {
     if (authUser && dataLoaded) {
       localStorage.setItem(`trai_favorites_${authUser.uid}`, JSON.stringify(favorites));
+      // Sync to Firestore for cross-device
+      if (db) {
+        db.collection('users').doc(authUser.uid).update({ favorites }).catch(() => {});
+      }
     }
   }, [favorites, authUser, dataLoaded]);
 
-  // Save tryHistory to localStorage (user-specific) - only after initial load
+  // Save tryHistory to localStorage AND Firestore (user-specific) - only after initial load
   useEffect(() => {
     if (authUser && dataLoaded) {
       localStorage.setItem(`trai_history_${authUser.uid}`, JSON.stringify(tryHistory));
+      // Sync to Firestore for cross-device (limit to last 20 for size)
+      if (db) {
+        db.collection('users').doc(authUser.uid).update({ tryHistory: tryHistory.slice(0, 20) }).catch(() => {});
+      }
     }
     // Make tryHistory accessible to SocialFeed
     window.tryHistoryRef = tryHistory;
@@ -10236,7 +10285,7 @@ const App = () => {
     localStorage.setItem('trai_posts_v1', JSON.stringify(posts));
   }, [posts]);
 
-  const addToCloset = item => setCloset(prev => prev.some(x => x.id === item.id) ? prev : [...prev, { ...item, addedAt: Date.now() }]);
+  const addToCloset = item => setCloset(prev => prev.some(x => x.id === item.id) ? prev : [...prev, { ...item, subType: item.subType || item.type || null, addedAt: Date.now() }]);
   const removeFromCloset = id => setCloset(prev => prev.filter(i => i.id !== id));
   
   // Add custom clothing to closet
