@@ -9530,26 +9530,19 @@ const App = () => {
         ...(u || {}), 
         username: authUser.username,
         displayName: authUser.displayName || null,
-        tokens: 3 // Başlangıç jetonları
+        tokens: u?.tokens ?? 3 // Mevcut token'ları koru veya 3 başlat
       };
-    } else if (u && !u.username) {
-      // Eski kullanıcı - localStorage'dan yükle ama username eksikse null bırak
-      userWithUsername = u;
     }
     
-    // Yeni kayıt veya localStorage'dan veri varsa yükle
+    // localStorage'dan veya yeni kayıttan veri varsa yükle
     if (userWithUsername && (userWithUsername.username || userWithUsername.baseAvatar)) {
       setUser(userWithUsername);
-      setLoadingAvatar(false);
-    } else if (authUser.username) {
-      // Yeni kayıt, sadece username/displayName var
-      setUser({
-        username: authUser.username,
-        displayName: authUser.displayName || null,
-        tokens: 3
-      });
-      setLoadingAvatar(false);
+      if (userWithUsername.baseAvatar) {
+        setLoadingAvatar(false);
+      }
     }
+    
+    // Closet, friends, etc. yükle
     if (Array.isArray(c) && c.length > 0) setCloset(c);
     if (Array.isArray(f) && f.length > 0) setFriends(f);
     if (Array.isArray(m) && m.length > 0) setMessages(m);
@@ -9559,62 +9552,55 @@ const App = () => {
     if (Array.isArray(th) && th.length > 0) setTryHistory(th);
     if (tc && typeof tc === 'object' && Object.keys(tc).length > 0) setTryOnCache(tc);
     
-    // localStorage'da user yoksa Firestore'dan yükle
-    if (!userWithUsername && db) {
+    // HER ZAMAN Firestore'dan eksik verileri kontrol et (username, avatar, tokens)
+    if (db) {
       db.collection('users').doc(userId).get().then(async doc => {
         if (doc.exists) {
           const data = doc.data();
-          // Avatar'ı Storage'dan indir
-          let baseAvatarDataUrl = null;
-          if (data.baseAvatarStorageUrl || storage) {
+          
+          // Avatar Storage'da varsa ve localStorage'da yoksa indir
+          let baseAvatarDataUrl = userWithUsername?.baseAvatar;
+          if (!baseAvatarDataUrl && (data.baseAvatarStorageUrl || data.params)) {
             baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
           }
-          if (baseAvatarDataUrl && data.params) {
-            const loadedUser = { 
-              ...data.params, 
-              baseAvatar: baseAvatarDataUrl,
-              username: data.username,
-              displayName: data.displayName,
-              profilePhoto: data.profilePhoto,
-              tokens: data.tokens ?? 3, // Varsayılan 3 jeton
-              subscription: data.subscription || null
+          
+          // User'ı Firestore verileriyle güncelle
+          setUser(prev => {
+            const updated = { 
+              ...(prev || {}),
+              username: data.username || prev?.username,
+              displayName: data.displayName || prev?.displayName,
+              profilePhoto: data.profilePhoto || prev?.profilePhoto,
+              tokens: data.tokens ?? prev?.tokens ?? 3,
+              subscription: data.subscription || prev?.subscription
             };
-            setUser(loadedUser);
+            
+            // Avatar varsa ekle
+            if (baseAvatarDataUrl) {
+              updated.baseAvatar = baseAvatarDataUrl;
+            }
+            
+            // Params varsa ekle
+            if (data.params) {
+              Object.assign(updated, data.params);
+            }
+            
+            return updated;
+          });
+          
+          // Avatar yüklendiyse toast göster
+          if (baseAvatarDataUrl && !userWithUsername?.baseAvatar) {
             setToast({ open: true, type: 'success', title: 'Hoş geldin', message: 'Avatarın yüklendi!' });
-          } else if (!data.params && (data.username || data.tokens !== undefined)) {
-            // Avatar yok ama kullanıcı bilgileri var
-            setUser(prev => ({
-              ...prev,
-              username: data.username,
-              displayName: data.displayName,
-              tokens: data.tokens ?? 3,
-              subscription: data.subscription || null
-            }));
           }
         }
         setLoadingAvatar(false);
         setDataLoaded(true);
-      }).catch(() => {
+      }).catch((e) => {
+        console.error('Firestore user fetch error:', e);
         setLoadingAvatar(false);
         setDataLoaded(true);
       });
     } else {
-      // localStorage'dan yüklendi, ama username/displayName eksik olabilir - Firestore'dan çek
-      if (db && userWithUsername) {
-        db.collection('users').doc(userId).get().then(doc => {
-          if (doc.exists) {
-            const data = doc.data();
-            // Username, displayName, tokens, subscription eksikse güncelle
-            setUser(prev => prev ? { 
-              ...prev, 
-              username: data.username || prev.username,
-              displayName: data.displayName || prev.displayName,
-              tokens: data.tokens ?? prev.tokens ?? 3,
-              subscription: data.subscription || prev.subscription
-            } : null);
-          }
-        }).catch(e => console.error('User data fetch error:', e));
-      }
       setLoadingAvatar(false);
       setDataLoaded(true);
     }
