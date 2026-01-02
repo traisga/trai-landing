@@ -103,35 +103,72 @@
     
     /* Desktop Responsive Layout */
     @media (min-width: 1024px) {
-      .desktop-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 24px;
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+      }
+      .app-shell {
+        max-width: 100% !important;
         height: 100vh;
         display: grid;
-        grid-template-columns: 1fr 400px;
-        gap: 24px;
+        grid-template-columns: 280px 1fr 320px;
+        gap: 0;
+        background: #F5F5F7;
+      }
+      .app-shell > * {
+        height: 100vh;
+        overflow-y: auto;
+      }
+      .desktop-sidebar-left {
+        background: white;
+        border-right: 1px solid rgba(0,0,0,0.08);
+        padding: 24px;
       }
       .desktop-main {
         background: white;
-        border-radius: 24px;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
       }
-      .desktop-sidebar {
-        background: white;
-        border-radius: 24px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      .desktop-sidebar-right {
+        background: #FAFAFA;
+        border-left: 1px solid rgba(0,0,0,0.08);
+        padding: 24px;
       }
-      .mobile-only {
+      .mobile-nav {
         display: none !important;
+      }
+      .desktop-nav {
+        display: flex !important;
       }
     }
     @media (max-width: 1023px) {
-      .desktop-only {
+      .desktop-nav, .desktop-sidebar-left, .desktop-sidebar-right {
         display: none !important;
       }
+      .app-shell {
+        display: block !important;
+      }
+    }
+    
+    /* Desktop Navigation */
+    .desktop-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 500;
+      color: #64748b;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .desktop-nav-item:hover {
+      background: rgba(41, 98, 255, 0.08);
+      color: #2962FF;
+    }
+    .desktop-nav-item.active {
+      background: rgba(41, 98, 255, 0.12);
+      color: #2962FF;
+      font-weight: 600;
     }
     
     /* Drag and Drop Styles */
@@ -651,6 +688,7 @@ const TRANSLATIONS = {
     // Tokens & Subscription
     tokens: "Jeton",
     buyTokens: "Jeton Satın Al",
+    buyPackage: "Paket Al",
     subscription: "Abonelik",
     premium: "Premium",
     premiumMember: "Premium Üye",
@@ -1159,6 +1197,7 @@ const TRANSLATIONS = {
     // Tokens & Subscription
     tokens: "Tokens",
     buyTokens: "Buy Tokens",
+    buyPackage: "Buy Package",
     subscription: "Subscription",
     premium: "Premium",
     premiumMember: "Premium Member",
@@ -9850,7 +9889,7 @@ const App = () => {
   }
 
   // Avatar wizard - show loading while fetching from Firebase
-  if (!user) {
+  if (!user || !user.baseAvatar) {
     // Eğer avatar yükleniyorsa loading göster
     if (loadingAvatar) {
       return (
@@ -9870,7 +9909,7 @@ const App = () => {
     
     return (
       <>
-        <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark"><AvatarWizard onComplete={setUser} setToast={setToast} /></div>
+        <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark"><AvatarWizard onComplete={(avatarData) => setUser(prev => ({ ...prev, ...avatarData }))} setToast={setToast} initialParams={user} /></div>
         <Toast toast={toast} onClose={() => setToast({ open: false })} />
       </>
     );
@@ -9879,11 +9918,68 @@ const App = () => {
   // Enhance user with stats
   const userWithStats = { ...user, closetCount: closet.length, tryOnCount: user.tryOnCount || 0 };
 
+  // Desktop navigation items
+  const navItems = [
+    { id: 'shop', icon: 'shop', label: t('shopTab') || 'Keşfet' },
+    { id: 'closet', icon: 'hanger', label: t('closetTab') || 'Dolabım' },
+    { id: 'social', icon: 'users', label: t('socialTab') || 'Sosyal' },
+    { id: 'profile', icon: 'user', label: t('profileTab') || 'Profil' }
+  ];
+
   // Main app
   return (
     <>
-      <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark relative flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-hidden">
+      {/* Desktop Layout */}
+      <div className="hidden lg:grid app-shell">
+        {/* Left Sidebar - Navigation */}
+        <div className="desktop-sidebar-left">
+          <div className="flex items-center gap-3 mb-8">
+            <img src={LOGO_BASE64} alt="TrAi" className="w-10 h-10 rounded-xl" />
+            <div>
+              <h1 className="font-bold text-lg">{CONFIG.name}</h1>
+              <p className="text-xs text-slate-500">{t('slogan')}</p>
+            </div>
+          </div>
+          
+          <nav className="space-y-2">
+            {navItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setTab(item.id)}
+                className={`desktop-nav-item w-full ${tab === item.id ? 'active' : ''}`}
+              >
+                <Icon name={item.icon} size={20} />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+          
+          {/* User Info */}
+          <div className="mt-auto pt-8 border-t border-slate-200 mt-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand">
+                {(user.profilePhoto || user.baseAvatar) ? (
+                  <img src={user.profilePhoto || user.baseAvatar} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white">
+                    <Icon name="user" size={20} />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm truncate">{user.displayName || user.username}</p>
+                <p className="text-xs text-slate-500">@{user.username}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 mt-4 text-sm">
+              <span className="text-amber-500">🪙 {user.tokens || 0}</span>
+              {user.videoTokens > 0 && <span className="text-brand">🎬 {user.videoTokens}</span>}
+            </div>
+          </div>
+        </div>
+        
+        {/* Main Content */}
+        <div className="desktop-main flex flex-col overflow-hidden">
           {tab === 'shop' && <Shop user={user} closet={closet} onTryOn={tryOnSingle} onAddToCloset={addToCloset} onAdvice={getAdvice} onAddToCart={addToCart} cart={cart} onShowCart={() => setShowCart(true)} onShowSubscription={() => setShowSubscription(true)} />}
           {tab === 'closet' && (
             <SmartCloset 
@@ -9911,7 +10007,7 @@ const App = () => {
                   authorName: user?.username || user?.displayName || 'Kullanıcı',
                   authorUsername: user?.username,
                   authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
-                  image: image, // SocialFeed 'image' alanını kullanıyor
+                  image: image,
                   items: items || [],
                   caption: '',
                   askFeedback: false,
@@ -9940,7 +10036,123 @@ const App = () => {
               setSettings={setSettings}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
-                setAvatarCache(null); // Clear cache so new params take effect
+                setAvatarCache(null);
+              }}
+              onUpdateProfilePhoto={(photo) => {
+                setUser(prev => ({ ...prev, profilePhoto: photo }));
+              }}
+              changeLanguage={changeLanguage}
+            />
+          )}
+          {tab === 'social' && (
+            <SocialFeed
+              user={user}
+              authUser={authUser}
+              friends={friends}
+              posts={posts}
+              setPosts={setPosts}
+              setToast={setToast}
+            />
+          )}
+        </div>
+        
+        {/* Right Sidebar - Quick Stats / Activity */}
+        <div className="desktop-sidebar-right">
+          <h3 className="font-bold text-sm text-slate-500 mb-4">{t('quickStats') || 'Hızlı Bakış'}</h3>
+          
+          <div className="space-y-4">
+            <div className="glass rounded-xl p-4">
+              <p className="text-xs text-slate-500 mb-1">{t('closetCount') || 'Dolabımda'}</p>
+              <p className="text-2xl font-bold">{closet.length} <span className="text-sm font-normal text-slate-500">parça</span></p>
+            </div>
+            
+            <div className="glass rounded-xl p-4">
+              <p className="text-xs text-slate-500 mb-1">{t('savedCombos') || 'Kayıtlı Kombinler'}</p>
+              <p className="text-2xl font-bold">{savedCombos.length} <span className="text-sm font-normal text-slate-500">kombin</span></p>
+            </div>
+            
+            <div className="glass rounded-xl p-4">
+              <p className="text-xs text-slate-500 mb-1">{t('tryOnHistory') || 'Deneme Geçmişi'}</p>
+              <p className="text-2xl font-bold">{tryHistory.length} <span className="text-sm font-normal text-slate-500">deneme</span></p>
+            </div>
+          </div>
+          
+          {/* Recent Try-ons */}
+          {tryHistory.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-bold text-sm text-slate-500 mb-3">{t('recentTryOns') || 'Son Denemeler'}</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {tryHistory.slice(0, 4).map(item => (
+                  <div key={item.id} className="aspect-[3/4] rounded-xl overflow-hidden">
+                    <img src={item.image} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="lg:hidden h-screen w-full max-w-lg mx-auto bg-dark relative flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden">
+          {tab === 'shop' && <Shop user={user} closet={closet} onTryOn={tryOnSingle} onAddToCloset={addToCloset} onAdvice={getAdvice} onAddToCart={addToCart} cart={cart} onShowCart={() => setShowCart(true)} onShowSubscription={() => setShowSubscription(true)} />}
+          {tab === 'closet' && (
+            <SmartCloset 
+              user={user}
+              authUser={authUser}
+              closet={closet} 
+              onRemove={removeFromCloset} 
+              onTryOnResult={onTryOnResult} 
+              setToast={setToast}
+              savedCombos={savedCombos}
+              setSavedCombos={setSavedCombos}
+              favorites={favorites}
+              setFavorites={setFavorites}
+              tryHistory={tryHistory}
+              setTryHistory={setTryHistory}
+              getBaseAvatar={getBaseAvatar}
+              tryOnCache={tryOnCache}
+              setTryOnCache={setTryOnCache}
+              checkCooldown={checkCooldown}
+              setLastTryTime={setLastTryTime}
+              onShareToFeed={(image, items) => {
+                const newPost = {
+                  id: Date.now(),
+                  authorId: authUser?.uid,
+                  authorName: user?.username || user?.displayName || 'Kullanıcı',
+                  authorUsername: user?.username,
+                  authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
+                  image: image,
+                  items: items || [],
+                  caption: '',
+                  askFeedback: false,
+                  visibility: 'public',
+                  likes: [],
+                  comments: [],
+                  createdAt: Date.now()
+                };
+                setPosts(prev => [newPost, ...prev]);
+                setTab('social');
+              }}
+            />
+          )}
+          {tab === 'profile' && (
+            <Profile 
+              user={userWithStats} 
+              authUser={authUser} 
+              onResetAvatar={resetAvatar} 
+              onLogout={logout}
+              onDeleteAccount={deleteAccount}
+              friends={friends}
+              setFriends={setFriends}
+              messages={messages}
+              setMessages={setMessages}
+              settings={settings}
+              setSettings={setSettings}
+              onUpdateUser={(newParams) => {
+                setUser(prev => ({ ...prev, ...newParams }));
+                setAvatarCache(null);
               }}
               onUpdateProfilePhoto={(photo) => {
                 setUser(prev => ({ ...prev, profilePhoto: photo }));
