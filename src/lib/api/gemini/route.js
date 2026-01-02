@@ -1,33 +1,30 @@
-// This API route proxies requests to Google's Gemini API
-// The API key is stored securely in Vercel Environment Variables
-// and never exposed to the client
+// app/api/gemini/route.js
+// Next.js App Router API Route - Gemini API proxy
+// API key Vercel Environment Variables'dan alınır
+
+// Route segment config (App Router style)
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 export async function POST(request) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    console.error('GEMINI_API_KEY not found in environment variables');
+    return Response.json(
+      { error: 'API key not configured. Add GEMINI_API_KEY to Vercel Environment Variables.' },
+      { status: 500 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { model, contents, generationConfig, safetySettings } = body;
     
-    const apiKey = process.env.GOOGLE_API_KEY; // NOT NEXT_PUBLIC_ - server only!
-    
-    if (!apiKey) {
-      return Response.json(
-        { error: { message: 'API key not configured on server' } },
-        { status: 500 }
-      );
-    }
-    
     if (!model) {
-      return Response.json(
-        { error: { message: 'Model not specified' } },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Model is required' }, { status: 400 });
     }
-    
-    // Build request body - only include fields that are provided
-    const requestBody = { contents };
-    if (generationConfig) requestBody.generationConfig = generationConfig;
-    if (safetySettings) requestBody.safetySettings = safetySettings;
-    
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
@@ -36,19 +33,26 @@ export async function POST(request) {
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          contents,
+          generationConfig,
+          safetySettings
+        })
       }
     );
-    
+
     const data = await response.json();
     
-    // Pass through the response status
-    return Response.json(data, { status: response.status });
-    
+    if (!response.ok) {
+      console.error('Gemini API error:', data);
+      return Response.json(data, { status: response.status });
+    }
+
+    return Response.json(data);
   } catch (error) {
-    console.error('API Proxy Error:', error);
+    console.error('Gemini API error:', error);
     return Response.json(
-      { error: { message: error.message || 'Internal server error' } },
+      { error: 'Internal server error: ' + error.message },
       { status: 500 }
     );
   }
