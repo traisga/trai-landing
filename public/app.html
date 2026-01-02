@@ -4125,21 +4125,52 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
     const ctx = canvas.getContext('2d');
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
+    // No mirror flip - show as captured
     ctx.drawImage(video, 0, 0);
-    const photo = canvas.toDataURL('image/jpeg', 0.9);
+    const photo = canvas.toDataURL('image/jpeg', 0.8);
     
     addPhoto(photo);
   };
 
-  // Handle photo from file input (mobile)
+  // Handle photo from file input (mobile) - with compression
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
     const reader = new FileReader();
-    reader.onload = (ev) => addPhoto(ev.target.result);
+    reader.onload = (ev) => {
+      // Compress image for mobile
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // Max 800px for avatar photos
+        const maxSize = 800;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Compress to ~100-200KB
+        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+        addPhoto(compressed);
+      };
+      img.src = ev.target.result;
+    };
     reader.readAsDataURL(file);
     e.target.value = '';
   };
@@ -4373,7 +4404,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                 autoPlay 
                 playsInline 
                 muted
-                className={`w-full h-full object-cover scale-x-[-1] ${cameraReady ? 'opacity-100' : 'opacity-0'}`}
+                className={`w-full h-full object-cover ${cameraReady ? 'opacity-100' : 'opacity-0'}`}
               />
               {!cameraReady && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black">
