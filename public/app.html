@@ -3855,8 +3855,8 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
 
   if (mode === 'welcome') {
     return (
-      <div className="h-full bg-gradient-premium flex flex-col overflow-hidden">
-        {/* Language Selector */}
+      <div className="h-full bg-gradient-premium flex flex-col">
+        {/* Language Selector - Fixed top */}
         <div className="flex-shrink-0 p-3 flex justify-end safe-top">
           <div className="flex gap-1 glass rounded-full p-1">
             <button 
@@ -3874,18 +3874,21 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         </div>
         
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center min-h-0 overflow-y-auto">
-          <div className="mb-4 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-20 h-20 rounded-3xl shadow-lg shadow-brand/15" /></div>
-          <h1 className="text-3xl font-black tracking-tight mb-1">{CONFIG.name}</h1>
-          <p className="text-base text-slate-500 mb-3">{t('sloganFull')}</p>
-          <div className="flex gap-4 mt-4 mb-6">
+        {/* Content - Scrollable */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-4 text-center overflow-y-auto min-h-0">
+          <div className="mb-3 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-16 h-16 rounded-2xl shadow-lg shadow-brand/15" /></div>
+          <h1 className="text-2xl font-black tracking-tight mb-1">{CONFIG.name}</h1>
+          <p className="text-sm text-slate-500 mb-4">{t('sloganFull')}</p>
+          <div className="flex gap-4 mb-4">
             {[{ icon: 'user', label: t('digitalTwin') }, { icon: 'shirt', label: t('virtualTryOn') }, { icon: 'sparkles', label: t('aiStylist') }].map((f, i) => (
-              <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}><div className="w-10 h-10 rounded-xl glass flex items-center justify-center mx-auto mb-1"><Icon name={f.icon} size={16} className="text-brand2" /></div><span className="text-[10px] text-slate-500">{f.label}</span></div>
+              <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}><div className="w-9 h-9 rounded-lg glass flex items-center justify-center mx-auto mb-1"><Icon name={f.icon} size={14} className="text-brand2" /></div><span className="text-[9px] text-slate-500">{f.label}</span></div>
             ))}
           </div>
-          <div className="flex items-center gap-3 text-slate-400 text-[10px]"><div className="flex items-center gap-1"><Icon name="shield" size={12} /><span>{t('kvkkCompliant')}</span></div><div className="w-1 h-1 rounded-full bg-slate-200" /><div className="flex items-center gap-1"><Icon name="lock" size={12} /><span>{t('sslSecure')}</span></div></div>
+          <div className="flex items-center gap-2 text-slate-400 text-[9px]"><div className="flex items-center gap-1"><Icon name="shield" size={10} /><span>{t('kvkkCompliant')}</span></div><div className="w-1 h-1 rounded-full bg-slate-300" /><div className="flex items-center gap-1"><Icon name="lock" size={10} /><span>{t('sslSecure')}</span></div></div>
         </div>
-        <div className="flex-shrink-0 p-4 space-y-2 safe-bottom bg-gradient-to-t from-white/80 to-transparent pt-6">
+        
+        {/* Buttons - Fixed bottom */}
+        <div className="flex-shrink-0 p-4 pb-6 space-y-2 safe-bottom bg-white/90 backdrop-blur-sm border-t border-slate-100">
           <button onClick={() => setMode('register')} className="w-full btn-primary py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2">{t('startFree')}<Icon name="chevronRight" size={18} /></button>
           <button onClick={() => setMode('login')} className="w-full btn-ghost py-3 rounded-2xl font-semibold text-sm">{t('alreadyHaveAccount')}</button>
         </div>
