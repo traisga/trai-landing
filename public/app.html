@@ -372,6 +372,38 @@ const TRANSLATIONS = {
     tryComboButton: "Kombini Dene",
     dailyRecommendation: "Günün Kombini",
     
+    // Custom Clothing Upload
+    addClothing: "Kıyafet Ekle",
+    myClothes: "Kıyafetlerim",
+    uploadClothing: "Kıyafet Yükle",
+    clothingUploadTitle: "Kendi Kıyafetini Ekle",
+    clothingUploadDesc: "Dolabındaki gerçek kıyafetleri dijital dolabına ekle",
+    clothingUploadInstructions: "Fotoğraf Çekim Talimatları",
+    clothingInstruction1: "Kıyafeti düz, tek renkli bir zemine serin",
+    clothingInstruction2: "Kıyafetten farklı renk zemin seçin (beyaz/gri ideal)",
+    clothingInstruction3: "Kolları ve etekleri açık şekilde düzeltin",
+    clothingInstruction4: "Üstten, tüm kıyafet çerçeveye sığacak şekilde çekin",
+    clothingInstruction5: "İyi aydınlatılmış ortamda çekin",
+    selectClothingType: "Kıyafet Türü Seçin",
+    clothingName: "Kıyafet Adı",
+    clothingNamePlaceholder: "Örn: Mavi Çizgili Gömlek",
+    clothingColor: "Renk",
+    uploadPhoto: "Fotoğraf Yükle",
+    takePhoto: "Fotoğraf Çek",
+    addToMyCloset: "Dolabıma Ekle",
+    premiumFeature: "Premium Özellik",
+    clothingUploadPremium: "Kıyafet Ekleme Paketi",
+    clothingUploadPremiumDesc: "Kendi kıyafetlerinizi yükleyin ve sanal deneme yapın",
+    maxItems: "Maksimum 100 kıyafet",
+    oneTimePurchase: "Tek seferlik ödeme",
+    buyNow: "Satın Al",
+    remainingSlots: "Kalan hak",
+    clothingAdded: "Kıyafet Eklendi",
+    clothingAddedDesc: "Kıyafetin dolabına eklendi",
+    limitReached: "Limit Doldu",
+    limitReachedDesc: "Maksimum 100 kıyafet ekleyebilirsiniz",
+    myClothesCount: "kıyafetim",
+    
     // Avatar Creation
     createDigitalTwin: "Dijital İkizini Oluştur",
     avatarDescription: "Bilgilerini gir, 3 fotoğraf çek ve yapay zeka seni modele dönüştürsün",
@@ -696,6 +728,14 @@ const TRANSLATIONS = {
     deleteAccountWarning: "Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinecektir.",
     deleteAccountConfirmText: "Bu işlem geri alınamaz. Hesabınızı silmek istediğinizden emin misiniz?",
     permanentlyDelete: "Kalıcı Olarak Sil",
+    sharingConsentTitle: "Paylaşım İzni",
+    sharingConsentDesc: "Oluşturduğunuz kombini diğer kullanıcılarla paylaşmak ister misiniz?",
+    analyticsConsentTitle: "Deneyimi Geliştir",
+    analyticsConsentDesc: "Kombin denemelerinizi analiz ederek size daha iyi öneriler sunmamıza yardımcı olun.",
+    allowSharing: "Paylaşıma İzin Ver",
+    allowAnalytics: "Analitik İzni Ver",
+    maybeLater: "Belki Sonra",
+    dontShowAgain: "Bir daha gösterme",
     
     // Tokens & Subscription
     tokens: "Jeton",
@@ -891,6 +931,38 @@ const TRANSLATIONS = {
     selectOuterwear: "Select outerwear (optional)",
     tryComboButton: "Try Combo",
     dailyRecommendation: "Daily Outfit",
+    
+    // Custom Clothing Upload
+    addClothing: "Add Clothing",
+    myClothes: "My Clothes",
+    uploadClothing: "Upload Clothing",
+    clothingUploadTitle: "Add Your Own Clothing",
+    clothingUploadDesc: "Add real clothes from your wardrobe to your digital closet",
+    clothingUploadInstructions: "Photo Instructions",
+    clothingInstruction1: "Lay the clothing flat on a solid color surface",
+    clothingInstruction2: "Choose a different color background (white/gray ideal)",
+    clothingInstruction3: "Spread out sleeves and hems",
+    clothingInstruction4: "Take photo from above, fit entire garment in frame",
+    clothingInstruction5: "Use good lighting",
+    selectClothingType: "Select Clothing Type",
+    clothingName: "Clothing Name",
+    clothingNamePlaceholder: "E.g.: Blue Striped Shirt",
+    clothingColor: "Color",
+    uploadPhoto: "Upload Photo",
+    takePhoto: "Take Photo",
+    addToMyCloset: "Add to My Closet",
+    premiumFeature: "Premium Feature",
+    clothingUploadPremium: "Clothing Upload Package",
+    clothingUploadPremiumDesc: "Upload your own clothes and try them on virtually",
+    maxItems: "Maximum 100 items",
+    oneTimePurchase: "One-time payment",
+    buyNow: "Buy Now",
+    remainingSlots: "Remaining slots",
+    clothingAdded: "Clothing Added",
+    clothingAddedDesc: "Added to your closet",
+    limitReached: "Limit Reached",
+    limitReachedDesc: "You can add up to 100 items",
+    myClothesCount: "my clothes",
     
     // Avatar Creation
     createDigitalTwin: "Create Your Digital Twin",
@@ -1216,6 +1288,14 @@ const TRANSLATIONS = {
     deleteAccountWarning: "All your data will be permanently deleted when you delete your account.",
     deleteAccountConfirmText: "This action cannot be undone. Are you sure you want to delete your account?",
     permanentlyDelete: "Permanently Delete",
+    sharingConsentTitle: "Sharing Permission",
+    sharingConsentDesc: "Would you like to share your outfit with other users?",
+    analyticsConsentTitle: "Improve Experience",
+    analyticsConsentDesc: "Help us provide better recommendations by analyzing your try-ons.",
+    allowSharing: "Allow Sharing",
+    allowAnalytics: "Allow Analytics",
+    maybeLater: "Maybe Later",
+    dontShowAgain: "Don't show again",
     
     // Tokens & Subscription
     tokens: "Tokens",
@@ -3425,7 +3505,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
   });
   
   // Check if required consents are given
-  const requiredConsentsOk = consents.faceData && consents.usaTransfer && consents.ageConfirm && termsOk;
+  const requiredConsentsOk = consents.faceData && consents.usaTransfer && termsOk;
 
   useEffect(() => {
     if (auth) auth.onAuthStateChanged(u => { if (u) onAuthed({ uid: u.uid, email: u.email, emailVerified: u.emailVerified }); });
@@ -3775,9 +3855,9 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
 
   if (mode === 'welcome') {
     return (
-      <div className="h-full bg-gradient-premium flex flex-col">
+      <div className="h-full bg-gradient-premium flex flex-col overflow-hidden">
         {/* Language Selector */}
-        <div className="p-4 flex justify-end safe-top">
+        <div className="flex-shrink-0 p-3 flex justify-end safe-top">
           <div className="flex gap-1 glass rounded-full p-1">
             <button 
               onClick={() => changeLanguage('tr')}
@@ -3794,20 +3874,20 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         </div>
         
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <div className="mb-8 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-24 h-24 rounded-3xl shadow-lg shadow-brand/15" /></div>
-          <h1 className="text-4xl font-black tracking-tight mb-2">{CONFIG.name}</h1>
-          <p className="text-lg text-slate-500 mb-4">{t('sloganFull')}</p>
-          <div className="flex gap-6 mt-8 mb-12">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center min-h-0 overflow-y-auto">
+          <div className="mb-4 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-20 h-20 rounded-3xl shadow-lg shadow-brand/15" /></div>
+          <h1 className="text-3xl font-black tracking-tight mb-1">{CONFIG.name}</h1>
+          <p className="text-base text-slate-500 mb-3">{t('sloganFull')}</p>
+          <div className="flex gap-4 mt-4 mb-6">
             {[{ icon: 'user', label: t('digitalTwin') }, { icon: 'shirt', label: t('virtualTryOn') }, { icon: 'sparkles', label: t('aiStylist') }].map((f, i) => (
-              <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}><div className="w-12 h-12 rounded-2xl glass flex items-center justify-center mx-auto mb-2"><Icon name={f.icon} size={20} className="text-brand2" /></div><span className="text-xs text-slate-500">{f.label}</span></div>
+              <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}><div className="w-10 h-10 rounded-xl glass flex items-center justify-center mx-auto mb-1"><Icon name={f.icon} size={16} className="text-brand2" /></div><span className="text-[10px] text-slate-500">{f.label}</span></div>
             ))}
           </div>
-          <div className="flex items-center gap-4 text-slate-400 text-xs"><div className="flex items-center gap-1"><Icon name="shield" size={14} /><span>{t('kvkkCompliant')}</span></div><div className="w-1 h-1 rounded-full bg-slate-200" /><div className="flex items-center gap-1"><Icon name="lock" size={14} /><span>{t('sslSecure')}</span></div></div>
+          <div className="flex items-center gap-3 text-slate-400 text-[10px]"><div className="flex items-center gap-1"><Icon name="shield" size={12} /><span>{t('kvkkCompliant')}</span></div><div className="w-1 h-1 rounded-full bg-slate-200" /><div className="flex items-center gap-1"><Icon name="lock" size={12} /><span>{t('sslSecure')}</span></div></div>
         </div>
-        <div className="p-6 space-y-3 safe-bottom">
-          <button onClick={() => setMode('register')} className="w-full btn-primary py-4 rounded-2xl font-bold flex items-center justify-center gap-2">{t('startFree')}<Icon name="chevronRight" size={20} /></button>
-          <button onClick={() => setMode('login')} className="w-full btn-ghost py-4 rounded-2xl font-semibold text-sm">{t('alreadyHaveAccount')}</button>
+        <div className="flex-shrink-0 p-4 space-y-2 safe-bottom bg-gradient-to-t from-white/80 to-transparent pt-6">
+          <button onClick={() => setMode('register')} className="w-full btn-primary py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2">{t('startFree')}<Icon name="chevronRight" size={18} /></button>
+          <button onClick={() => setMode('login')} className="w-full btn-ghost py-3 rounded-2xl font-semibold text-sm">{t('alreadyHaveAccount')}</button>
         </div>
       </div>
     );
@@ -3894,7 +3974,14 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             <label className="text-xs text-slate-500 mb-1.5 block">Şifre</label>
             <div className="relative">
               <Icon name="lock" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input type={showPass ? 'text' : 'password'} value={pass} onChange={e => handlePassChange(e.target.value)} placeholder="••••••••" className="pl-11 pr-11" />
+              <input 
+                type={showPass ? 'text' : 'password'} 
+                value={pass} 
+                onChange={e => handlePassChange(e.target.value)} 
+                onKeyDown={e => { if (e.key === 'Enter' && !busy) submit(e); }}
+                placeholder="••••••••" 
+                className="pl-11 pr-11" 
+              />
               <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5"><Icon name={showPass ? 'eyeOff' : 'eye'} size={18} className="text-slate-400" /></button>
             </div>
             {/* Password requirements - only show on register */}
@@ -3933,45 +4020,25 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
         {/* Consent Checkboxes - only show on registration */}
         {mode === 'register' && (
           <div className="mb-6 space-y-3">
-            {/* 18+ Age Confirmation - REQUIRED */}
-            <div className="flex items-start gap-3 p-3 rounded-xl glass border border-red-200">
-              <input 
-                type="checkbox" 
-                checked={consents.ageConfirm} 
-                onChange={e => setConsents(p => ({ ...p, ageConfirm: e.target.checked }))} 
-                className="w-5 h-5 rounded border-2 border-red-300 bg-slate-100 checked:bg-red-500 checked:border-red-500 mt-0.5 cursor-pointer accent-red-500" 
-              />
-              <div>
-                <p className="text-xs font-semibold text-red-600 flex items-center gap-1">🔞 {t('ageRequirement')} <span className="text-red-400">*</span></p>
-                <p className="text-[11px] text-slate-500 mt-0.5">{t('ageConfirmText')}</p>
-              </div>
+            {/* 18+ Age Notice - Just text, no checkbox */}
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200">
+              <p className="text-xs text-red-600 flex items-center gap-2">
+                <span className="text-base">🔞</span>
+                <span>{t('ageConfirmText')}</span>
+              </p>
             </div>
             
-            {/* Face Data Consent - REQUIRED */}
+            {/* Combined Face Data & USA Transfer Consent - REQUIRED */}
             <div className="flex items-start gap-3 p-3 rounded-xl glass border border-brand/20">
               <input 
                 type="checkbox" 
-                checked={consents.faceData} 
-                onChange={e => setConsents(p => ({ ...p, faceData: e.target.checked }))} 
-                className="w-5 h-5 rounded border-2 border-slate-300 bg-slate-100 checked:bg-brand checked:border-brand mt-0.5 cursor-pointer accent-brand" 
+                checked={consents.faceData && consents.usaTransfer} 
+                onChange={e => setConsents(p => ({ ...p, faceData: e.target.checked, usaTransfer: e.target.checked }))} 
+                className="w-5 h-5 rounded border-2 border-slate-300 bg-slate-100 checked:bg-brand checked:border-brand mt-0.5 cursor-pointer accent-brand flex-shrink-0" 
               />
               <div>
                 <p className="text-xs font-semibold text-slate-700 flex items-center gap-1">{t('faceDataConsent')} <span className="text-red-400">*</span></p>
-                <p className="text-[11px] text-slate-500 mt-0.5">{t('faceDataConsentText')}</p>
-              </div>
-            </div>
-            
-            {/* USA Transfer Consent - REQUIRED */}
-            <div className="flex items-start gap-3 p-3 rounded-xl glass border border-brand/20">
-              <input 
-                type="checkbox" 
-                checked={consents.usaTransfer} 
-                onChange={e => setConsents(p => ({ ...p, usaTransfer: e.target.checked }))} 
-                className="w-5 h-5 rounded border-2 border-slate-300 bg-slate-100 checked:bg-brand checked:border-brand mt-0.5 cursor-pointer accent-brand" 
-              />
-              <div>
-                <p className="text-xs font-semibold text-slate-700 flex items-center gap-1">{t('usaTransferConsent')} <span className="text-red-400">*</span></p>
-                <p className="text-[11px] text-slate-500 mt-0.5">{t('usaTransferConsentText')}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">{t('faceDataConsentText')} {t('usaTransferConsentText')}</p>
               </div>
             </div>
             
@@ -3981,7 +4048,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
                 type="checkbox" 
                 checked={termsOk} 
                 onChange={e => setTermsOk(e.target.checked)} 
-                className="w-5 h-5 rounded border-2 border-slate-300 bg-slate-100 checked:bg-brand checked:border-brand mt-0.5 cursor-pointer accent-brand" 
+                className="w-5 h-5 rounded border-2 border-slate-300 bg-slate-100 checked:bg-brand checked:border-brand mt-0.5 cursor-pointer accent-brand flex-shrink-0" 
               />
               <div>
                 <p className="text-xs text-slate-600">
@@ -3990,33 +4057,6 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
                   <button onClick={() => openLegalDoc('kvkk')} className="text-brand2 font-medium underline underline-offset-2">{t('kvkkText')}</button>
                   {t('readAccepted')} <span className="text-red-400">*</span>
                 </p>
-              </div>
-            </div>
-            
-            {/* Optional Consents */}
-            <div className="border-t border-slate-200 pt-3 mt-3">
-              <p className="text-[10px] text-slate-400 mb-2">{t('optionalConsents')}</p>
-              
-              {/* Sharing Consent - OPTIONAL */}
-              <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50">
-                <input 
-                  type="checkbox" 
-                  checked={consents.sharing} 
-                  onChange={e => setConsents(p => ({ ...p, sharing: e.target.checked }))} 
-                  className="w-4 h-4 rounded border-2 border-slate-300 bg-slate-100 checked:bg-brand checked:border-brand mt-0.5 cursor-pointer accent-brand" 
-                />
-                <p className="text-[11px] text-slate-500">{t('sharingConsentText')}</p>
-              </div>
-              
-              {/* Analytics Consent - OPTIONAL */}
-              <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50">
-                <input 
-                  type="checkbox" 
-                  checked={consents.analytics} 
-                  onChange={e => setConsents(p => ({ ...p, analytics: e.target.checked }))} 
-                  className="w-4 h-4 rounded border-2 border-slate-300 bg-slate-100 checked:bg-brand checked:border-brand mt-0.5 cursor-pointer accent-brand" 
-                />
-                <p className="text-[11px] text-slate-500">{t('analyticsConsentText')}</p>
               </div>
             </div>
             
@@ -4978,8 +5018,8 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
 };
 
 // ============ CLOSET ============
-const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed }) => {
-  const [tab, setTab] = useState('studio'); // studio, items, combos, favorites, history, weather
+const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed, onFirstTryOn, onAddCustomClothing, settings, onShowSubscription }) => {
+  const [tab, setTab] = useState('studio'); // studio, items, upload, combos, favorites, history, weather
   const [selected, setSelected] = useState({ top: null, bottom: null, outerwear: null, fullbody: null });
   const [bg, setBg] = useState(BACKGROUNDS[0]);
   const [loading, setLoading] = useState(false);
@@ -4988,6 +5028,19 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('recent');
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  
+  // Custom clothing upload state
+  const [uploadPhoto, setUploadPhoto] = useState(null);
+  const [clothingName, setClothingName] = useState('');
+  const [clothingType, setClothingType] = useState('top');
+  const [clothingColor, setClothingColor] = useState('');
+  const [uploadingClothing, setUploadingClothing] = useState(false);
+  const uploadInputRef = React.useRef(null);
+  
+  // Count user's custom clothes
+  const customClothesCount = closet.filter(item => item.isCustom).length;
+  const hasClothingUploadAccess = user?.clothingUploadPurchased || user?.subscription === 'premium';
+  const maxCustomClothes = 100;
   
   // Email doğrulama kontrolü
   const isEmailVerified = authUser?.emailVerified === true;
@@ -5179,7 +5232,14 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
       
       debugLog('TryOn', 'History\'ye ekleniyor...', 'info');
       const historyItem = { id: Date.now(), image: result, items, background: bg, createdAt: Date.now() };
-      setTryHistory(prev => [historyItem, ...prev].slice(0, 50));
+      setTryHistory(prev => {
+        const newHistory = [historyItem, ...prev].slice(0, 50);
+        // İlk deneme ise analytics consent popup göster
+        if (prev.length === 0 && onFirstTryOn) {
+          onFirstTryOn();
+        }
+        return newHistory;
+      });
       
       debugLog('TryOn', 'Loading kapatılıyor...', 'info');
       setLoading(false);
@@ -5243,6 +5303,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
   const tabs = [
     { id: 'studio', icon: 'sparkles', label: t('studioTab') || 'Stüdyo', count: 0 },
     { id: 'items', icon: 'hanger', label: t('productsTab'), count: closet.length },
+    { id: 'upload', icon: 'plus', label: t('addClothing'), count: customClothesCount, premium: !hasClothingUploadAccess },
     { id: 'weather', icon: 'sun', label: t('weatherTab'), count: 0 },
     { id: 'combos', icon: 'layers', label: t('combosTab'), count: savedCombos.length },
     { id: 'favorites', icon: 'heart', label: t('favoritesTab'), count: favorites.length },
@@ -5293,13 +5354,14 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 py-2.5 px-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition ${
+              className={`relative flex-1 py-2.5 px-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition ${
                 tab === t.id ? 'bg-brand text-white' : 'text-slate-500 hover:text-slate-600'
               }`}
             >
               <Icon name={t.icon} size={14} />
               <span className="hidden sm:inline">{t.label}</span>
-              {t.count > 0 && <span className="bg-slate-200 px-1.5 py-0.5 rounded-full text-[10px]">{t.count}</span>}
+              {t.count > 0 && <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${tab === t.id ? 'bg-white/20' : 'bg-slate-200'}`}>{t.count}</span>}
+              {t.premium && <span className="absolute -top-1 -right-1 bg-amber-400 text-[8px] text-white px-1 rounded">PRO</span>}
             </button>
           ))}
         </div>
@@ -6128,6 +6190,287 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                 </div>
               ))}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* UPLOAD TAB - Custom Clothing */}
+      {tab === 'upload' && (
+        <div className="flex-1 overflow-y-auto custom-scroll p-4 pb-24">
+          {/* Hidden file input */}
+          <input 
+            ref={uploadInputRef}
+            type="file" 
+            accept="image/*" 
+            capture="environment"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                // Compress image
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  const maxSize = 800;
+                  let width = img.width;
+                  let height = img.height;
+                  if (width > height) {
+                    if (width > maxSize) { height = Math.round((height * maxSize) / width); width = maxSize; }
+                  } else {
+                    if (height > maxSize) { width = Math.round((width * maxSize) / height); height = maxSize; }
+                  }
+                  canvas.width = width;
+                  canvas.height = height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, width, height);
+                  setUploadPhoto(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = ev.target.result;
+              };
+              reader.readAsDataURL(file);
+              e.target.value = '';
+            }}
+            className="hidden"
+          />
+          
+          {/* Premium Gate - Show if not purchased */}
+          {!hasClothingUploadAccess ? (
+            <div className="text-center py-8">
+              <div className="w-20 h-20 mx-auto rounded-full bg-amber-100 flex items-center justify-center mb-4">
+                <Icon name="plus" size={40} className="text-amber-500" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">{t('clothingUploadPremium')}</h3>
+              <p className="text-slate-500 text-sm mb-6">{t('clothingUploadPremiumDesc')}</p>
+              
+              <div className="glass rounded-2xl p-6 max-w-sm mx-auto mb-6">
+                <div className="text-3xl font-black text-brand mb-2">₺299</div>
+                <p className="text-sm text-slate-500 mb-4">{t('oneTimePurchase')}</p>
+                
+                <div className="space-y-2 text-left mb-6">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Icon name="check" size={16} className="text-green-500" />
+                    <span>{t('maxItems')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Icon name="check" size={16} className="text-green-500" />
+                    <span>{t('clothingUploadDesc')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Icon name="check" size={16} className="text-green-500" />
+                    <span>Premium üyelik avantajları</span>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => onShowSubscription && onShowSubscription('clothingUpload')}
+                  className="w-full btn-primary py-3 rounded-xl font-bold"
+                >
+                  {t('buyNow')} - ₺299
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Remaining Slots */}
+              <div className="glass rounded-2xl p-4 mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center">
+                    <Icon name="hanger" size={20} className="text-brand" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">{t('remainingSlots')}</p>
+                    <p className="font-bold">{maxCustomClothes - customClothesCount} / {maxCustomClothes}</p>
+                  </div>
+                </div>
+                <span className="text-xs text-slate-400">{customClothesCount} {t('myClothesCount')}</span>
+              </div>
+              
+              {/* Upload Form */}
+              <div className="glass rounded-2xl p-4 mb-4">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                  <Icon name="camera" size={18} />
+                  {t('clothingUploadTitle')}
+                </h3>
+                
+                {/* Photo Instructions */}
+                <div className="bg-amber-50 rounded-xl p-3 mb-4">
+                  <p className="text-xs font-semibold text-amber-700 mb-2">{t('clothingUploadInstructions')}</p>
+                  <ul className="text-xs text-amber-600 space-y-1">
+                    <li>• {t('clothingInstruction1')}</li>
+                    <li>• {t('clothingInstruction2')}</li>
+                    <li>• {t('clothingInstruction3')}</li>
+                    <li>• {t('clothingInstruction4')}</li>
+                    <li>• {t('clothingInstruction5')}</li>
+                  </ul>
+                </div>
+                
+                {/* Photo Upload Area */}
+                <div 
+                  onClick={() => uploadInputRef.current?.click()}
+                  className={`relative aspect-square rounded-xl border-2 border-dashed mb-4 flex items-center justify-center cursor-pointer transition ${
+                    uploadPhoto ? 'border-brand bg-brand/5' : 'border-slate-300 hover:border-brand hover:bg-slate-50'
+                  }`}
+                >
+                  {uploadPhoto ? (
+                    <>
+                      <img src={uploadPhoto} className="w-full h-full object-contain rounded-xl" />
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setUploadPhoto(null); }}
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full"
+                      >
+                        <Icon name="x" size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-center p-6">
+                      <Icon name="camera" size={48} className="text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm text-slate-500">{t('uploadPhoto')} / {t('takePhoto')}</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Clothing Type */}
+                <div className="mb-4">
+                  <label className="text-xs font-semibold text-slate-500 mb-2 block">{t('selectClothingType')}</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: 'top', label: t('topLabel'), icon: 'shirt' },
+                      { id: 'bottom', label: t('bottomLabel'), icon: 'hanger' },
+                      { id: 'outerwear', label: t('outerwearLabel'), icon: 'shirt' },
+                      { id: 'fullbody', label: t('dressLabel'), icon: 'hanger' }
+                    ].map(type => (
+                      <button
+                        key={type.id}
+                        onClick={() => setClothingType(type.id)}
+                        className={`p-2 rounded-xl text-xs font-medium transition ${
+                          clothingType === type.id 
+                            ? 'bg-brand text-white' 
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {type.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Clothing Name */}
+                <div className="mb-4">
+                  <label className="text-xs font-semibold text-slate-500 mb-2 block">{t('clothingName')}</label>
+                  <input 
+                    value={clothingName}
+                    onChange={(e) => setClothingName(e.target.value)}
+                    placeholder={t('clothingNamePlaceholder')}
+                    className="w-full"
+                  />
+                </div>
+                
+                {/* Color */}
+                <div className="mb-4">
+                  <label className="text-xs font-semibold text-slate-500 mb-2 block">{t('clothingColor')}</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {['Siyah', 'Beyaz', 'Gri', 'Lacivert', 'Mavi', 'Kırmızı', 'Yeşil', 'Kahve', 'Bej', 'Pembe'].map(color => (
+                      <button
+                        key={color}
+                        onClick={() => setClothingColor(color)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                          clothingColor === color 
+                            ? 'bg-brand text-white' 
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Submit Button */}
+                <button 
+                  onClick={async () => {
+                    if (!uploadPhoto) {
+                      setToast({ open: true, type: 'error', title: t('error'), message: 'Fotoğraf yükleyin' });
+                      return;
+                    }
+                    if (!clothingName.trim()) {
+                      setToast({ open: true, type: 'error', title: t('error'), message: 'Kıyafet adı girin' });
+                      return;
+                    }
+                    if (customClothesCount >= maxCustomClothes) {
+                      setToast({ open: true, type: 'error', title: t('limitReached'), message: t('limitReachedDesc') });
+                      return;
+                    }
+                    
+                    setUploadingClothing(true);
+                    try {
+                      const newItem = {
+                        id: `custom_${Date.now()}`,
+                        name: clothingName.trim(),
+                        brand: t('myClothes'),
+                        category: clothingType,
+                        image: uploadPhoto,
+                        color: clothingColor || 'Belirtilmemiş',
+                        isCustom: true,
+                        addedAt: Date.now()
+                      };
+                      
+                      if (onAddCustomClothing) {
+                        await onAddCustomClothing(newItem);
+                      }
+                      
+                      setToast({ open: true, type: 'success', title: t('clothingAdded'), message: t('clothingAddedDesc') });
+                      setUploadPhoto(null);
+                      setClothingName('');
+                      setClothingColor('');
+                    } catch (e) {
+                      setToast({ open: true, type: 'error', title: t('error'), message: e.message });
+                    }
+                    setUploadingClothing(false);
+                  }}
+                  disabled={!uploadPhoto || !clothingName.trim() || uploadingClothing}
+                  className="w-full btn-primary py-3 rounded-xl font-bold disabled:opacity-50"
+                >
+                  {uploadingClothing ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {t('processing')}
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <Icon name="plus" size={18} />
+                      {t('addToMyCloset')}
+                    </span>
+                  )}
+                </button>
+              </div>
+              
+              {/* My Custom Clothes List */}
+              {customClothesCount > 0 && (
+                <div>
+                  <h3 className="font-bold mb-3 flex items-center gap-2">
+                    <Icon name="hanger" size={18} />
+                    {t('myClothes')} ({customClothesCount})
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {closet.filter(item => item.isCustom).map(item => (
+                      <div key={item.id} className="relative aspect-[3/4] rounded-xl overflow-hidden glass">
+                        <img src={item.image} className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                          <p className="text-white text-xs font-medium truncate">{item.name}</p>
+                        </div>
+                        <button 
+                          onClick={() => onRemove(item.id)}
+                          className="absolute top-1 right-1 p-1.5 bg-red-500/80 text-white rounded-full"
+                        >
+                          <Icon name="x" size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -9119,6 +9462,47 @@ const SocialFeed = ({ user, authUser, friends, posts, setPosts, setToast }) => {
   );
 };
 
+// ============ CONSENT POPUP ============
+const ConsentPopup = ({ type, onAccept, onDecline, onDontShowAgain }) => {
+  const isSharing = type === 'sharing';
+  
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center p-4 fade-in">
+      <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl slide-up">
+        <div className="p-6 text-center">
+          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${isSharing ? 'bg-brand/10' : 'bg-amber-100'}`}>
+            <Icon name={isSharing ? 'share' : 'sparkles'} size={32} className={isSharing ? 'text-brand' : 'text-amber-500'} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">{t(isSharing ? 'sharingConsentTitle' : 'analyticsConsentTitle')}</h3>
+          <p className="text-slate-500 text-sm mb-6">{t(isSharing ? 'sharingConsentDesc' : 'analyticsConsentDesc')}</p>
+          
+          <div className="space-y-2">
+            <button 
+              onClick={onAccept}
+              className="w-full btn-primary py-3.5 rounded-2xl font-bold"
+            >
+              {t(isSharing ? 'allowSharing' : 'allowAnalytics')}
+            </button>
+            <button 
+              onClick={onDecline}
+              className="w-full btn-ghost py-3 rounded-2xl font-medium text-sm"
+            >
+              {t('maybeLater')}
+            </button>
+          </div>
+          
+          <button 
+            onClick={onDontShowAgain}
+            className="mt-4 text-xs text-slate-400 hover:text-slate-600"
+          >
+            {t('dontShowAgain')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ============ BOTTOM NAV ============
 const BottomNav = ({ tab, setTab, hasNotifications }) => (
   <div className="flex-shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-2 pb-4 safe-bottom shadow-lg">
@@ -9175,8 +9559,15 @@ const App = () => {
     notifyMessages: true,
     notifyFriends: true,
     notifyDailyOutfit: true, // Günlük öneri bildirimi
-    debugMode: true // Geliştirici modu varsayılan açık
+    debugMode: true, // Geliştirici modu varsayılan açık
+    sharingConsent: null, // null = not asked, true = accepted, false = declined
+    analyticsConsent: null,
+    sharingConsentDismissed: false, // Bir daha gösterme
+    analyticsConsentDismissed: false
   });
+  
+  // Consent popup state
+  const [consentPopup, setConsentPopup] = useState({ open: false, type: null });
   
   // Closet features state
   const [savedCombos, setSavedCombos] = useState([]);
@@ -9516,26 +9907,19 @@ const App = () => {
         ...(u || {}), 
         username: authUser.username,
         displayName: authUser.displayName || null,
-        tokens: 3 // Başlangıç jetonları
+        tokens: u?.tokens ?? 3 // Mevcut token varsa koru
       };
-    } else if (u && !u.username) {
-      // Eski kullanıcı - localStorage'dan yükle ama username eksikse null bırak
+    } else if (u) {
       userWithUsername = u;
     }
     
-    // Yeni kayıt veya localStorage'dan veri varsa yükle
-    if (userWithUsername && (userWithUsername.username || userWithUsername.baseAvatar)) {
+    // localStorage'dan veri varsa yükle
+    if (userWithUsername && userWithUsername.baseAvatar) {
       setUser(userWithUsername);
       setLoadingAvatar(false);
-    } else if (authUser.username) {
-      // Yeni kayıt, sadece username/displayName var
-      setUser({
-        username: authUser.username,
-        displayName: authUser.displayName || null,
-        tokens: 3
-      });
-      setLoadingAvatar(false);
     }
+    
+    // Diğer verileri yükle
     if (Array.isArray(c) && c.length > 0) setCloset(c);
     if (Array.isArray(f) && f.length > 0) setFriends(f);
     if (Array.isArray(m) && m.length > 0) setMessages(m);
@@ -9545,61 +9929,68 @@ const App = () => {
     if (Array.isArray(th) && th.length > 0) setTryHistory(th);
     if (tc && typeof tc === 'object' && Object.keys(tc).length > 0) setTryOnCache(tc);
     
-    // localStorage'da user yoksa Firestore'dan yükle
-    if (!userWithUsername && db) {
+    // HER ZAMAN Firestore'dan kontrol et (avatar eksikse veya güncel veri için)
+    if (db) {
       db.collection('users').doc(userId).get().then(async doc => {
         if (doc.exists) {
           const data = doc.data();
-          // Avatar'ı Storage'dan indir
-          let baseAvatarDataUrl = null;
-          if (data.baseAvatarStorageUrl || storage) {
+          
+          // Avatar localStorage'da yoksa Storage'dan indir
+          let baseAvatarDataUrl = userWithUsername?.baseAvatar;
+          if (!baseAvatarDataUrl && (data.baseAvatarStorageUrl || data.params)) {
             baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
           }
-          if (baseAvatarDataUrl && data.params) {
-            const loadedUser = { 
-              ...data.params, 
-              baseAvatar: baseAvatarDataUrl,
-              username: data.username,
-              displayName: data.displayName,
-              profilePhoto: data.profilePhoto,
-              tokens: data.tokens ?? 3, // Varsayılan 3 jeton
-              subscription: data.subscription || null
-            };
-            setUser(loadedUser);
-            setToast({ open: true, type: 'success', title: 'Hoş geldin', message: 'Avatarın yüklendi!' });
-          } else if (!data.params && (data.username || data.tokens !== undefined)) {
-            // Avatar yok ama kullanıcı bilgileri var
-            setUser(prev => ({
-              ...prev,
-              username: data.username,
-              displayName: data.displayName,
-              tokens: data.tokens ?? 3,
-              subscription: data.subscription || null
-            }));
+          
+          // User'ı güncelle
+          const updatedUser = {
+            ...(userWithUsername || {}),
+            username: data.username || userWithUsername?.username,
+            displayName: data.displayName || userWithUsername?.displayName,
+            profilePhoto: data.profilePhoto || userWithUsername?.profilePhoto,
+            tokens: data.tokens ?? userWithUsername?.tokens ?? 3,
+            subscription: data.subscription || userWithUsername?.subscription || 'freemium',
+            clothingUploadPurchased: data.clothingUploadPurchased || userWithUsername?.clothingUploadPurchased || false
+          };
+          
+          // Avatar varsa ekle
+          if (baseAvatarDataUrl) {
+            updatedUser.baseAvatar = baseAvatarDataUrl;
           }
+          
+          // Params varsa ekle
+          if (data.params) {
+            Object.assign(updatedUser, data.params);
+          }
+          
+          setUser(updatedUser);
+          
+          // Avatar yeni yüklendiyse bildir
+          if (baseAvatarDataUrl && !userWithUsername?.baseAvatar) {
+            setToast({ open: true, type: 'success', title: 'Hoş geldin', message: 'Avatarın yüklendi!' });
+          }
+        } else if (authUser.username) {
+          // Firestore'da yok ama yeni kayıt
+          setUser({
+            username: authUser.username,
+            displayName: authUser.displayName || null,
+            tokens: 3
+          });
         }
         setLoadingAvatar(false);
         setDataLoaded(true);
-      }).catch(() => {
+      }).catch((e) => {
+        console.error('Firestore error:', e);
+        // Firestore hatası - localStorage verisi varsa kullan
+        if (userWithUsername) {
+          setUser(userWithUsername);
+        }
         setLoadingAvatar(false);
         setDataLoaded(true);
       });
     } else {
-      // localStorage'dan yüklendi, ama username/displayName eksik olabilir - Firestore'dan çek
-      if (db && userWithUsername) {
-        db.collection('users').doc(userId).get().then(doc => {
-          if (doc.exists) {
-            const data = doc.data();
-            // Username, displayName, tokens, subscription eksikse güncelle
-            setUser(prev => prev ? { 
-              ...prev, 
-              username: data.username || prev.username,
-              displayName: data.displayName || prev.displayName,
-              tokens: data.tokens ?? prev.tokens ?? 3,
-              subscription: data.subscription || prev.subscription
-            } : null);
-          }
-        }).catch(e => console.error('User data fetch error:', e));
+      // Firestore yok - localStorage'dan devam
+      if (userWithUsername) {
+        setUser(userWithUsername);
       }
       setLoadingAvatar(false);
       setDataLoaded(true);
@@ -9740,6 +10131,21 @@ const App = () => {
 
   const addToCloset = item => setCloset(prev => prev.some(x => x.id === item.id) ? prev : [...prev, { ...item, addedAt: Date.now() }]);
   const removeFromCloset = id => setCloset(prev => prev.filter(i => i.id !== id));
+  
+  // Add custom clothing to closet
+  const addCustomClothing = async (item) => {
+    // Add to local state
+    setCloset(prev => [...prev, item]);
+    
+    // Save to Firestore if available
+    if (db && authUser?.uid) {
+      try {
+        await db.collection('users').doc(authUser.uid).collection('customClothes').doc(item.id).set(item);
+      } catch (e) {
+        console.error('Error saving custom clothing:', e);
+      }
+    }
+  };
 
   // Get base avatar - prefer from Storage, fallback to local
   // Avatar cache - Firebase'den bir kez indir, sonra cache'den kullan
@@ -10059,7 +10465,20 @@ const App = () => {
               setTryOnCache={setTryOnCache}
               checkCooldown={checkCooldown}
               setLastTryTime={setLastTryTime}
+              settings={settings}
+              onShowSubscription={() => setShowSubscription(true)}
+              onAddCustomClothing={addCustomClothing}
+              onFirstTryOn={() => {
+                if (settings.analyticsConsent === null && !settings.analyticsConsentDismissed) {
+                  setTimeout(() => setConsentPopup({ open: true, type: 'analytics' }), 1500);
+                }
+              }}
               onShareToFeed={(image, items) => {
+                if (settings.sharingConsent === null && !settings.sharingConsentDismissed) {
+                  window.pendingShare = { image, items };
+                  setConsentPopup({ open: true, type: 'sharing' });
+                  return;
+                }
                 const newPost = {
                   id: Date.now(),
                   authorId: authUser?.uid,
@@ -10175,7 +10594,20 @@ const App = () => {
               setTryOnCache={setTryOnCache}
               checkCooldown={checkCooldown}
               setLastTryTime={setLastTryTime}
+              settings={settings}
+              onShowSubscription={() => setShowSubscription(true)}
+              onAddCustomClothing={addCustomClothing}
+              onFirstTryOn={() => {
+                if (settings.analyticsConsent === null && !settings.analyticsConsentDismissed) {
+                  setTimeout(() => setConsentPopup({ open: true, type: 'analytics' }), 1500);
+                }
+              }}
               onShareToFeed={(image, items) => {
+                if (settings.sharingConsent === null && !settings.sharingConsentDismissed) {
+                  window.pendingShare = { image, items };
+                  setConsentPopup({ open: true, type: 'sharing' });
+                  return;
+                }
                 const newPost = {
                   id: Date.now(),
                   authorId: authUser?.uid,
@@ -10413,6 +10845,61 @@ const App = () => {
             </button>
           </div>
         </div>
+      )}
+      
+      {/* Consent Popup */}
+      {consentPopup.open && (
+        <ConsentPopup 
+          type={consentPopup.type}
+          onAccept={() => {
+            if (consentPopup.type === 'sharing') {
+              setSettings(prev => ({ ...prev, sharingConsent: true }));
+              // Process pending share if exists
+              if (window.pendingShare) {
+                const { image, items } = window.pendingShare;
+                const newPost = {
+                  id: Date.now(),
+                  authorId: authUser?.uid,
+                  authorName: user?.username || user?.displayName || 'Kullanıcı',
+                  authorUsername: user?.username,
+                  authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
+                  image: image,
+                  items: items || [],
+                  caption: '',
+                  askFeedback: false,
+                  visibility: 'public',
+                  likes: [],
+                  comments: [],
+                  createdAt: Date.now()
+                };
+                setPosts(prev => [newPost, ...prev]);
+                setTab('social');
+                window.pendingShare = null;
+              }
+            } else {
+              setSettings(prev => ({ ...prev, analyticsConsent: true }));
+            }
+            setConsentPopup({ open: false, type: null });
+          }}
+          onDecline={() => {
+            if (consentPopup.type === 'sharing') {
+              setSettings(prev => ({ ...prev, sharingConsent: false }));
+            } else {
+              setSettings(prev => ({ ...prev, analyticsConsent: false }));
+            }
+            window.pendingShare = null;
+            setConsentPopup({ open: false, type: null });
+          }}
+          onDontShowAgain={() => {
+            if (consentPopup.type === 'sharing') {
+              setSettings(prev => ({ ...prev, sharingConsentDismissed: true }));
+            } else {
+              setSettings(prev => ({ ...prev, analyticsConsentDismissed: true }));
+            }
+            window.pendingShare = null;
+            setConsentPopup({ open: false, type: null });
+          }}
+        />
       )}
       
       <Toast toast={toast} onClose={() => setToast({ open: false })} />
