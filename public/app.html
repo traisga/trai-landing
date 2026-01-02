@@ -389,12 +389,12 @@ const TRANSLATIONS = {
     uploadClothing: "Kıyafet Yükle",
     clothingUploadTitle: "Kendi Kıyafetini Ekle",
     clothingUploadDesc: "Dolabındaki gerçek kıyafetleri dijital dolabına ekle",
-    clothingUploadInstructions: "Fotoğraf Çekim Talimatları",
-    clothingInstruction1: "Kıyafeti düz, tek renkli bir zemine serin",
-    clothingInstruction2: "Kıyafetten farklı renk zemin seçin (beyaz/gri ideal)",
-    clothingInstruction3: "Kolları ve etekleri açık şekilde düzeltin",
-    clothingInstruction4: "Üstten, tüm kıyafet çerçeveye sığacak şekilde çekin",
-    clothingInstruction5: "İyi aydınlatılmış ortamda çekin",
+    clothingUploadInstructions: "📸 İyi Fotoğraf Nasıl Çekilir?",
+    clothingInstruction1: "✓ Düz zemine serin (yatak, masa veya zemin)",
+    clothingInstruction2: "✓ Açık renk zemin kullanın (beyaz/gri en iyi)",
+    clothingInstruction3: "✓ Kıyafeti düzeltin, kol ve etekleri açın",
+    clothingInstruction4: "✓ Yukarıdan çekin, tam ortada olsun",
+    clothingInstruction5: "✓ Gün ışığında veya iyi aydınlık ortamda çekin",
     selectClothingType: "Kıyafet Türü Seçin",
     clothingName: "Kıyafet Adı",
     clothingNamePlaceholder: "Örn: Mavi Çizgili Gömlek",
@@ -3901,20 +3901,22 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         </div>
         
-        {/* Main Content - Centered */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+        {/* Main Content - Centered with top bias */}
+        <div className="flex-1 flex flex-col items-center justify-start pt-8 px-6 text-center">
           {/* Logo & Brand */}
-          <div className="mb-4 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-24 h-24 rounded-3xl shadow-xl shadow-brand/20" /></div>
-          <h1 className="text-4xl font-black tracking-tight mb-2">{CONFIG.name}</h1>
+          <div className="mb-3 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-20 h-20 rounded-2xl shadow-xl shadow-brand/20" /></div>
+          <h1 className="text-2xl font-light tracking-wide text-slate-700 mb-1">TrAi Style</h1>
           
-          {/* BUTTONS - Right after brand name */}
-          <div className="w-full max-w-xs space-y-3 my-6">
-            <button onClick={() => setMode('register')} className="w-full btn-primary py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-brand/30">{t('startFree')}<Icon name="chevronRight" size={20} /></button>
-            <button onClick={() => setMode('login')} className="w-full glass py-3 rounded-2xl font-semibold text-sm text-slate-600">{t('alreadyHaveAccount')}</button>
+          {/* BUTTONS - Compact */}
+          <div className="w-full max-w-xs space-y-2 my-4">
+            <button onClick={() => setMode('register')} className="w-full btn-primary py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand/25">{t('startFree')}<Icon name="chevronRight" size={16} /></button>
+            <button onClick={() => setMode('login')} className="w-full glass py-2.5 rounded-xl font-medium text-sm text-slate-600">{t('alreadyHaveAccount')}</button>
           </div>
           
-          {/* Slogan & Features below buttons */}
-          <p className="text-base text-slate-500 mb-6">{t('sloganFull')}</p>
+          {/* Slogan with more spacing */}
+          <p className="text-sm text-slate-500 mt-4 mb-8">{t('sloganFull')}</p>
+          
+          {/* Features */}
           <div className="flex gap-6 mb-6">
             {[{ icon: 'user', label: t('digitalTwin') }, { icon: 'shirt', label: t('virtualTryOn') }, { icon: 'sparkles', label: t('aiStylist') }].map((f, i) => (
               <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
@@ -4126,7 +4128,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         )}
         
-        <p className="text-center text-sm text-slate-500 pb-8">{mode === 'login' ? t('noAccount') + ' ' : t('haveAccount') + ' '}<button onClick={() => setMode(mode === 'login' ? 'register' : 'login')} className="text-brand2 font-semibold">{mode === 'login' ? t('signUp') : t('signIn')}</button></p>
+        <p className="text-center text-sm text-slate-500 pb-8 safe-bottom">{mode === 'login' ? t('noAccount') + ' ' : t('haveAccount') + ' '}<button onClick={() => setMode(mode === 'login' ? 'register' : 'login')} className="text-brand2 font-semibold">{mode === 'login' ? t('signUp') : t('signIn')}</button></p>
       </div>
       <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} onAccept={termsDocType === 'terms' ? acceptTerms : null} docType={termsDocType} />
     </div>
@@ -4488,34 +4490,34 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                 <>
                   {/* Face guide frame */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-48 h-64 border-2 border-dashed border-slate-2000 rounded-3xl" />
+                    <div className="w-44 h-60 border-2 border-dashed border-white/50 rounded-3xl" />
                   </div>
                   
-                  {/* Animated instruction overlay */}
-                  <div className="absolute top-4 left-4 right-4 pointer-events-none">
-                    <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4 fade-in" key={photos.length}>
-                      <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center flex-shrink-0 pulse">
-                        {currentInstruction.direction === 'front' && <Icon name="user" size={28} />}
-                        {currentInstruction.direction === 'right' && <Icon name="chevronRight" size={32} />}
-                        {currentInstruction.direction === 'left' && <Icon name="chevronLeft" size={32} />}
+                  {/* Compact instruction overlay */}
+                  <div className="absolute top-3 left-3 right-3 pointer-events-none">
+                    <div className="bg-black/60 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3 fade-in" key={photos.length}>
+                      <div className="w-10 h-10 rounded-full bg-brand flex items-center justify-center flex-shrink-0 pulse">
+                        {currentInstruction.direction === 'front' && <Icon name="user" size={20} />}
+                        {currentInstruction.direction === 'right' && <Icon name="chevronRight" size={24} />}
+                        {currentInstruction.direction === 'left' && <Icon name="chevronLeft" size={24} />}
                       </div>
-                      <div className="flex-1">
-                        <div className="font-bold text-lg">{currentInstruction.text}</div>
-                        <div className="text-slate-500 text-sm">{currentInstruction.subtext}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-white truncate">{currentInstruction.text}</div>
+                        <div className="text-slate-400 text-xs truncate">{currentInstruction.subtext}</div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-slate-200/60 flex items-center justify-center font-bold text-xl">
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm text-white">
                         {photos.length + 1}
                       </div>
                     </div>
                   </div>
                   
-                  {/* Bottom direction indicator */}
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
-                    <div className="bg-black/70 backdrop-blur-sm rounded-full px-6 py-3 flex items-center gap-3">
-                      {photos.length === 0 && <Icon name="user" size={24} className="text-brand2" />}
-                      {photos.length === 1 && <div className="animate-bounce-right"><Icon name="chevronRight" size={28} className="text-brand2" /></div>}
-                      {photos.length === 2 && <div className="animate-bounce-left"><Icon name="chevronLeft" size={28} className="text-brand2" /></div>}
-                      <span className="font-semibold">{currentInstruction.text}</span>
+                  {/* Bottom direction indicator - simplified */}
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
+                    <div className="bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
+                      {photos.length === 0 && <Icon name="user" size={18} className="text-brand2" />}
+                      {photos.length === 1 && <div className="animate-bounce-right"><Icon name="chevronRight" size={20} className="text-brand2" /></div>}
+                      {photos.length === 2 && <div className="animate-bounce-left"><Icon name="chevronLeft" size={20} className="text-brand2" /></div>}
+                      <span className="font-medium text-sm text-white">{currentInstruction.text}</span>
                     </div>
                   </div>
                 </>
@@ -5494,7 +5496,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
           {/* Main Studio Area */}
           <div className="flex-1 flex overflow-hidden">
             {/* Left Panel - Bottoms */}
-            <div className="w-28 lg:w-32 flex-shrink-0 border-r border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
+            <div className="w-32 lg:w-36 flex-shrink-0 border-r border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
               <p className="text-[10px] font-bold text-slate-400 py-2 text-center sticky top-0 bg-slate-50/95 backdrop-blur-sm border-b border-slate-100">👖 ALT</p>
               <div className="p-1.5 space-y-1">
                 {Object.entries(bottomsGrouped).filter(([_, items]) => items.length > 0).map(([subType, items]) => (
@@ -5544,10 +5546,10 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
             </div>
 
             {/* Center - Avatar Drop Zone */}
-            <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
-              {/* Avatar Area */}
+            <div className="flex-1 flex flex-col items-center justify-center p-2 relative">
+              {/* Avatar Area - object-contain for fullbody visibility */}
               <div 
-                className={`relative w-40 h-56 lg:w-48 lg:h-64 rounded-2xl overflow-hidden drop-zone ${
+                className={`relative w-36 h-52 lg:w-44 lg:h-60 rounded-2xl overflow-hidden drop-zone ${
                   loading ? 'opacity-50' : ''
                 }`}
                 style={{ background: 'linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%)' }}
@@ -5568,9 +5570,9 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                   } catch (err) {}
                 }}
               >
-                {/* Base Avatar */}
+                {/* Base Avatar - object-contain to show full body */}
                 {(user?.baseAvatar || user?.avatar) ? (
-                  <img src={user?.baseAvatar || user?.avatar} className="w-full h-full object-cover" />
+                  <img src={user?.baseAvatar || user?.avatar} className="w-full h-full object-contain" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-slate-100">
                     <Icon name="user" size={48} className="text-slate-300" />
@@ -5660,7 +5662,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
             </div>
 
             {/* Right Panel - Tops */}
-            <div className="w-28 lg:w-32 flex-shrink-0 border-l border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
+            <div className="w-32 lg:w-36 flex-shrink-0 border-l border-slate-100 overflow-y-auto custom-scroll bg-slate-50/50">
               <p className="text-[10px] font-bold text-slate-400 py-2 text-center sticky top-0 bg-slate-50/95 backdrop-blur-sm border-b border-slate-100">👕 ÜST</p>
               <div className="p-1.5 space-y-1">
                 {Object.entries(topsGrouped).filter(([_, items]) => items.length > 0).map(([subType, items]) => (
@@ -6260,13 +6262,13 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-slate-700">📦 100 Kıyafet Paketi</p>
-                    <p className="text-[10px] text-slate-500">Sınırsız kıyafet ekle</p>
+                    <p className="text-[10px] text-slate-500">Dolabında daha fazla yer aç</p>
                   </div>
                   <button 
                     onClick={() => onShowSubscription && onShowSubscription('clothingUpload')}
                     className="px-4 py-2 bg-brand text-white text-xs font-bold rounded-lg"
                   >
-                    ₺99
+                    99₺
                   </button>
                 </div>
               </div>
@@ -6283,7 +6285,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
               <p className="text-slate-500 text-sm mb-6">10 ücretsiz kıyafet hakkınızı kullandınız. Daha fazla eklemek için paketi satın alın.</p>
               
               <div className="glass rounded-2xl p-6 max-w-sm mx-auto mb-6">
-                <div className="text-3xl font-black text-brand mb-2">₺99</div>
+                <div className="text-3xl font-black text-brand mb-2">99₺</div>
                 <p className="text-sm text-slate-500 mb-4">{t('oneTimePurchase')}</p>
                 
                 <div className="space-y-2 text-left mb-6">
@@ -6301,7 +6303,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                   onClick={() => onShowSubscription && onShowSubscription('clothingUpload')}
                   className="w-full btn-primary py-3 rounded-xl font-bold"
                 >
-                  {t('buyNow')} - ₺99
+                  {t('buyNow')} - 99₺
                 </button>
               </div>
               
@@ -8407,6 +8409,18 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyTokens, load
       ]
     },
     {
+      id: 'clothingUpload',
+      name: t('clothingUploadPremium'),
+      price: 99,
+      type: 'clothingUpload',
+      amount: 100,
+      desc: t('clothingUploadPremiumDesc'),
+      features: [
+        { icon: '👕', text: '100 kıyafet hakkı' },
+        { icon: '📸', text: 'Kendi kıyafetlerini yükle' }
+      ]
+    },
+    {
       id: 'video5',
       name: t('videoPackage5'),
       price: 300,
@@ -10053,14 +10067,32 @@ const App = () => {
       db.collection('users').doc(userId).get().then(async doc => {
         if (doc.exists) {
           const data = doc.data();
+          console.log('Firestore data loaded:', { hasParams: !!data.params, hasBaseAvatarUrl: !!data.baseAvatarStorageUrl });
           
-          // Avatar localStorage'da yoksa Storage'dan indir
-          // Her zaman dene - farklı cihazlardan giriş için
+          // Avatar yükleme - birden fazla kaynak dene
           let baseAvatarDataUrl = userWithUsername?.baseAvatar;
+          
           if (!baseAvatarDataUrl) {
             console.log('Avatar not in localStorage, trying Storage...');
-            baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
-            console.log('Storage result:', baseAvatarDataUrl ? 'Found' : 'Not found');
+            try {
+              baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
+              console.log('Storage download result:', baseAvatarDataUrl ? 'SUCCESS' : 'NOT FOUND');
+            } catch (storageError) {
+              console.error('Storage download error:', storageError);
+            }
+          }
+          
+          // Hala yoksa ve params varsa, avatar oluşturulmuş demektir - tekrar dene
+          if (!baseAvatarDataUrl && data.params) {
+            console.log('Avatar has params but no image, retrying download...');
+            try {
+              // Biraz bekle ve tekrar dene
+              await new Promise(r => setTimeout(r, 1000));
+              baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
+              console.log('Retry result:', baseAvatarDataUrl ? 'SUCCESS' : 'STILL NOT FOUND');
+            } catch (e) {
+              console.error('Retry failed:', e);
+            }
           }
           
           // User'ı güncelle
@@ -10070,6 +10102,7 @@ const App = () => {
             displayName: data.displayName || userWithUsername?.displayName,
             profilePhoto: data.profilePhoto || userWithUsername?.profilePhoto,
             tokens: data.tokens ?? userWithUsername?.tokens ?? 3,
+            videoTokens: data.videoTokens ?? userWithUsername?.videoTokens ?? 0,
             subscription: data.subscription || userWithUsername?.subscription || 'freemium',
             clothingUploadPurchased: data.clothingUploadPurchased || userWithUsername?.clothingUploadPurchased || false
           };
@@ -10077,9 +10110,12 @@ const App = () => {
           // Avatar varsa ekle
           if (baseAvatarDataUrl) {
             updatedUser.baseAvatar = baseAvatarDataUrl;
+            // localStorage'a da kaydet
+            localStorage.setItem(`trai_user_${userId}`, JSON.stringify(updatedUser));
+            console.log('Avatar loaded and saved to localStorage');
           }
           
-          // Params varsa ekle
+          // Params varsa ekle (avatar parametreleri)
           if (data.params) {
             Object.assign(updatedUser, data.params);
           }
