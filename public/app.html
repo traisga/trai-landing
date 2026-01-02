@@ -248,7 +248,7 @@ const LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAA
 // ============ CONFIG ============
 const CONFIG = {
   name: "TrAi",
-  slogan: "Sanal Stil Asistanın",
+  slogan: "Yapay Zeka Moda ile Buluştu",
   apiKey: null, // API key is hidden in Vercel env - fetched via /api/gemini
   useApiRoute: true, // Always use /api/gemini for security
   freemiumImageModel: "gemini-2.5-flash-image",
@@ -271,13 +271,13 @@ const CONFIG = {
 const TRANSLATIONS = {
   tr: {
     // Slogan & Branding
-    slogan: "Dene. Keşfet. Parla.",
-    sloganFull: "Sanal Stil Asistanın",
+    slogan: "Yapay Zeka Moda ile Buluştu",
+    sloganFull: "Yapay Zeka Moda ile Buluştu",
     
     // Welcome Screen
     digitalTwin: "Dijital İkiz",
     virtualTryOn: "Sanal Deneme",
-    aiStylist: "Sanal Stil Asistanı",
+    aiStylist: "AI Stilist",
     kvkkCompliant: "KVKK Uyumlu",
     sslSecure: "256-bit SSL",
     startFree: "Ücretsiz Başla",
@@ -320,11 +320,11 @@ const TRANSLATIONS = {
     // Navigation
     explore: "Keşfet",
     closet: "Dolap",
-    social: "Sosyal",
+    social: "Akış",
     profile: "Profil",
     shopTab: "Keşfet",
     closetTab: "Dolabım",
-    socialTab: "Sosyal",
+    socialTab: "Akış",
     profileTab: "Profil",
     quickStats: "Hızlı Bakış",
     closetCount: "Dolabımda",
@@ -666,6 +666,10 @@ const TRANSLATIONS = {
     cafe: "Kafe",
     park: "Park",
     beach: "Plaj",
+    travel: "Seyahat",
+    fineDining: "Fine Dining",
+    rooftop: "Teras",
+    gallery: "Galeri",
     notVerifiedYet: "Henüz doğrulanmadı",
     clickLinkAndRetry: "E-postanızdaki linke tıklayın ve tekrar deneyin.",
     notFollowingAnyone: "Henüz kimseyi takip etmiyorsun",
@@ -787,8 +791,8 @@ const TRANSLATIONS = {
   },
   en: {
     // Slogan & Branding
-    slogan: "Try. Discover. Shine.",
-    sloganFull: "Your Virtual Style Assistant",
+    slogan: "AI Meets Fashion",
+    sloganFull: "AI Meets Fashion",
     
     // Welcome Screen
     digitalTwin: "Digital Twin",
@@ -1182,6 +1186,10 @@ const TRANSLATIONS = {
     cafe: "Cafe",
     park: "Park",
     beach: "Beach",
+    travel: "Travel",
+    fineDining: "Fine Dining",
+    rooftop: "Rooftop",
+    gallery: "Gallery",
     notVerifiedYet: "Not verified yet",
     clickLinkAndRetry: "Click the link in your email and try again.",
     notFollowingAnyone: "You're not following anyone yet",
@@ -3044,7 +3052,11 @@ const BACKGROUNDS = [
   { id: 'office', value: 'Modern minimalist corporate office with large windows and natural light' },
   { id: 'cafe', value: 'Trendy hipster cafe interior with warm ambient lighting' },
   { id: 'park', value: 'Beautiful green park with golden hour sunlight filtering through trees' },
-  { id: 'beach', value: 'Stunning beach at sunset with soft warm lighting' }
+  { id: 'beach', value: 'Stunning beach at sunset with soft warm lighting' },
+  { id: 'travel', value: 'Scenic airport lounge with luxury atmosphere and city skyline view' },
+  { id: 'fineDining', value: 'Elegant fine dining restaurant with crystal chandeliers and sophisticated ambiance' },
+  { id: 'rooftop', value: 'Stylish rooftop terrace bar with city skyline panorama at dusk' },
+  { id: 'gallery', value: 'Contemporary art gallery with white walls and dramatic spotlighting' }
 ];
 
 // ============ UI COMPONENTS ============
@@ -3881,7 +3893,14 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             <label className="text-xs text-slate-500 mb-1.5 block">Şifre</label>
             <div className="relative">
               <Icon name="lock" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input type={showPass ? 'text' : 'password'} value={pass} onChange={e => handlePassChange(e.target.value)} placeholder="••••••••" className="pl-11 pr-11" />
+              <input 
+                type={showPass ? 'text' : 'password'} 
+                value={pass} 
+                onChange={e => handlePassChange(e.target.value)} 
+                onKeyDown={e => { if (e.key === 'Enter' && !busy) submit(e); }}
+                placeholder="••••••••" 
+                className="pl-11 pr-11" 
+              />
               <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5"><Icon name={showPass ? 'eyeOff' : 'eye'} size={18} className="text-slate-400" /></button>
             </div>
             {/* Password requirements - only show on register */}
@@ -4369,17 +4388,17 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                   
                   {/* Animated instruction overlay */}
                   <div className="absolute top-4 left-4 right-4 pointer-events-none">
-                    <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4 fade-in" key={photos.length}>
-                      <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center flex-shrink-0 pulse">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4 fade-in shadow-lg" key={photos.length}>
+                      <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center flex-shrink-0 pulse text-white">
                         {currentInstruction.direction === 'front' && <Icon name="user" size={28} />}
                         {currentInstruction.direction === 'right' && <Icon name="chevronRight" size={32} />}
                         {currentInstruction.direction === 'left' && <Icon name="chevronLeft" size={32} />}
                       </div>
                       <div className="flex-1">
-                        <div className="font-bold text-lg">{currentInstruction.text}</div>
+                        <div className="font-bold text-lg text-slate-800">{currentInstruction.text}</div>
                         <div className="text-slate-500 text-sm">{currentInstruction.subtext}</div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-slate-200/60 flex items-center justify-center font-bold text-xl">
+                      <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center font-bold text-xl text-brand">
                         {photos.length + 1}
                       </div>
                     </div>
@@ -4387,11 +4406,11 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                   
                   {/* Bottom direction indicator */}
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
-                    <div className="bg-black/70 backdrop-blur-sm rounded-full px-6 py-3 flex items-center gap-3">
-                      {photos.length === 0 && <Icon name="user" size={24} className="text-brand2" />}
-                      {photos.length === 1 && <div className="animate-bounce-right"><Icon name="chevronRight" size={28} className="text-brand2" /></div>}
-                      {photos.length === 2 && <div className="animate-bounce-left"><Icon name="chevronLeft" size={28} className="text-brand2" /></div>}
-                      <span className="font-semibold">{currentInstruction.text}</span>
+                    <div className="bg-white/95 backdrop-blur-sm rounded-full px-6 py-3 flex items-center gap-3 shadow-lg">
+                      {photos.length === 0 && <Icon name="user" size={24} className="text-brand" />}
+                      {photos.length === 1 && <div className="animate-bounce-right"><Icon name="chevronRight" size={28} className="text-brand" /></div>}
+                      {photos.length === 2 && <div className="animate-bounce-left"><Icon name="chevronLeft" size={28} className="text-brand" /></div>}
+                      <span className="font-semibold text-slate-800">{currentInstruction.text}</span>
                     </div>
                   </div>
                 </>
@@ -8421,29 +8440,29 @@ const AdviceModal = ({ open, item, advice, loading, onClose }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[80] bg-black/90 flex flex-col slide-up">
-      <div className="p-4 flex items-center justify-between border-b border-slate-200">
-        <h3 className="font-bold flex items-center gap-2"><Icon name="ruler" size={18} className="text-accent" />{t('sizeStyleAdvice')}</h3>
-        <button onClick={onClose} className="p-2"><Icon name="x" /></button>
+      <div className="p-4 flex items-center justify-between border-b border-slate-700 bg-slate-800">
+        <h3 className="font-bold flex items-center gap-2 text-white"><Icon name="ruler" size={18} className="text-brand" />{t('sizeStyleAdvice')}</h3>
+        <button onClick={onClose} className="p-2 text-white"><Icon name="x" /></button>
       </div>
-      <div className="flex-1 overflow-auto custom-scroll p-4">
+      <div className="flex-1 overflow-auto custom-scroll p-4 bg-slate-900">
         <div className="flex gap-3 mb-4">
           <div className="w-20 h-28 rounded-xl overflow-hidden"><img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" /></div>
           <div>
-            <p className="text-xs text-slate-500">{item.brandName}</p>
-            <p className="font-bold">{item.name}</p>
-            <p className="text-brand2 text-sm">{item.price}</p>
+            <p className="text-xs text-slate-400">{item.brandName}</p>
+            <p className="font-bold text-white">{item.name}</p>
+            <p className="text-brand text-sm">{item.price}</p>
           </div>
         </div>
-        <div className="bg-brand/10 border border-brand/20 rounded-2xl p-4">
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
           {loading ? (
-            <div className="flex items-center gap-2 text-slate-500"><div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin" />Analiz ediliyor...</div>
+            <div className="flex items-center gap-2 text-slate-400"><div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin" />Analiz ediliyor...</div>
           ) : (
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{advice}</p>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-200">{advice}</p>
           )}
         </div>
       </div>
-      <div className="p-4 border-t border-slate-200">
-        <button onClick={onClose} className="w-full btn-ghost py-4 rounded-2xl font-bold">Kapat</button>
+      <div className="p-4 border-t border-slate-700 bg-slate-800">
+        <button onClick={onClose} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-4 rounded-2xl font-bold">Kapat</button>
       </div>
     </div>
   );
