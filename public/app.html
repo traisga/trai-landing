@@ -44,11 +44,12 @@
 
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body,#root{height:100%;height:100dvh;margin:0;padding:0}
+    html,body,#root{height:100%;height:100dvh;margin:0;padding:0;overflow:hidden}
     body{
       font-family:'Inter',sans-serif;
       background:#F5F5F7;
-      color:#111111;overflow:hidden;-webkit-font-smoothing:antialiased
+      color:#111111;overflow:hidden;-webkit-font-smoothing:antialiased;
+      position:fixed;width:100%;top:0;left:0
     }
     .safe-bottom{padding-bottom:env(safe-area-inset-bottom,0)}
     .safe-top{padding-top:env(safe-area-inset-top,0)}
@@ -4763,9 +4764,9 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Logo & Slogan Header with Cart/Premium */}
-      <div className="px-4 pt-2 pb-1 flex items-center justify-between">
+      <div className="flex-shrink-0 px-4 pt-2 pb-1 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img src={LOGO_BASE64} alt="TrAi" className="w-8 h-8 rounded-lg shadow-sm" />
           <p className="text-xs font-bold bg-brand bg-clip-text text-transparent">{t('slogan')}</p>
@@ -4949,7 +4950,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
       </div>
 
       {/* Products Grid */}
-      <div className="flex-1 overflow-y-auto custom-scroll p-4 pt-0 pb-24">
+      <div className="flex-1 overflow-y-auto custom-scroll p-4 pt-0 pb-4 min-h-0">
         {products.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto mb-4">
@@ -9120,7 +9121,7 @@ const SocialFeed = ({ user, authUser, friends, posts, setPosts, setToast }) => {
 
 // ============ BOTTOM NAV ============
 const BottomNav = ({ tab, setTab, hasNotifications }) => (
-  <div className="bg-white/95 backdrop-blur-xl border-t border-slate-200 p-2 pb-4 safe-bottom shadow-lg">
+  <div className="flex-shrink-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-2 pb-4 safe-bottom shadow-lg">
     <div className="flex justify-around">
       {[
         { id: 'shop', icon: 'shop', labelKey: 'explore' }, 
@@ -10152,8 +10153,8 @@ const App = () => {
       </div>
 
       {/* Mobile Layout */}
-      <div className="lg:hidden h-screen w-full max-w-lg mx-auto bg-dark relative flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-hidden">
+      <div className="lg:hidden fixed inset-0 w-full max-w-lg mx-auto bg-dark flex flex-col">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {tab === 'shop' && <Shop user={user} closet={closet} onTryOn={tryOnSingle} onAddToCloset={addToCloset} onAdvice={getAdvice} onAddToCart={addToCart} cart={cart} onShowCart={() => setShowCart(true)} onShowSubscription={() => setShowSubscription(true)} />}
           {tab === 'closet' && (
             <SmartCloset 
