@@ -1472,19 +1472,39 @@ async function uploadAvatarToStorage(userId, avatarDataUrl) {
 // Helper: Download avatar from Firebase Storage as data URL
 async function downloadAvatarFromStorage(userId) {
   if (!FIREBASE_OK || !storage) return null;
+  
+  // 10 saniye timeout
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('Avatar download timeout')), 10000)
+  );
+  
+  const downloadPromise = (async () => {
+    try {
+      const ref = storage.ref(`avatars/${userId}/base-avatar.png`);
+      const url = await ref.getDownloadURL();
+      // Fetch and convert to data URL
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      // storage/object-not-found hatası normal - avatar yok demek
+      if (e.code === 'storage/object-not-found') {
+        console.log('ℹ️ Avatar Storage\'da bulunamadı');
+        return null;
+      }
+      throw e;
+    }
+  })();
+  
   try {
-    const ref = storage.ref(`avatars/${userId}/base-avatar.png`);
-    const url = await ref.getDownloadURL();
-    // Fetch and convert to data URL
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    return await Promise.race([downloadPromise, timeoutPromise]);
   } catch (e) {
+    console.warn('⚠️ Avatar indirme hatası:', e.message);
     return null;
   }
 }
@@ -4444,7 +4464,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                       { value: 'blonde', label: t('blondeHair'), color: '#d4a017' },
                       { value: 'red', label: t('redHair'), color: '#8b2500' },
                       { value: 'gray', label: t('grayHair'), color: '#808080' },
-                      { value: 'hijab', label: t('hijabOption'), color: 'linear-gradient(135deg, #6366f1, #8b5cf6)', icon: '🧕' }
+                      { value: 'hijab', label: t('hijabOption'), color: 'linear-gradient(135deg, #6366f1, #8b5cf6)', isHijab: true }
                     ].map(hair => (
                       <button
                         key={hair.value}
@@ -4459,8 +4479,8 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                             : 'border-transparent bg-slate-50 hover:bg-slate-100'
                         }`}
                       >
-                        {hair.icon ? (
-                          <div className="text-2xl mb-1">{hair.icon}</div>
+                        {hair.isHijab ? (
+                          <div className="w-8 h-8 rounded-full mx-auto mb-1 flex items-center justify-center text-white text-[10px] font-bold" style={{ background: hair.color }}>T</div>
                         ) : (
                           <div className="w-8 h-8 rounded-full mx-auto mb-1" style={{ background: hair.color }} />
                         )}
@@ -4506,7 +4526,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                 
                 {params.hijab && (
                   <div className="bg-purple-50 rounded-lg p-3 text-xs text-purple-700">
-                    <span className="font-medium">🧕 Türban Modu:</span> Avatarınız modern türban stiliyle oluşturulacak. Kombin denemelerinde kıyafetlerinizle uyumlu türban önerilecek.
+                    <span className="font-medium">Türban Modu:</span> Avatarınız modern türban stiliyle oluşturulacak. Kombin denemelerinde kıyafetlerinizle uyumlu türban önerilecek.
                   </div>
                 )}
               </div>
@@ -10191,20 +10211,28 @@ const App = () => {
       lastFreeReset: new Date().toDateString()
     } : null;
     
-    // SADECE Firestore'dan veri yükle - localStorage kullanma
+    // SADECE Firestore'dan veri yükle
     if (db) {
       db.collection('users').doc(userId).get().then(async doc => {
         if (doc.exists) {
           const data = doc.data();
-          console.log('Firestore data loaded:', Object.keys(data));
+          console.log('📦 Firestore data loaded:', Object.keys(data));
           
-          // Avatar'ı Storage'dan indir
+          // Avatar kontrolü - SADECE baseAvatarStorageUrl VARSA indir
           let baseAvatarDataUrl = null;
-          try {
-            baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
-            console.log('Avatar download:', baseAvatarDataUrl ? 'SUCCESS' : 'NOT FOUND');
-          } catch (e) {
-            console.error('Avatar download error:', e);
+          const hasAvatar = data.baseAvatarStorageUrl || data.params?.baseAvatar;
+          
+          if (hasAvatar) {
+            console.log('🖼️ Avatar mevcut, Storage\'dan indiriliyor...');
+            try {
+              baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
+              console.log('✅ Avatar download:', baseAvatarDataUrl ? 'SUCCESS' : 'NOT FOUND');
+            } catch (e) {
+              console.error('❌ Avatar download error:', e.message);
+              // Hata durumunda null bırak - kullanıcıya yeni avatar oluşturma gösterilecek
+            }
+          } else {
+            console.log('ℹ️ Kullanıcının avatarı yok, indirme atlanıyor');
           }
           
           // Günlük ücretsiz hakları kontrol et ve sıfırla
@@ -10228,22 +10256,29 @@ const App = () => {
             displayName: data.displayName,
             profilePhoto: data.profilePhoto,
             credits: data.credits ?? 0,
+            videoTokens: data.videoTokens ?? 0,
             freeShopTries: freeShopTries,
             freeComboTries: data.freeComboTries ?? 3,
             lastFreeReset: today,
             subscription: data.subscription || null,
             clothingUploadPurchased: data.clothingUploadPurchased || false,
-            gender: data.gender,
-            skinTone: data.skinTone,
-            hairColor: data.hairColor,
-            hairLength: data.hairLength,
-            hairType: data.hairType,
-            hijab: data.hijab || false,
-            ...(data.params || {})
+            // Avatar parametreleri - önce params'tan, yoksa doğrudan data'dan
+            gender: data.params?.gender || data.gender,
+            age: data.params?.age || data.age,
+            height: data.params?.height || data.height,
+            weight: data.params?.weight || data.weight,
+            bodyType: data.params?.bodyType || data.bodyType,
+            skinTone: data.params?.skinTone || data.skinTone,
+            hairColor: data.params?.hairColor || data.hairColor,
+            hairLength: data.params?.hairLength || data.hairLength,
+            hairType: data.params?.hairType || data.hairType,
+            hijab: data.params?.hijab || data.hijab || false
           };
           
+          // Avatar varsa ekle
           if (baseAvatarDataUrl) {
             userData.baseAvatar = baseAvatarDataUrl;
+            console.log('✅ User state\'e avatar eklendi');
           }
           
           setUser(userData);
@@ -10257,19 +10292,29 @@ const App = () => {
           
         } else if (initialUserData) {
           // Yeni kullanıcı - Firestore'a kaydet
+          console.log('🆕 Yeni kullanıcı, Firestore\'a kaydediliyor...');
           await db.collection('users').doc(userId).set(initialUserData);
           setUser(initialUserData);
+        } else {
+          // Firestore'da yok ve initialUserData da yok - sadece temel user oluştur
+          console.log('⚠️ Kullanıcı verisi bulunamadı');
+          setUser({ username: null });
         }
         
         setLoadingAvatar(false);
         setDataLoaded(true);
       }).catch((e) => {
-        console.error('Firestore error:', e);
+        console.error('❌ Firestore error:', e);
+        // Hata durumunda bile UI'ı aç
+        if (initialUserData) {
+          setUser(initialUserData);
+        }
         setLoadingAvatar(false);
         setDataLoaded(true);
       });
     } else {
       // Firestore yok
+      console.warn('⚠️ Firestore bağlantısı yok');
       setLoadingAvatar(false);
       setDataLoaded(true);
     }
