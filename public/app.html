@@ -3792,13 +3792,20 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
         // Email doğrulama
         if (!c.user.emailVerified) {
           try {
+            console.log('📧 Email doğrulama gönderiliyor...', c.user.email);
             const actionCodeSettings = {
               url: window.location.origin + '/?verified=true',
               handleCodeInApp: false
             };
             await c.user.sendEmailVerification(actionCodeSettings);
+            console.log('✅ Email doğrulama gönderildi');
+            setToast({ open: true, type: 'info', title: 'Doğrulama Emaili', message: 'Lütfen email kutunuzu kontrol edin' });
           } catch (verifyErr) {
-            console.warn('Email doğrulama gönderilemedi:', verifyErr.message);
+            console.error('❌ Email doğrulama hatası:', verifyErr.code, verifyErr.message);
+            // Firebase'de "too-many-requests" hatası olabilir
+            if (verifyErr.code !== 'auth/too-many-requests') {
+              setToast({ open: true, type: 'warning', title: 'Email Doğrulama', message: 'Doğrulama emaili gönderilemedi. Daha sonra tekrar deneyin.' });
+            }
           }
         }
       }
@@ -3959,7 +3966,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
   return (
     <div className="h-full bg-gradient-premium flex flex-col">
       <div className="p-6 safe-top"><button onClick={() => setMode('welcome')} className="p-2 -ml-2 rounded-xl hover:bg-slate-200/60"><Icon name="chevronLeft" size={24} /></button></div>
-      <div className="flex-1 px-6 overflow-y-auto custom-scroll">
+      <div className="flex-1 px-6 pb-24 overflow-y-auto custom-scroll">
         <div className="flex justify-center mb-6"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-16 h-16 rounded-2xl" /></div>
         <h1 className="text-2xl font-bold text-center mb-1">{mode === 'login' ? t('welcomeBack') : t('createAccount')}</h1>
         <p className="text-sm text-slate-500 text-center mb-8">{mode === 'login' ? t('loginToAccount') : t('startFashionJourney')}</p>
@@ -10305,7 +10312,10 @@ const App = () => {
         if (user.bodyType !== undefined) userParams.bodyType = user.bodyType;
         if (user.skinTone !== undefined) userParams.skinTone = user.skinTone;
         if (user.hairColor !== undefined) userParams.hairColor = user.hairColor;
+        if (user.hairLength !== undefined) userParams.hairLength = user.hairLength;
+        if (user.hairType !== undefined) userParams.hairType = user.hairType;
         if (user.hairStyle !== undefined) userParams.hairStyle = user.hairStyle;
+        if (user.hijab !== undefined) userParams.hijab = user.hijab;
         
         // Temel kullanıcı verisi
         const userData = {
