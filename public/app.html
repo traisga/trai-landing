@@ -3800,6 +3800,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             usernameLower: username.toLowerCase(),
             displayName: displayName.trim() || null,
             email: c.user.email,
+            profilePublic: true,
             tokens: 3,
             subscription: null,
             createdAt: Date.now()
@@ -10307,7 +10308,10 @@ const App = () => {
           if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
           
           setLoadingAvatar(false);
-          setDataLoaded(true);
+          setTimeout(() => {
+            setDataLoaded(true);
+            console.log('✅ Veri senkronizasyonu aktif');
+          }, 2000);
           
         } else {
           // Kullanıcı Firestore'da yok - yeni profil oluştur
@@ -10330,13 +10334,14 @@ const App = () => {
             // initialUserData yok - sadece temel bilgilerle devam et
             console.log('⚠️ initialUserData yok, temel profil oluşturuluyor');
             const basicProfile = {
-              email: authUser.email,
-              credits: 0,
-              videoTokens: 0,
-              freeShopTries: 5,
-              freeComboTries: 3,
-              lastFreeReset: new Date().toDateString(),
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            email: authUser.email,
+            profilePublic: true, // <--- BUNU EKLE: Rules dosyan buna bakıyor
+            credits: 0,
+            videoTokens: 0,
+            freeShopTries: 5,
+            freeComboTries: 3,
+            lastFreeReset: new Date().toDateString(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             db.collection('users').doc(userId).set(basicProfile)
               .then(() => setUser({ ...basicProfile, createdAt: Date.now() }))
@@ -10350,12 +10355,10 @@ const App = () => {
       (error) => {
         console.error('❌ Firestore onSnapshot error:', error);
         setLoadingAvatar(false);
-        setDataLoaded(true);
+        // setDataLoaded(true); // KALDIRILDI: Hata varsa sakın kaydetme tetikleyicisini açma!
         
-        // Hata durumunda bile UI'ı aç
-        if (initialUserData) {
-          setUser(initialUserData);
-        }
+        // Kullanıcıya hata olduğunu göster ki boş veriyle işlem yapıp veritabanını bozmasın
+        setToast({ open: true, type: 'error', title: 'Bağlantı Hatası', message: 'Veriler yüklenemedi. Lütfen sayfayı yenileyin.' });
       }
     );
     
