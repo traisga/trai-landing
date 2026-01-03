@@ -10441,8 +10441,8 @@ const App = () => {
     }
   }, [user, authUser]);
 
-  // Save closet to localStorage AND Firestore (user-specific) - only after initial load
-  useEffect(() => {
+ // Save closet to localStorage AND Firestore (user-specific) - only after initial load
+ useEffect(() => {
     if (authUser && dataLoaded && db) {
       db.collection('users').doc(authUser.uid).update({ closet }).catch(() => {});
     }
