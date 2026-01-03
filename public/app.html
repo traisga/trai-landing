@@ -1465,7 +1465,8 @@ async function uploadAvatarToStorage(userId, avatarDataUrl) {
     const url = await ref.getDownloadURL();
     return url;
   } catch (e) {
-    return null;
+  console.warn('❌ Avatar upload failed:', e.code || '', e.message || e);
+  return null;
   }
 }
 
