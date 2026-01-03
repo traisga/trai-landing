@@ -434,23 +434,36 @@ const TRANSLATIONS = {
     plus: "Büyük Beden",
     appearance: "Görünüm",
     appearanceHelp: "Avatar'ın ten ve saç özelliklerini belirler",
-    skinTone: "Ten Rengi",
-    fairSkin: "Çok Açık Ten",
-    lightSkin: "Açık Ten",
-    mediumSkin: "Buğday Ten",
-    oliveSkin: "Zeytin Ten",
-    tanSkin: "Bronz Ten",
-    darkSkin: "Koyu Ten",
+    skinTone: "Ten Renginizi Seçin",
+    fairSkin: "Çok Açık",
+    lightSkin: "Açık",
+    mediumSkin: "Buğday",
+    oliveSkin: "Zeytin",
+    tanSkin: "Bronz",
+    darkSkin: "Koyu",
+    hairSection: "Saç Özellikleri",
+    hairColorSelect: "Saç Renginizi Seçin",
     hairColor: "Saç Rengi",
-    blackHair: "Siyah Saç",
+    blackHair: "Siyah",
     brownHair: "Kahverengi",
     blondeHair: "Sarı",
     redHair: "Kızıl",
     grayHair: "Gri / Beyaz",
-    hairStyle: "Saç Stili",
+    hijabOption: "Türban",
+    hairLengthSelect: "Saç Uzunluğunuzu Seçin",
+    hairLength: "Saç Uzunluğu",
+    veryShortHair: "Çok Kısa",
     shortHair: "Kısa",
     mediumHair: "Orta",
     longHair: "Uzun",
+    veryLongHair: "Çok Uzun",
+    hairTypeSelect: "Saç Tipinizi Seçin",
+    hairType: "Saç Tipi",
+    straightHair: "Düz",
+    wavyHair: "Dalgalı",
+    curlyHair: "Kıvırcık",
+    coilyHair: "Afro/Sıkı Kıvırcık",
+    hairStyle: "Saç Stili",
     continueToPhoto: "Fotoğraf Çekimine Geç",
     takePhotos: "Fotoğraf Çek",
     photoInstructions: "3 farklı açıdan fotoğraf çek",
@@ -748,51 +761,38 @@ const TRANSLATIONS = {
     maybeLater: "Belki Sonra",
     dontShowAgain: "Bir daha gösterme",
     
-    // Tokens & Subscription
-    tokens: "Jeton",
-    buyTokens: "Jeton Satın Al",
+    // Credits & Subscription (Yeni sistem)
+    credits: "Kredi",
+    buyCredits: "Kredi Satın Al",
     buyPackage: "Paket Al",
     subscription: "Abonelik",
     premium: "Premium",
     premiumMember: "Premium Üye",
     freemium: "Ücretsiz",
-    monthlySubscription: "Aylık Abonelik",
-    hdTryOns: "HD Deneme Hakkı",
+    freeTriesLeft: "Ücretsiz Hak",
+    dailyFreeTries: "Günlük Ücretsiz",
+    comboFreeTries: "Kombin Hakkı",
+    monthlySubscription: "Aylık Premium",
+    monthlyCredits: "Aylık Kredi",
     unlimitedStyleChat: "Sınırsız Stil Sohbeti",
     adFreeExperience: "Reklamsız Deneyim",
-    urgentPackage: "Acil Paket",
-    urgentPackageDesc: "Bu akşamki düğün için",
+    creditPackage: "Kredi Paketi",
+    creditPackage5: "5 Kredi Paketi",
+    creditPackage40: "40 Kredi Paketi",
     tryOns: "Deneme",
     perMonth: "/ay",
     subscribe: "Abone Ol",
     buyNow: "Şimdi Al",
     currentPlan: "Mevcut Plan",
-    insufficientTokens: "Yetersiz Jeton",
-    needMoreTokens: "Daha fazla jeton satın alın.",
-    tokenUsed: "1 jeton kullanıldı",
-    tokensRemaining: "Kalan jeton",
-    // Video Tokens
-    videoTokens: "Video Jetonu",
-    videoPackage5: "5 Video Paketi",
-    videoPackage10: "10 Video Paketi",
-    videoPackageDesc5: "Kısa süreli video denemeleri",
-    videoPackageDesc10: "%5 indirimli avantajlı paket",
-    videoTryOn: "Video Deneme",
-    videoTryOnDesc: "6 saniyelik moda videosu oluştur",
-    createVideo: "Video Oluştur",
-    videoCreating: "Video oluşturuluyor...",
-    videoReady: "Videonuz hazır!",
-    insufficientVideoTokens: "Yetersiz Video Jetonu",
-    needMoreVideoTokens: "Video paketi satın alın.",
-    videoTokenUsed: "1 video jetonu kullanıldı",
-    videoTokensRemaining: "Kalan video jetonu",
-    videoTab: "Video",
-    videoPackages: "Video Paketleri",
-    purchaseFromProfile: "Profilden satın alabilirsiniz",
-    videoTokenCount: "Video Jetonu",
-    discountText: "indirimli",
-    whereWillYouWear: "Bu Kombini Nerede Giyeceksin?",
-    selectBackground: "Ortam seç, kombinini orada görelim",
+    insufficientCredits: "Yetersiz Kredi",
+    needMoreCredits: "Kredi satın alın veya ücretsiz haklarınızı kullanın.",
+    creditUsed: "1 kredi kullanıldı",
+    creditsRemaining: "Kalan kredi",
+    freeTrieUsed: "Ücretsiz hak kullanıldı",
+    noFreeTries: "Ücretsiz hakkınız kalmadı",
+    // Video kaldırıldı - sadece görsel deneme
+    whereWillYouWear: "Ortam Seç",
+    selectBackground: "Kombinini nerede görmek istersin?",
     noItemsFound: "Ürün bulunamadı",
     
     // Cart & Shop
@@ -2088,6 +2088,14 @@ const AI = {
       plus: "plus-size"
     }[params.bodyType] || "average";
 
+    // Türban/Hijab kontrolü
+    const hijabInstruction = params.hijab ? `
+- HIJAB/HEADSCARF: The person wears a modern, elegant hijab. Style the hijab in contemporary Turkish fashion - elegantly wrapped with a sophisticated look. Choose a neutral color (white, beige, or soft gray) that complements the base outfit. The hijab should look natural, stylish, and high-quality.` : '';
+
+    // Saç bilgisi (türban yoksa)
+    const hairInstruction = !params.hijab ? `
+- Hair: ${params.hairColor || 'natural'} color, ${params.hairLength || 'medium'} length, ${params.hairType || 'natural'} texture. Preserve the exact hair from reference photos.` : '';
+
     // Professional hyper-realistic avatar generation prompt
     const prompt = `Task: Generate a hyper-realistic, 8K resolution FULL-BODY fashion portrait of this specific person based on the reference photos.
 
@@ -2101,7 +2109,8 @@ Identity & Body:
 - Subject: ${gender}, ${params.age} years old.
 - Height: ${params.height}cm, Weight: ${params.weight}kg.
 - Body Type: ${bodyTypeDesc} build.
-- CRITICAL IDENTITY LOCK: You MUST preserve the EXACT facial features from the reference photos - same face shape, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, and hair style. The generated face must be 100% identical to the reference. This is the highest priority.
+- Skin Tone: ${params.skinTone || 'natural'}.${hairInstruction}${hijabInstruction}
+- CRITICAL IDENTITY LOCK: You MUST preserve the EXACT facial features from the reference photos - same face shape, bone structure, eyes, nose, lips, skin texture, and skin tone. The generated face must be 100% identical to the reference. This is the highest priority.
 
 Pose & Setting:
 - Pose: Standing straight, facing forward, arms slightly relaxed at sides (A-pose or neutral fashion pose). Full body visible from head to feet.
@@ -2120,7 +2129,7 @@ Output: Professional full-body fashion catalog photography showing complete figu
     return await this.generateWithFallback(parts, null);
   },
 
-  async tryOnSingle(baseAvatarDataUrl, item, backgroundValue) {
+  async tryOnSingle(baseAvatarDataUrl, item, backgroundValue, userParams = {}) {
     debugLog('TryOn', `Tek ürün: ${item.name}`, 'info');
     
     if (!baseAvatarDataUrl || !baseAvatarDataUrl.startsWith('data:image')) {
@@ -2173,6 +2182,10 @@ Output: Professional full-body fashion catalog photography showing complete figu
     // Dynamic background based on selection
     const bgDescription = backgroundValue || 'Clean white professional photography studio with seamless backdrop';
     
+    // Türban/Hijab desteği
+    const hijabInstruction = userParams.hijab ? `
+8. HIJAB/HEADSCARF: The person wears a hijab/headscarf. Add a modern, stylish hijab that complements the outfit colors and style. The hijab should be elegantly wrapped in contemporary Turkish fashion style, matching or complementing the ${item.color} garment. Ensure the hijab fabric and texture look realistic and high-quality.` : '';
+    
     const prompt = `Task: Professional Virtual Try-On (VTO).
 
 Inputs:
@@ -2183,10 +2196,10 @@ Instructions:
 1. ACTION: ${action}. Apply the garment from Image 2 onto the person in Image 1.
 2. Fit & Physics: Ensure the clothing fits the body type naturally. Accurately render fabric folds, texture, draping, and gravity effects.
 3. Lighting Integration: Match the lighting and shadows of the new garment to the environment.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style, and any distinguishing features. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, and any distinguishing features. NO modifications allowed.
 5. Garment Details: ${garmentDetails}.
 6. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-7. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure the lighting, shadows, and atmosphere match this setting realistically.
+7. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure the lighting, shadows, and atmosphere match this setting realistically.${hijabInstruction}
 
 Output: High-quality full-body fashion photograph, 8K resolution, photorealistic, commercial quality.`;
 
@@ -2194,7 +2207,7 @@ Output: High-quality full-body fashion photograph, 8K resolution, photorealistic
     return await this.generateWithFallback(parts, null);
   },
 
-  async tryOnCombo(baseAvatarDataUrl, items, backgroundValue) {
+  async tryOnCombo(baseAvatarDataUrl, items, backgroundValue, userParams = {}) {
     if (!baseAvatarDataUrl || !baseAvatarDataUrl.startsWith('data:image')) {
       throw new Error("Geçersiz avatar formatı");
     }
@@ -2205,7 +2218,7 @@ Output: High-quality full-body fashion photograph, 8K resolution, photorealistic
 
     // Tek ürün varsa tryOnSingle kullan
     if (items.length === 1) {
-      return await this.tryOnSingle(baseAvatarDataUrl, items[0], backgroundValue);
+      return await this.tryOnSingle(baseAvatarDataUrl, items[0], backgroundValue, userParams);
     }
 
     const avatarInline = dataUrlToInlinePart(baseAvatarDataUrl, "image/png");
@@ -2242,6 +2255,10 @@ Output: High-quality full-body fashion photograph, 8K resolution, photorealistic
 
     // Dynamic background based on selection
     const bgDescription = backgroundValue || 'Clean white professional photography studio with seamless backdrop';
+    
+    // Türban/Hijab talimatı - tüm promptlara eklenecek
+    const hijabInstruction = userParams.hijab ? `
+HIJAB REQUIREMENT: The person wears a hijab/headscarf. Add a modern, elegant hijab that complements the outfit colors. Style it in contemporary Turkish fashion - elegantly wrapped and matching the overall look. The hijab color should harmonize with the garments being worn.` : '';
 
     let prompt;
     const parts = [{ text: '' }, avatarInline];
@@ -2261,9 +2278,9 @@ Directives:
 1. LAYERING: Dress the model with the top (Img 2) as base layer, bottom (Img 3) for lower body, and outerwear (Img 4) as the outer layer worn OPEN over the top.
 2. Realism: Pay meticulous attention to how garments interact - waistline tucking, jacket draping over shoulders, natural fabric folds.
 3. Cohesion: Create a stylistically cohesive look with proper proportions and layering.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone. NO modifications allowed.
 5. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting and atmosphere match this setting.
+6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting and atmosphere match this setting.${hijabInstruction}
 
 Quality: Masterpiece, full-body commercial fashion photography, high detail, 8K resolution.`;
     }
@@ -2281,9 +2298,9 @@ Directives:
 1. OUTFIT: Dress the model in Image 1 with BOTH the top (Img 2) and bottom (Img 3).
 2. Styling: Create a cohesive look. Decide on tucking (tucked in or out) based on current fashion trends and the garment types.
 3. Waistline Realism: Pay close attention to where the garments meet. Create realistic shadows, fabric overlap, and natural interaction.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone. NO modifications allowed.
 5. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting and atmosphere match this setting.
+6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting and atmosphere match this setting.${hijabInstruction}
 
 Quality: Masterpiece, full-body commercial fashion photography, high detail, photorealistic.`;
     }
@@ -2301,9 +2318,9 @@ Directives:
 1. LAYERING: Put the top (Img 2) on the model, then layer the outerwear (Img 3) OVER it, worn open.
 2. Auto-Complete: Generate stylish dark trousers or jeans that complement the outfit.
 3. Realism: Show how the outerwear drapes over the top layer naturally.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone. NO modifications allowed.
 5. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.
+6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.${hijabInstruction}
 
 Style: High-end full-body fashion photography, photorealistic.`;
     }
@@ -2321,9 +2338,9 @@ Directives:
 1. OUTFIT: Put the bottom (Img 2) on the model, layer the outerwear (Img 3) on top.
 2. Auto-Complete: Generate a clean white or neutral t-shirt/blouse underneath the outerwear.
 3. Layering: Show the outerwear worn open with the auto-generated top visible.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone. NO modifications allowed.
 5. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.
+6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.${hijabInstruction}
 
 Style: High-end full-body fashion photography, photorealistic.`;
     }
@@ -2340,9 +2357,9 @@ Instructions:
 1. Replace the model's current top with the garment from Image 2.
 2. Auto-Complete: Generate a pair of matching, stylish dark trousers or jeans to complete the look harmoniously.
 3. Fit: Ensure the new top fits the body type perfectly with natural draping.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone. NO modifications allowed.
 5. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.
+6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.${hijabInstruction}
 
 Style: High-end full-body fashion photography, photorealistic.`;
     }
@@ -2359,9 +2376,9 @@ Instructions:
 1. Replace the model's current pants/skirt with the garment from Image 2.
 2. Auto-Complete: Generate a matching, clean white or neutral t-shirt/blouse to complete the look.
 3. Integration: Ensure realistic waistline interaction and proper hemline.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone. NO modifications allowed.
 5. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.
+6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.${hijabInstruction}
 
 Style: High-end full-body fashion photography, photorealistic.`;
     }
@@ -2378,9 +2395,9 @@ Instructions:
 1. Layer the outerwear from Image 2 OVER the model's current outfit, worn open.
 2. Fit: Ensure the jacket/coat fits naturally on the shoulders and drapes properly.
 3. Styling: Show the outerwear complementing the existing base outfit underneath.
-4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone, hair color, hair style. NO modifications allowed.
+4. CRITICAL IDENTITY LOCK: The face MUST remain 100% identical to Image 1 - preserve exact facial features, bone structure, eyes, nose, lips, skin texture, skin tone. NO modifications allowed.
 5. FRAMING: Generate a FULL-BODY shot from head to toe. The entire person must be visible including face, torso, legs, and feet/shoes.
-6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.
+6. BACKGROUND & SETTING: Place the person in this environment: ${bgDescription}. Ensure lighting matches.${hijabInstruction}
 
 Style: Full-body fashion photography, photorealistic.`;
     }
@@ -4140,7 +4157,9 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
   const [step, setStep] = useState(1);
   const [params, setParams] = useState(initialParams || {
     gender: '', age: '', height: '', weight: '',
-    bodyType: 'average', skinTone: 'medium', hairColor: 'brown', hairStyle: 'medium'
+    bodyType: 'average', skinTone: 'medium', 
+    hairColor: 'brown', hairLength: 'medium', hairType: 'straight',
+    hijab: false
   });
   const [photos, setPhotos] = useState([]);
   const [status, setStatus] = useState('');
@@ -4370,39 +4389,119 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                 </select>
               </div>
 
-              {/* Appearance */}
-              <div>
+              {/* Skin Tone Section */}
+              <div className="glass rounded-xl p-4">
                 <label className="text-sm font-semibold text-slate-700 mb-3 block flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-brand/10 flex items-center justify-center text-xs">4</span>
-                  {t('appearance')}
+                  <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-xs">4</span>
+                  {t('skinTone')}
                 </label>
-                <p className="text-xs text-slate-500 mb-3">{t('appearanceHelp')}</p>
-                <div className="space-y-3">
-                  <select value={params.skinTone} onChange={e => setParams(p => ({ ...p, skinTone: e.target.value }))}>
-                    <option value="fair">{t('fairSkin')}</option>
-                    <option value="light">{t('lightSkin')}</option>
-                    <option value="medium">{t('mediumSkin')}</option>
-                    <option value="olive">{t('oliveSkin')}</option>
-                    <option value="tan">{t('tanSkin')}</option>
-                    <option value="dark">{t('darkSkin')}</option>
-                  </select>
-                  <div className="grid grid-cols-2 gap-3">
-                    <select value={params.hairColor} onChange={e => setParams(p => ({ ...p, hairColor: e.target.value }))}>
-                      <option value="black">{t('blackHair')}</option>
-                      <option value="brown">{t('brownHair')}</option>
-                      <option value="blonde">{t('blondeHair')}</option>
-                      <option value="red">{t('redHair')}</option>
-                      <option value="gray">{t('grayHair')}</option>
-                    </select>
-                    <select value={params.hairStyle} onChange={e => setParams(p => ({ ...p, hairStyle: e.target.value }))}>
-                      <option value="short">{t('shortHair')}</option>
-                      <option value="medium">{t('mediumHair')}</option>
-                      <option value="long">{t('longHair')}</option>
-                      <option value="curly">{t('curlyHair')}</option>
-                      {params.gender === 'male' && <option value="bald">{t('bald')}</option>}
-                    </select>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: 'fair', label: t('fairSkin'), color: '#fde8d8' },
+                    { value: 'light', label: t('lightSkin'), color: '#f5d5c0' },
+                    { value: 'medium', label: t('mediumSkin'), color: '#d4a574' },
+                    { value: 'olive', label: t('oliveSkin'), color: '#c49a6c' },
+                    { value: 'tan', label: t('tanSkin'), color: '#a67c52' },
+                    { value: 'dark', label: t('darkSkin'), color: '#6b4423' }
+                  ].map(skin => (
+                    <button
+                      key={skin.value}
+                      onClick={() => setParams(p => ({ ...p, skinTone: skin.value }))}
+                      className={`p-2 rounded-lg border-2 text-xs font-medium transition ${
+                        params.skinTone === skin.value 
+                          ? 'border-brand bg-brand/5' 
+                          : 'border-transparent bg-slate-50 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-full mx-auto mb-1" style={{ background: skin.color }} />
+                      {skin.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hair Section */}
+              <div className="glass rounded-xl p-4">
+                <label className="text-sm font-semibold text-slate-700 mb-3 block flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center text-xs">5</span>
+                  {t('hairSection')}
+                </label>
+                
+                {/* Hair Color / Hijab */}
+                <div className="mb-4">
+                  <p className="text-xs text-slate-500 mb-2">{t('hairColorSelect')}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'black', label: t('blackHair'), color: '#1a1a1a' },
+                      { value: 'brown', label: t('brownHair'), color: '#5c4033' },
+                      { value: 'blonde', label: t('blondeHair'), color: '#d4a017' },
+                      { value: 'red', label: t('redHair'), color: '#8b2500' },
+                      { value: 'gray', label: t('grayHair'), color: '#808080' },
+                      { value: 'hijab', label: t('hijabOption'), color: 'linear-gradient(135deg, #6366f1, #8b5cf6)', icon: '🧕' }
+                    ].map(hair => (
+                      <button
+                        key={hair.value}
+                        onClick={() => setParams(p => ({ 
+                          ...p, 
+                          hairColor: hair.value,
+                          hijab: hair.value === 'hijab'
+                        }))}
+                        className={`p-2 rounded-lg border-2 text-xs font-medium transition ${
+                          params.hairColor === hair.value 
+                            ? 'border-brand bg-brand/5' 
+                            : 'border-transparent bg-slate-50 hover:bg-slate-100'
+                        }`}
+                      >
+                        {hair.icon ? (
+                          <div className="text-2xl mb-1">{hair.icon}</div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-full mx-auto mb-1" style={{ background: hair.color }} />
+                        )}
+                        {hair.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
+                
+                {/* Hair Length & Type - Only show if not hijab */}
+                {!params.hijab && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-slate-500 mb-2">{t('hairLengthSelect')}</p>
+                      <select 
+                        value={params.hairLength} 
+                        onChange={e => setParams(p => ({ ...p, hairLength: e.target.value }))}
+                        className="text-sm"
+                      >
+                        <option value="very-short">{t('veryShortHair')}</option>
+                        <option value="short">{t('shortHair')}</option>
+                        <option value="medium">{t('mediumHair')}</option>
+                        <option value="long">{t('longHair')}</option>
+                        <option value="very-long">{t('veryLongHair')}</option>
+                        {params.gender === 'male' && <option value="bald">{t('bald')}</option>}
+                      </select>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-2">{t('hairTypeSelect')}</p>
+                      <select 
+                        value={params.hairType} 
+                        onChange={e => setParams(p => ({ ...p, hairType: e.target.value }))}
+                        className="text-sm"
+                      >
+                        <option value="straight">{t('straightHair')}</option>
+                        <option value="wavy">{t('wavyHair')}</option>
+                        <option value="curly">{t('curlyHair')}</option>
+                        <option value="coily">{t('coilyHair')}</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+                
+                {params.hijab && (
+                  <div className="bg-purple-50 rounded-lg p-3 text-xs text-purple-700">
+                    <span className="font-medium">🧕 Türban Modu:</span> Avatarınız modern türban stiliyle oluşturulacak. Kombin denemelerinde kıyafetlerinizle uyumlu türban önerilecek.
+                  </div>
+                )}
               </div>
 
               {/* Submit Button */}
@@ -4423,6 +4522,9 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                   Cinsiyet, yaş, boy ve kilo bilgilerini girin
                 </p>
               )}
+              
+              {/* Safe bottom zone */}
+              <div className="h-8 safe-bottom"></div>
             </div>
           </div>
         </div>
@@ -5064,7 +5166,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
 };
 
 // ============ CLOSET ============
-const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed, onFirstTryOn, onAddCustomClothing, settings, onShowSubscription }) => {
+const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed, onFirstTryOn, onAddCustomClothing, settings, onShowSubscription, useCredit }) => {
   const [tab, setTab] = useState('studio'); // studio, items, upload, combos, favorites, history, weather
   const [selected, setSelected] = useState({ top: null, bottom: null, outerwear: null, fullbody: null });
   const [bg, setBg] = useState(BACKGROUNDS[0]);
@@ -5282,13 +5384,18 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
     // Create cache key
     const cacheKey = `combo_${items.map(i => i.id).sort().join('_')}_${selectedBg.id}`;
     
-    // Check cache first
+    // Check cache first - cache hit doesn't use credit
     if (tryOnCache && tryOnCache[cacheKey]) {
       const cachedResult = tryOnCache[cacheKey];
       const historyItem = { id: Date.now(), image: cachedResult, items, background: selectedBg, createdAt: Date.now() };
       setTryHistory(prev => [historyItem, ...prev].slice(0, 50));
       onTryOnResult(cachedResult, items);
       setToast({ open: true, type: 'success', title: 'Hızlı Sonuç ⚡', message: 'Önceki deneme yüklendi!' });
+      return;
+    }
+    
+    // Kredi kontrolü - stüdyo için 'studio' source
+    if (useCredit && !useCredit('studio')) {
       return;
     }
     
@@ -5304,7 +5411,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
       }
       
       debugLog('TryOn', `Kombin: ${items.length} ürün, Background: ${selectedBg.id}`, 'info');
-      const result = await AI.tryOnCombo(baseAvatar, items, selectedBg.value);
+      const result = await AI.tryOnCombo(baseAvatar, items, selectedBg.value, { hijab: user?.hijab });
         
       if (!result || !result.startsWith('data:image')) {
         throw new Error("Görsel oluşturulamadı");
@@ -6778,16 +6885,18 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
         </div>
       )}
       
-      {/* Background Selection Modal */}
+      {/* Background Selection Modal - Compact */}
       {showBackgroundModal && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex items-end sm:items-center justify-center p-4 fade-in">
-          <div className="glass rounded-3xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto scale-in">
-            <div className="text-center mb-4">
-              <h3 className="text-xl font-bold mb-2">{t('whereWillYouWear') || 'Bu Kombini Nerede Giyeceksin?'}</h3>
-              <p className="text-slate-500 text-sm">{t('selectBackground') || 'Ortam seç, kombinini orada görelim'}</p>
+        <div className="fixed inset-0 z-[100] bg-black/80 flex items-end justify-center fade-in" onClick={() => setShowBackgroundModal(false)}>
+          <div className="glass rounded-t-2xl p-4 w-full max-w-lg scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-sm">{t('whereWillYouWear') || 'Ortam Seç'}</h3>
+              <button onClick={() => setShowBackgroundModal(false)} className="p-1">
+                <Icon name="x" size={18} />
+              </button>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-4 gap-2">
               {BACKGROUNDS.map(b => (
                 <button
                   key={b.id}
@@ -6796,7 +6905,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                     setShowBackgroundModal(false);
                     executeTryOn(b);
                   }}
-                  className="group relative aspect-[4/3] rounded-xl overflow-hidden border-2 border-transparent hover:border-brand transition"
+                  className="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-brand transition"
                 >
                   <div 
                     className="absolute inset-0"
@@ -6806,25 +6915,13 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                         : `url('${b.preview || ''}') center/cover, ${b.value}`
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <p className="text-white text-sm font-semibold">{t(b.id)}</p>
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                    <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center">
-                      <Icon name="sparkles" size={24} className="text-white" />
-                    </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute bottom-1 left-1 right-1">
+                    <p className="text-white text-[9px] font-medium truncate">{t(b.id)}</p>
                   </div>
                 </button>
               ))}
             </div>
-            
-            <button 
-              onClick={() => setShowBackgroundModal(false)}
-              className="w-full btn-ghost py-3 rounded-xl text-sm"
-            >
-              {t('cancel') || 'Vazgeç'}
-            </button>
           </div>
         </div>
       )}
@@ -8378,72 +8475,85 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, onCheckout
 };
 
 // Subscription Modal
-const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyTokens, loading }) => {
-  const [selectedPlan, setSelectedPlan] = useState('subscription');
+const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loading }) => {
+  const [selectedPlan, setSelectedPlan] = useState('credits40');
   const [paymentMethod, setPaymentMethod] = useState('card');
   
   if (!open) return null;
   
   const plans = [
     {
-      id: 'subscription',
-      name: t('monthlySubscription'),
-      price: 199,
+      id: 'premium',
+      name: 'Premium Abonelik',
+      price: 399,
       type: 'subscription',
       features: [
-        { icon: '🎨', text: `30 ${t('hdTryOns')}` },
-        { icon: '💬', text: t('unlimitedStyleChat') },
-        { icon: '🚫', text: t('adFreeExperience') }
+        { icon: '🎨', text: '100 Kredi / Ay' },
+        { icon: '🚫', text: t('adFreeExperience') },
+        { icon: '💎', text: 'Öncelikli Destek' }
       ],
-      popular: true
+      popular: true,
+      badge: 'EN AVANTAJLI'
     },
     {
-      id: 'urgent',
-      name: t('urgentPackage'),
-      price: 49,
-      type: 'tokens',
-      amount: 5,
-      desc: t('urgentPackageDesc'),
+      id: 'credits40',
+      name: '40 Kredi Paketi',
+      price: 199,
+      type: 'credits',
+      amount: 40,
+      desc: 'Hem keşfet hem stüdyoda kullan',
       features: [
-        { icon: '⚡', text: `5 ${t('tryOns')}` }
+        { icon: '🎨', text: '40 Deneme Hakkı' },
+        { icon: '✨', text: 'Sınırsız Geçerlilik' }
       ]
     },
     {
-      id: 'clothingUpload',
-      name: t('clothingUploadPremium'),
-      price: 99,
-      type: 'clothingUpload',
-      amount: 100,
-      desc: t('clothingUploadPremiumDesc'),
+      id: 'credits5',
+      name: '5 Kredi Paketi',
+      price: 50,
+      type: 'credits',
+      amount: 5,
+      desc: 'Hızlı deneme için',
       features: [
-        { icon: '👕', text: '100 kıyafet hakkı' },
-        { icon: '📸', text: 'Kendi kıyafetlerini yükle' }
+        { icon: '⚡', text: '5 Deneme Hakkı' }
       ]
     },
     {
       id: 'video5',
-      name: t('videoPackage5'),
+      name: '5 Video Paketi',
       price: 300,
       type: 'videoTokens',
       amount: 5,
-      desc: t('videoPackageDesc5'),
+      desc: 'Kısa süreli video denemeleri',
       features: [
-        { icon: '🎬', text: `5 ${t('videoTryOn')}` },
-        { icon: '⏱️', text: t('videoTryOnDesc') }
+        { icon: '🎬', text: '5 Video Deneme' },
+        { icon: '⏱️', text: '6 saniyelik moda videosu' }
       ]
     },
     {
       id: 'video10',
-      name: t('videoPackage10'),
+      name: '10 Video Paketi',
       price: 570,
       type: 'videoTokens',
       amount: 10,
-      desc: t('videoPackageDesc10'),
+      desc: '%5 indirimli avantajlı paket',
       features: [
-        { icon: '🎬', text: `10 ${t('videoTryOn')}` },
-        { icon: '💰', text: '%5 ' + (currentLanguage === 'tr' ? 'indirim' : 'discount') }
+        { icon: '🎬', text: '10 Video Deneme' },
+        { icon: '💰', text: '%5 indirim' }
       ],
-      badge: currentLanguage === 'tr' ? 'AVANTAJLI' : 'BEST VALUE'
+      badge: 'AVANTAJLI'
+    },
+    {
+      id: 'clothingUpload',
+      name: '100 Kıyafet Paketi',
+      price: 99,
+      type: 'clothingUpload',
+      amount: 100,
+      desc: 'Kendi kıyafetlerini yükle',
+      features: [
+        { icon: '👕', text: '100 kıyafet hakkı' },
+        { icon: '📸', text: 'Dolabını dijitalleştir' }
+      ]
     }
   ];
   
@@ -8461,7 +8571,7 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyTokens, load
     if (plan.type === 'subscription') {
       onSubscribe();
     } else {
-      onBuyTokens(plan.amount, plan.type, plan.price);
+      onBuyCredits(plan.amount, plan.type, plan.price);
     }
   };
   
@@ -8470,16 +8580,15 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyTokens, load
       <div className="w-full max-w-md bg-surface rounded-3xl max-h-[90vh] overflow-hidden flex flex-col fade-in">
         <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-brand/5">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
-              <span className="text-2xl">🪙</span>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-brand2 flex items-center justify-center">
+              <span className="text-2xl">💎</span>
             </div>
             <div>
-              <h2 className="font-bold">{t('buyTokens')}</h2>
-              <div className="flex items-center gap-3 text-xs text-slate-500">
-                <span>🪙 <span className="font-bold text-brand2">{user?.tokens || 0}</span></span>
-                {(user?.videoTokens || 0) > 0 && (
-                  <span>🎬 <span className="font-bold text-brand">{user.videoTokens}</span></span>
-                )}
+              <h2 className="font-bold">Paketler & Abonelik</h2>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <span>💎 <span className="font-bold text-brand">{user?.credits || 0}</span></span>
+                <span>🎬 <span className="font-bold text-purple-600">{user?.videoTokens || 0}</span></span>
+                <span>🎁 <span className="font-bold text-green-600">{user?.freeShopTries || 0}</span> günlük</span>
               </div>
             </div>
           </div>
@@ -9734,68 +9843,94 @@ const App = () => {
   
   const cartTotal = cart.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
   
-  // Token functions
-  const useToken = () => {
+  // Kredi sistemi fonksiyonları
+  // source: 'shop' (keşfet) veya 'studio' (kombin)
+  const useCredit = (source = 'shop') => {
     if (!user) return false;
-    const currentTokens = user.tokens || 0;
-    if (currentTokens <= 0) {
-      // Subscription kontrolü
-      if (user.subscription?.active && user.subscription?.remainingTryOns > 0) {
+    
+    // Önce ücretsiz hakları kontrol et
+    if (source === 'shop' && (user.freeShopTries || 0) > 0) {
+      const newFreeShop = user.freeShopTries - 1;
+      setUser(prev => ({ ...prev, freeShopTries: newFreeShop }));
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ freeShopTries: newFreeShop }).catch(() => {});
+      }
+      setToast({ open: true, type: 'success', title: '🎁 Ücretsiz hak kullanıldı', message: `Kalan: ${newFreeShop}` });
+      return true;
+    }
+    
+    if (source === 'studio' && (user.freeComboTries || 0) > 0) {
+      const newFreeCombo = user.freeComboTries - 1;
+      setUser(prev => ({ ...prev, freeComboTries: newFreeCombo }));
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ freeComboTries: newFreeCombo }).catch(() => {});
+      }
+      setToast({ open: true, type: 'success', title: '🎨 Kombin hakkı kullanıldı', message: `Kalan: ${newFreeCombo}` });
+      return true;
+    }
+    
+    // Ücretsiz hak yoksa kredi kullan
+    const currentCredits = user.credits || 0;
+    if (currentCredits <= 0) {
+      // Premium abonelik kontrolü
+      if (user.subscription?.active && (user.subscription?.remainingCredits || 0) > 0) {
+        const newRemaining = user.subscription.remainingCredits - 1;
         setUser(prev => ({
           ...prev,
-          subscription: {
-            ...prev.subscription,
-            remainingTryOns: prev.subscription.remainingTryOns - 1
-          }
+          subscription: { ...prev.subscription, remainingCredits: newRemaining }
         }));
+        if (db && authUser?.uid) {
+          db.collection('users').doc(authUser.uid).update({ 
+            'subscription.remainingCredits': newRemaining 
+          }).catch(() => {});
+        }
+        setToast({ open: true, type: 'info', title: '💎 Premium kredi kullanıldı', message: `Kalan: ${newRemaining}` });
         return true;
       }
-      setToast({ open: true, type: 'error', title: t('insufficientTokens'), message: t('needMoreTokens') });
+      
+      setToast({ open: true, type: 'error', title: t('insufficientCredits'), message: t('needMoreCredits') });
       setShowSubscription(true);
       return false;
     }
-    const newTokens = (user.tokens || 0) - 1;
-    setUser(prev => ({ ...prev, tokens: newTokens }));
-    // Sync to Firestore
+    
+    const newCredits = currentCredits - 1;
+    setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ tokens: newTokens }).catch(() => {});
+      db.collection('users').doc(authUser.uid).update({ credits: newCredits }).catch(() => {});
     }
-    setToast({ open: true, type: 'info', title: t('tokenUsed'), message: `${t('tokensRemaining')}: ${newTokens}` });
+    setToast({ open: true, type: 'info', title: t('creditUsed'), message: `${t('creditsRemaining')}: ${newCredits}` });
     return true;
   };
-
+  
+  const addCredits = (amount) => {
+    const newCredits = (user?.credits || 0) + amount;
+    setUser(prev => ({ ...prev, credits: newCredits }));
+    if (db && authUser?.uid) {
+      db.collection('users').doc(authUser.uid).update({ credits: newCredits }).catch(() => {});
+    }
+  };
+  
   // Video token kullanımı
   const useVideoToken = () => {
     if (!user) return false;
     const currentVideoTokens = user.videoTokens || 0;
     if (currentVideoTokens <= 0) {
-      setToast({ open: true, type: 'error', title: t('insufficientVideoTokens'), message: t('needMoreVideoTokens') });
+      setToast({ open: true, type: 'error', title: 'Yetersiz Video Kredisi', message: 'Video paketi satın alın.' });
       setShowSubscription(true);
       return false;
     }
     const newVideoTokens = currentVideoTokens - 1;
     setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
-    // Sync to Firestore
     if (db && authUser?.uid) {
       db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens }).catch(() => {});
     }
-    setToast({ open: true, type: 'info', title: t('videoTokenUsed'), message: `${t('videoTokensRemaining')}: ${newVideoTokens}` });
+    setToast({ open: true, type: 'info', title: '🎬 Video kredisi kullanıldı', message: `Kalan: ${newVideoTokens}` });
     return true;
-  };
-  
-  const addTokens = (amount) => {
-    const newTokens = (user?.tokens || 0) + amount;
-    setUser(prev => ({ ...prev, tokens: newTokens }));
-    // Sync to Firestore
-    if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ tokens: newTokens }).catch(() => {});
-    }
   };
 
   const addVideoTokens = (amount) => {
     const newVideoTokens = (user?.videoTokens || 0) + amount;
     setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
-    // Sync to Firestore
     if (db && authUser?.uid) {
       db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens }).catch(() => {});
     }
@@ -9813,19 +9948,36 @@ const App = () => {
         ...prev,
         subscription: {
           active: true,
-          plan: 'monthly',
-          remainingTryOns: 30,
+          plan: 'premium',
+          remainingCredits: 100,
           startDate: Date.now(),
           endDate: Date.now() + (30 * 24 * 60 * 60 * 1000)
         }
       }));
-      setToast({ open: true, type: 'success', title: t('paymentSuccess'), message: t('premiumMember') });
-    } else if (type === 'tokens') {
-      addTokens(amount);
-      setToast({ open: true, type: 'success', title: t('paymentSuccess'), message: `+${amount} ${t('tokens')}` });
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({
+          subscription: {
+            active: true,
+            plan: 'premium',
+            remainingCredits: 100,
+            startDate: Date.now(),
+            endDate: Date.now() + (30 * 24 * 60 * 60 * 1000)
+          }
+        }).catch(() => {});
+      }
+      setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: 'Premium üye oldunuz!' });
+    } else if (type === 'credits') {
+      addCredits(amount);
+      setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: `+${amount} Kredi eklendi` });
     } else if (type === 'videoTokens') {
       addVideoTokens(amount);
-      setToast({ open: true, type: 'success', title: t('paymentSuccess'), message: `+${amount} ${t('videoTokens')}` });
+      setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: `+${amount} Video kredisi eklendi` });
+    } else if (type === 'clothingUpload') {
+      setUser(prev => ({ ...prev, clothingUploadPurchased: true }));
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ clothingUploadPurchased: true }).catch(() => {});
+      }
+      setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: '100 kıyafet hakkı aktifleştirildi!' });
     } else if (type === 'cart') {
       setCart([]);
       setToast({ open: true, type: 'success', title: t('orderConfirmed'), message: t('thankYouOrder') });
@@ -10020,154 +10172,97 @@ const App = () => {
     // Set loading state while fetching
     setLoadingAvatar(true);
     
-    // Load user-specific data from localStorage (keyed by userId)
     const userId = authUser.uid;
-    const u = safeJsonParse(localStorage.getItem(`trai_user_${userId}`), null);
-    const c = safeJsonParse(localStorage.getItem(`trai_closet_${userId}`), []);
-    const f = safeJsonParse(localStorage.getItem(`trai_friends_${userId}`), []);
-    const m = safeJsonParse(localStorage.getItem(`trai_messages_${userId}`), []);
-    const s = safeJsonParse(localStorage.getItem(`trai_settings_${userId}`), null);
-    const sc = safeJsonParse(localStorage.getItem(`trai_combos_${userId}`), []);
-    const fv = safeJsonParse(localStorage.getItem(`trai_favorites_${userId}`), []);
-    const th = safeJsonParse(localStorage.getItem(`trai_history_${userId}`), []);
-    const tc = safeJsonParse(localStorage.getItem(`trai_tryoncache_${userId}`), {});
     
-    // Kayıt sırasında gelen username ve displayName'i kullan
-    let userWithUsername = u;
-    if (authUser.username) {
-      // Yeni kayıt - username ve displayName ile başlat
-      userWithUsername = { 
-        ...(u || {}), 
-        username: authUser.username,
-        displayName: authUser.displayName || null,
-        tokens: u?.tokens ?? 3 // Mevcut token varsa koru
-      };
-    } else if (u) {
-      userWithUsername = u;
-    }
+    // Kayıt sırasında gelen username ve displayName
+    const initialUserData = authUser.username ? {
+      username: authUser.username,
+      displayName: authUser.displayName || null,
+      credits: 0,
+      freeShopTries: 5,
+      freeComboTries: 3,
+      lastFreeReset: new Date().toDateString()
+    } : null;
     
-    // localStorage'dan veri varsa yükle
-    if (userWithUsername && userWithUsername.baseAvatar) {
-      setUser(userWithUsername);
-      setLoadingAvatar(false);
-    }
-    
-    // Diğer verileri yükle
-    if (Array.isArray(c) && c.length > 0) setCloset(c);
-    if (Array.isArray(f) && f.length > 0) setFriends(f);
-    if (Array.isArray(m) && m.length > 0) setMessages(m);
-    if (s) setSettings(prev => ({ ...prev, ...s }));
-    if (Array.isArray(sc) && sc.length > 0) setSavedCombos(sc);
-    if (Array.isArray(fv) && fv.length > 0) setFavorites(fv);
-    if (Array.isArray(th) && th.length > 0) setTryHistory(th);
-    if (tc && typeof tc === 'object' && Object.keys(tc).length > 0) setTryOnCache(tc);
-    
-    // HER ZAMAN Firestore'dan kontrol et (avatar eksikse veya güncel veri için)
+    // SADECE Firestore'dan veri yükle - localStorage kullanma
     if (db) {
       db.collection('users').doc(userId).get().then(async doc => {
         if (doc.exists) {
           const data = doc.data();
-          console.log('Firestore data loaded:', { hasParams: !!data.params, hasBaseAvatarUrl: !!data.baseAvatarStorageUrl });
+          console.log('Firestore data loaded:', Object.keys(data));
           
-          // Avatar yükleme - birden fazla kaynak dene
-          let baseAvatarDataUrl = userWithUsername?.baseAvatar;
-          
-          if (!baseAvatarDataUrl) {
-            console.log('Avatar not in localStorage, trying Storage...');
-            try {
-              baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
-              console.log('Storage download result:', baseAvatarDataUrl ? 'SUCCESS' : 'NOT FOUND');
-            } catch (storageError) {
-              console.error('Storage download error:', storageError);
-            }
+          // Avatar'ı Storage'dan indir
+          let baseAvatarDataUrl = null;
+          try {
+            baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
+            console.log('Avatar download:', baseAvatarDataUrl ? 'SUCCESS' : 'NOT FOUND');
+          } catch (e) {
+            console.error('Avatar download error:', e);
           }
           
-          // Hala yoksa ve params varsa, avatar oluşturulmuş demektir - tekrar dene
-          if (!baseAvatarDataUrl && data.params) {
-            console.log('Avatar has params but no image, retrying download...');
-            try {
-              // Biraz bekle ve tekrar dene
-              await new Promise(r => setTimeout(r, 1000));
-              baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
-              console.log('Retry result:', baseAvatarDataUrl ? 'SUCCESS' : 'STILL NOT FOUND');
-            } catch (e) {
-              console.error('Retry failed:', e);
-            }
+          // Günlük ücretsiz hakları kontrol et ve sıfırla
+          const today = new Date().toDateString();
+          let freeShopTries = data.freeShopTries ?? 5;
+          let freeComboTries = data.freeComboTries ?? 3;
+          
+          if (data.lastFreeReset !== today) {
+            // Yeni gün - keşfet haklarını sıfırla (kombin hakları tek seferlik)
+            freeShopTries = 5;
+            // Firestore'a kaydet
+            db.collection('users').doc(userId).update({ 
+              freeShopTries: 5, 
+              lastFreeReset: today 
+            }).catch(() => {});
           }
           
-          // User'ı güncelle
-          const updatedUser = {
-            ...(userWithUsername || {}),
-            username: data.username || userWithUsername?.username,
-            displayName: data.displayName || userWithUsername?.displayName,
-            profilePhoto: data.profilePhoto || userWithUsername?.profilePhoto,
-            tokens: data.tokens ?? userWithUsername?.tokens ?? 3,
-            videoTokens: data.videoTokens ?? userWithUsername?.videoTokens ?? 0,
-            subscription: data.subscription || userWithUsername?.subscription || 'freemium',
-            clothingUploadPurchased: data.clothingUploadPurchased || userWithUsername?.clothingUploadPurchased || false
+          // User state'i oluştur
+          const userData = {
+            username: data.username,
+            displayName: data.displayName,
+            profilePhoto: data.profilePhoto,
+            credits: data.credits ?? 0,
+            freeShopTries: freeShopTries,
+            freeComboTries: data.freeComboTries ?? 3,
+            lastFreeReset: today,
+            subscription: data.subscription || null,
+            clothingUploadPurchased: data.clothingUploadPurchased || false,
+            gender: data.gender,
+            skinTone: data.skinTone,
+            hairColor: data.hairColor,
+            hairLength: data.hairLength,
+            hairType: data.hairType,
+            hijab: data.hijab || false,
+            ...(data.params || {})
           };
           
-          // Avatar varsa ekle
           if (baseAvatarDataUrl) {
-            updatedUser.baseAvatar = baseAvatarDataUrl;
-            // localStorage'a da kaydet
-            localStorage.setItem(`trai_user_${userId}`, JSON.stringify(updatedUser));
-            console.log('Avatar loaded and saved to localStorage');
+            userData.baseAvatar = baseAvatarDataUrl;
           }
           
-          // Params varsa ekle (avatar parametreleri)
-          if (data.params) {
-            Object.assign(updatedUser, data.params);
-          }
+          setUser(userData);
           
-          setUser(updatedUser);
+          // Diğer verileri Firestore'dan yükle
+          if (data.closet && Array.isArray(data.closet)) setCloset(data.closet);
+          if (data.savedCombos && Array.isArray(data.savedCombos)) setSavedCombos(data.savedCombos);
+          if (data.favorites && Array.isArray(data.favorites)) setFavorites(data.favorites);
+          if (data.tryHistory && Array.isArray(data.tryHistory)) setTryHistory(data.tryHistory);
+          if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
           
-          // Firestore'dan diğer verileri de yükle (cihazlar arası senkronizasyon)
-          if (data.closet && Array.isArray(data.closet)) {
-            setCloset(data.closet);
-            localStorage.setItem(`trai_closet_${userId}`, JSON.stringify(data.closet));
-          }
-          if (data.savedCombos && Array.isArray(data.savedCombos)) {
-            setSavedCombos(data.savedCombos);
-            localStorage.setItem(`trai_combos_${userId}`, JSON.stringify(data.savedCombos));
-          }
-          if (data.favorites && Array.isArray(data.favorites)) {
-            setFavorites(data.favorites);
-            localStorage.setItem(`trai_favorites_${userId}`, JSON.stringify(data.favorites));
-          }
-          if (data.tryHistory && Array.isArray(data.tryHistory)) {
-            setTryHistory(data.tryHistory);
-            localStorage.setItem(`trai_history_${userId}`, JSON.stringify(data.tryHistory));
-          }
-          
-          // Avatar yeni yüklendiyse bildir
-          if (baseAvatarDataUrl && !userWithUsername?.baseAvatar) {
-            setToast({ open: true, type: 'success', title: 'Hoş geldin', message: 'Avatarın yüklendi!' });
-          }
-        } else if (authUser.username) {
-          // Firestore'da yok ama yeni kayıt
-          setUser({
-            username: authUser.username,
-            displayName: authUser.displayName || null,
-            tokens: 3
-          });
+        } else if (initialUserData) {
+          // Yeni kullanıcı - Firestore'a kaydet
+          await db.collection('users').doc(userId).set(initialUserData);
+          setUser(initialUserData);
         }
+        
         setLoadingAvatar(false);
         setDataLoaded(true);
       }).catch((e) => {
         console.error('Firestore error:', e);
-        // Firestore hatası - localStorage verisi varsa kullan
-        if (userWithUsername) {
-          setUser(userWithUsername);
-        }
         setLoadingAvatar(false);
         setDataLoaded(true);
       });
     } else {
-      // Firestore yok - localStorage'dan devam
-      if (userWithUsername) {
-        setUser(userWithUsername);
-      }
+      // Firestore yok
       setLoadingAvatar(false);
       setDataLoaded(true);
     }
@@ -10244,77 +10339,39 @@ const App = () => {
 
   // Save closet to localStorage AND Firestore (user-specific) - only after initial load
   useEffect(() => {
-    if (authUser && dataLoaded) {
-      localStorage.setItem(`trai_closet_${authUser.uid}`, JSON.stringify(closet));
-      // Sync to Firestore for cross-device
-      if (db) {
-        db.collection('users').doc(authUser.uid).update({ closet }).catch(() => {});
-      }
+    if (authUser && dataLoaded && db) {
+      db.collection('users').doc(authUser.uid).update({ closet }).catch(() => {});
     }
   }, [closet, authUser, dataLoaded]);
 
-  // Save friends to localStorage (user-specific) - only after initial load
+  // Save settings to Firestore
   useEffect(() => {
-    if (authUser && dataLoaded) {
-      localStorage.setItem(`trai_friends_${authUser.uid}`, JSON.stringify(friends));
-    }
-  }, [friends, authUser, dataLoaded]);
-
-  // Save messages to localStorage (user-specific) - only after initial load
-  useEffect(() => {
-    if (authUser && dataLoaded) {
-      localStorage.setItem(`trai_messages_${authUser.uid}`, JSON.stringify(messages));
-    }
-  }, [messages, authUser, dataLoaded]);
-
-  // Save settings to localStorage (user-specific) - only after initial load
-  useEffect(() => {
-    if (authUser && dataLoaded) {
-      localStorage.setItem(`trai_settings_${authUser.uid}`, JSON.stringify(settings));
+    if (authUser && dataLoaded && db) {
+      db.collection('users').doc(authUser.uid).update({ settings }).catch(() => {});
     }
   }, [settings, authUser, dataLoaded]);
 
-  // Save savedCombos to localStorage AND Firestore (user-specific) - only after initial load
+  // Save savedCombos to Firestore
   useEffect(() => {
-    if (authUser && dataLoaded) {
-      localStorage.setItem(`trai_combos_${authUser.uid}`, JSON.stringify(savedCombos));
-      // Sync to Firestore for cross-device
-      if (db) {
-        db.collection('users').doc(authUser.uid).update({ savedCombos }).catch(() => {});
-      }
+    if (authUser && dataLoaded && db) {
+      db.collection('users').doc(authUser.uid).update({ savedCombos }).catch(() => {});
     }
   }, [savedCombos, authUser, dataLoaded]);
 
-  // Save favorites to localStorage AND Firestore (user-specific) - only after initial load
+  // Save favorites to Firestore
   useEffect(() => {
-    if (authUser && dataLoaded) {
-      localStorage.setItem(`trai_favorites_${authUser.uid}`, JSON.stringify(favorites));
-      // Sync to Firestore for cross-device
-      if (db) {
-        db.collection('users').doc(authUser.uid).update({ favorites }).catch(() => {});
-      }
+    if (authUser && dataLoaded && db) {
+      db.collection('users').doc(authUser.uid).update({ favorites }).catch(() => {});
     }
   }, [favorites, authUser, dataLoaded]);
 
-  // Save tryHistory to localStorage AND Firestore (user-specific) - only after initial load
+  // Save tryHistory to Firestore (limit to last 30)
   useEffect(() => {
-    if (authUser && dataLoaded) {
-      localStorage.setItem(`trai_history_${authUser.uid}`, JSON.stringify(tryHistory));
-      // Sync to Firestore for cross-device (limit to last 20 for size)
-      if (db) {
-        db.collection('users').doc(authUser.uid).update({ tryHistory: tryHistory.slice(0, 20) }).catch(() => {});
-      }
+    if (authUser && dataLoaded && db) {
+      db.collection('users').doc(authUser.uid).update({ tryHistory: tryHistory.slice(0, 30) }).catch(() => {});
     }
-    // Make tryHistory accessible to SocialFeed
     window.tryHistoryRef = tryHistory;
   }, [tryHistory, authUser, dataLoaded]);
-
-  // Save tryOnCache to localStorage (user-specific) - only after initial load
-  useEffect(() => {
-    if (authUser && dataLoaded && Object.keys(tryOnCache).length > 0) {
-      localStorage.setItem(`trai_tryoncache_${authUser.uid}`, JSON.stringify(tryOnCache));
-    }
-  }, [tryOnCache, authUser, dataLoaded]);
 
   // Save posts to localStorage (shared across users)
   useEffect(() => {
@@ -10398,8 +10455,8 @@ const App = () => {
       return;
     }
     
-    // Check token/subscription before making API request
-    if (!useToken()) {
+    // Kredi kontrolü - keşfet için 'shop' source
+    if (!useCredit('shop')) {
       return;
     }
     
@@ -10416,7 +10473,7 @@ const App = () => {
         throw new Error('Avatar yüklenemedi');
       }
       
-      const img = await AI.tryOnSingle(baseAvatar, item, BACKGROUNDS[0].value);
+      const img = await AI.tryOnSingle(baseAvatar, item, BACKGROUNDS[0].value, { hijab: user?.hijab });
       
       if (!img || !img.startsWith('data:image')) {
         throw new Error('Görsel oluşturulamadı');
@@ -10660,6 +10717,7 @@ const App = () => {
               settings={settings}
               onShowSubscription={() => setShowSubscription(true)}
               onAddCustomClothing={addCustomClothing}
+              useCredit={useCredit}
               onFirstTryOn={() => {
                 if (settings.analyticsConsent === null && !settings.analyticsConsentDismissed) {
                   setTimeout(() => setConsentPopup({ open: true, type: 'analytics' }), 1500);
@@ -10789,6 +10847,7 @@ const App = () => {
               settings={settings}
               onShowSubscription={() => setShowSubscription(true)}
               onAddCustomClothing={addCustomClothing}
+              useCredit={useCredit}
               onFirstTryOn={() => {
                 if (settings.analyticsConsent === null && !settings.analyticsConsentDismissed) {
                   setTimeout(() => setConsentPopup({ open: true, type: 'analytics' }), 1500);
