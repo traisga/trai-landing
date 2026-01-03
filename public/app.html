@@ -9881,7 +9881,7 @@ const App = () => {
       const newFreeShop = user.freeShopTries - 1;
       setUser(prev => ({ ...prev, freeShopTries: newFreeShop }));
       if (db && authUser?.uid) {
-        db.collection('users').doc(authUser.uid).update({ freeShopTries: newFreeShop }).catch(() => {});
+        db.collection('users').doc(authUser.uid).set({ freeShopTries: newFreeShop }, { merge: true }).catch(console.warn);
       }
       setToast({ open: true, type: 'success', title: '🎁 Ücretsiz hak kullanıldı', message: `Kalan: ${newFreeShop}` });
       return true;
@@ -9891,7 +9891,7 @@ const App = () => {
       const newFreeCombo = user.freeComboTries - 1;
       setUser(prev => ({ ...prev, freeComboTries: newFreeCombo }));
       if (db && authUser?.uid) {
-        db.collection('users').doc(authUser.uid).update({ freeComboTries: newFreeCombo }).catch(() => {});
+        db.collection('users').doc(authUser.uid).set({ freeComboTries: newFreeCombo }, { merge: true }).catch(console.warn);
       }
       setToast({ open: true, type: 'success', title: '🎨 Kombin hakkı kullanıldı', message: `Kalan: ${newFreeCombo}` });
       return true;
@@ -9908,9 +9908,7 @@ const App = () => {
           subscription: { ...prev.subscription, remainingCredits: newRemaining }
         }));
         if (db && authUser?.uid) {
-          db.collection('users').doc(authUser.uid).update({ 
-            'subscription.remainingCredits': newRemaining 
-          }).catch(() => {});
+          db.collection('users').doc(authUser.uid).set({ 'subscription.remainingCredits': newRemaining }, { merge: true }).catch(console.warn);
         }
         setToast({ open: true, type: 'info', title: '💎 Premium kredi kullanıldı', message: `Kalan: ${newRemaining}` });
         return true;
@@ -9924,7 +9922,7 @@ const App = () => {
     const newCredits = currentCredits - 1;
     setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ credits: newCredits }).catch(() => {});
+      db.collection('users').doc(authUser.uid).set({ credits: newCredits }, { merge: true }).catch(console.warn);
     }
     setToast({ open: true, type: 'info', title: t('creditUsed'), message: `${t('creditsRemaining')}: ${newCredits}` });
     return true;
@@ -9934,7 +9932,7 @@ const App = () => {
     const newCredits = (user?.credits || 0) + amount;
     setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ credits: newCredits }).catch(() => {});
+      db.collection('users').doc(authUser.uid).set({ credits: newCredits }, { merge: true }).catch(console.warn);
     }
   };
   
@@ -10444,35 +10442,35 @@ const App = () => {
  // Save closet to localStorage AND Firestore (user-specific) - only after initial load
  useEffect(() => {
     if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).update({ closet }).catch(() => {});
+      db.collection('users').doc(authUser.uid).set({ closet }, { merge: true }).catch(console.warn);
     }
   }, [closet, authUser, dataLoaded]);
 
   // Save settings to Firestore
   useEffect(() => {
     if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).update({ settings }).catch(() => {});
+      db.collection('users').doc(authUser.uid).set({ settings }, { merge: true }).catch(console.warn);
     }
   }, [settings, authUser, dataLoaded]);
 
   // Save savedCombos to Firestore
   useEffect(() => {
     if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).update({ savedCombos }).catch(() => {});
+      db.collection('users').doc(authUser.uid).set({ savedCombos }, { merge: true }).catch(console.warn);
     }
   }, [savedCombos, authUser, dataLoaded]);
 
   // Save favorites to Firestore
   useEffect(() => {
     if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).update({ favorites }).catch(() => {});
-    }
+      db.collection('users').doc(authUser.uid).set({ favorites }, { merge: true }).catch(console.warn);
+      }
   }, [favorites, authUser, dataLoaded]);
 
   // Save tryHistory to Firestore (limit to last 30)
   useEffect(() => {
     if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).update({ tryHistory: tryHistory.slice(0, 30) }).catch(() => {});
+      db.collection('users').doc(authUser.uid).set({ tryHistory: tryHistory.slice(0, 30) }, { merge: true }).catch(console.warn);
     }
     window.tryHistoryRef = tryHistory;
   }, [tryHistory, authUser, dataLoaded]);
