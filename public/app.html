@@ -10235,7 +10235,7 @@ const App = () => {
           // Avatar'ı sadece bir kez indir (her snapshot'ta değil)
           let baseAvatarDataUrl = null;
           
-          if (!avatarDownloadedRef.current && data.baseAvatarStorageUrl) {
+          if (!avatarDownloadedRef.current) {
             console.log('🖼️ Avatar indiriliyor...');
             try {
               baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
@@ -10428,7 +10428,7 @@ const App = () => {
             // Save to Firestore with storage URL reference
             db.collection('users').doc(userId).set({
               ...userData,
-              baseAvatarStorageUrl: storageUrl || null
+              baseAvatarStorageUrl: storageUrl
             }, { merge: true }).catch(() => {});
           });
         } else {
