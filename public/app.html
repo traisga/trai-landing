@@ -10177,8 +10177,9 @@ const App = () => {
     if (Array.isArray(ps)) setPosts(ps);
   }, []);
 
-  // Load user-specific data AFTER auth is confirmed
-  const [dataLoaded, setDataLoaded] = useState(false); // İlk yükleme tamamlandı mı?
+  // Load user-specific data AFTER auth is confirmed - onSnapshot ile CANLI dinleme
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const avatarDownloadedRef = React.useRef(false); // useRef kullan - render'lar arası persist eder
   
   useEffect(() => {
     if (!authUser) {
@@ -10193,131 +10194,176 @@ const App = () => {
       setTryHistory([]);
       setTryOnCache({});
       setDataLoaded(false);
+      avatarDownloadedRef.current = false; // Reset on logout
       return;
     }
     
-    // Set loading state while fetching
-    setLoadingAvatar(true);
-    
     const userId = authUser.uid;
+    console.log('🔑 Auth confirmed, userId:', userId);
+    
+    // Set loading state
+    setLoadingAvatar(true);
     
     // Kayıt sırasında gelen username ve displayName
     const initialUserData = authUser.username ? {
       username: authUser.username,
       displayName: authUser.displayName || null,
+      email: authUser.email || null,
       credits: 0,
+      videoTokens: 0,
       freeShopTries: 5,
       freeComboTries: 3,
-      lastFreeReset: new Date().toDateString()
+      lastFreeReset: new Date().toDateString(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     } : null;
     
-    // SADECE Firestore'dan veri yükle
-    if (db) {
-      db.collection('users').doc(userId).get().then(async doc => {
+    if (!db) {
+      console.warn('⚠️ Firestore bağlantısı yok');
+      setLoadingAvatar(false);
+      setDataLoaded(true);
+      return;
+    }
+    
+    // Firestore'dan CANLI dinleme başlat (onSnapshot)
+    const unsubscribe = db.collection('users').doc(userId).onSnapshot(
+      async (doc) => {
+        console.log('📡 onSnapshot triggered, exists:', doc.exists);
+        
         if (doc.exists) {
           const data = doc.data();
-          console.log('📦 Firestore data loaded:', Object.keys(data));
+          console.log('📦 Firestore data:', Object.keys(data));
           
-          // Avatar kontrolü - SADECE baseAvatarStorageUrl VARSA indir
+          // Avatar'ı sadece bir kez indir (her snapshot'ta değil)
           let baseAvatarDataUrl = null;
-          const hasAvatar = data.baseAvatarStorageUrl || data.params?.baseAvatar;
           
-          if (hasAvatar) {
-            console.log('🖼️ Avatar mevcut, Storage\'dan indiriliyor...');
+          if (!avatarDownloadedRef.current && data.baseAvatarStorageUrl) {
+            console.log('🖼️ Avatar indiriliyor...');
             try {
               baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
-              console.log('✅ Avatar download:', baseAvatarDataUrl ? 'SUCCESS' : 'NOT FOUND');
+              if (baseAvatarDataUrl) {
+                console.log('✅ Avatar indirildi');
+                avatarDownloadedRef.current = true;
+              } else {
+                console.log('⚠️ Avatar bulunamadı');
+              }
             } catch (e) {
-              console.error('❌ Avatar download error:', e.message);
-              // Hata durumunda null bırak - kullanıcıya yeni avatar oluşturma gösterilecek
+              console.error('❌ Avatar indirme hatası:', e.message);
             }
-          } else {
-            console.log('ℹ️ Kullanıcının avatarı yok, indirme atlanıyor');
           }
           
-          // Günlük ücretsiz hakları kontrol et ve sıfırla
+          // Günlük ücretsiz hakları kontrol et
           const today = new Date().toDateString();
           let freeShopTries = data.freeShopTries ?? 5;
-          let freeComboTries = data.freeComboTries ?? 3;
+          const freeComboTries = data.freeComboTries ?? 3;
           
           if (data.lastFreeReset !== today) {
-            // Yeni gün - keşfet haklarını sıfırla (kombin hakları tek seferlik)
             freeShopTries = 5;
-            // Firestore'a kaydet
+            // Firestore'a kaydet (async, bekleme)
             db.collection('users').doc(userId).update({ 
               freeShopTries: 5, 
               lastFreeReset: today 
-            }).catch(() => {});
+            }).catch(e => console.warn('Free tries reset error:', e));
           }
           
-          // User state'i oluştur
-          const userData = {
-            username: data.username,
-            displayName: data.displayName,
-            profilePhoto: data.profilePhoto,
-            credits: data.credits ?? 0,
-            videoTokens: data.videoTokens ?? 0,
-            freeShopTries: freeShopTries,
-            freeComboTries: data.freeComboTries ?? 3,
-            lastFreeReset: today,
-            subscription: data.subscription || null,
-            clothingUploadPurchased: data.clothingUploadPurchased || false,
-            // Avatar parametreleri - önce params'tan, yoksa doğrudan data'dan
-            gender: data.params?.gender || data.gender,
-            age: data.params?.age || data.age,
-            height: data.params?.height || data.height,
-            weight: data.params?.weight || data.weight,
-            bodyType: data.params?.bodyType || data.bodyType,
-            skinTone: data.params?.skinTone || data.skinTone,
-            hairColor: data.params?.hairColor || data.hairColor,
-            hairLength: data.params?.hairLength || data.hairLength,
-            hairType: data.params?.hairType || data.hairType,
-            hijab: data.params?.hijab || data.hijab || false
-          };
+          // User state'i güncelle
+          setUser(prev => {
+            const newUser = {
+              username: data.username,
+              displayName: data.displayName,
+              profilePhoto: data.profilePhoto,
+              email: data.email,
+              credits: data.credits ?? 0,
+              videoTokens: data.videoTokens ?? 0,
+              freeShopTries: freeShopTries,
+              freeComboTries: freeComboTries,
+              lastFreeReset: today,
+              subscription: data.subscription || null,
+              clothingUploadPurchased: data.clothingUploadPurchased || false,
+              // Avatar parametreleri
+              gender: data.params?.gender || data.gender,
+              age: data.params?.age || data.age,
+              height: data.params?.height || data.height,
+              weight: data.params?.weight || data.weight,
+              bodyType: data.params?.bodyType || data.bodyType,
+              skinTone: data.params?.skinTone || data.skinTone,
+              hairColor: data.params?.hairColor || data.hairColor,
+              hairLength: data.params?.hairLength || data.hairLength,
+              hairType: data.params?.hairType || data.hairType,
+              hijab: data.params?.hijab || data.hijab || false,
+              // Mevcut avatar'ı koru veya yenisini ekle
+              baseAvatar: baseAvatarDataUrl || prev?.baseAvatar || null
+            };
+            return newUser;
+          });
           
-          // Avatar varsa ekle
-          if (baseAvatarDataUrl) {
-            userData.baseAvatar = baseAvatarDataUrl;
-            console.log('✅ User state\'e avatar eklendi');
+          // Diğer verileri güncelle
+          if (data.closet && Array.isArray(data.closet)) {
+            setCloset(data.closet);
+            console.log('👕 Closet loaded:', data.closet.length, 'items');
           }
-          
-          setUser(userData);
-          
-          // Diğer verileri Firestore'dan yükle
-          if (data.closet && Array.isArray(data.closet)) setCloset(data.closet);
           if (data.savedCombos && Array.isArray(data.savedCombos)) setSavedCombos(data.savedCombos);
           if (data.favorites && Array.isArray(data.favorites)) setFavorites(data.favorites);
           if (data.tryHistory && Array.isArray(data.tryHistory)) setTryHistory(data.tryHistory);
           if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
           
-        } else if (initialUserData) {
-          // Yeni kullanıcı - Firestore'a kaydet
-          console.log('🆕 Yeni kullanıcı, Firestore\'a kaydediliyor...');
-          await db.collection('users').doc(userId).set(initialUserData);
-          setUser(initialUserData);
+          setLoadingAvatar(false);
+          setDataLoaded(true);
+          
         } else {
-          // Firestore'da yok ve initialUserData da yok - sadece temel user oluştur
-          console.log('⚠️ Kullanıcı verisi bulunamadı');
-          setUser({ username: null });
+          // Kullanıcı Firestore'da yok - yeni profil oluştur
+          console.log('🆕 Yeni kullanıcı, profil oluşturuluyor...');
+          
+          if (initialUserData) {
+            db.collection('users').doc(userId).set(initialUserData)
+              .then(() => {
+                console.log('✅ Yeni profil oluşturuldu');
+                setUser({
+                  ...initialUserData,
+                  createdAt: Date.now()
+                });
+              })
+              .catch(e => {
+                console.error('❌ Profil oluşturma hatası:', e);
+                setUser({ username: authUser.username || null });
+              });
+          } else {
+            // initialUserData yok - sadece temel bilgilerle devam et
+            console.log('⚠️ initialUserData yok, temel profil oluşturuluyor');
+            const basicProfile = {
+              email: authUser.email,
+              credits: 0,
+              videoTokens: 0,
+              freeShopTries: 5,
+              freeComboTries: 3,
+              lastFreeReset: new Date().toDateString(),
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            db.collection('users').doc(userId).set(basicProfile)
+              .then(() => setUser({ ...basicProfile, createdAt: Date.now() }))
+              .catch(e => console.error('Basic profile error:', e));
+          }
+          
+          setLoadingAvatar(false);
+          setDataLoaded(true);
         }
-        
+      },
+      (error) => {
+        console.error('❌ Firestore onSnapshot error:', error);
         setLoadingAvatar(false);
         setDataLoaded(true);
-      }).catch((e) => {
-        console.error('❌ Firestore error:', e);
+        
         // Hata durumunda bile UI'ı aç
         if (initialUserData) {
           setUser(initialUserData);
         }
-        setLoadingAvatar(false);
-        setDataLoaded(true);
-      });
-    } else {
-      // Firestore yok
-      console.warn('⚠️ Firestore bağlantısı yok');
-      setLoadingAvatar(false);
-      setDataLoaded(true);
-    }
+      }
+    );
+    
+    // Cleanup - component unmount veya authUser değiştiğinde dinleyiciyi kaldır
+    return () => {
+      console.log('🔌 Firestore listener unsubscribed');
+      unsubscribe();
+    };
   }, [authUser]);
 
   // Günlük öneri kontrolü - kullanıcı ve dolap yüklendikten sonra
