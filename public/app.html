@@ -1453,8 +1453,12 @@ try {
 
 // Helper: Upload avatar to Firebase Storage
 async function uploadAvatarToStorage(userId, avatarDataUrl) {
-  if (!FIREBASE_OK || !storage || !avatarDataUrl) return null;
+  if (!FIREBASE_OK || !storage || !avatarDataUrl) {
+    console.warn('⚠️ uploadAvatarToStorage: Missing requirements', { FIREBASE_OK, hasStorage: !!storage, hasAvatar: !!avatarDataUrl });
+    return null;
+  }
   try {
+    console.log('📤 Uploading avatar to Storage...');
     const ref = storage.ref(`avatars/${userId}/base-avatar.png`);
     // Convert data URL to blob
     const response = await fetch(avatarDataUrl);
@@ -1463,10 +1467,11 @@ async function uploadAvatarToStorage(userId, avatarDataUrl) {
     await ref.put(blob, { contentType: 'image/png' });
     // Get download URL
     const url = await ref.getDownloadURL();
+    console.log('✅ Avatar uploaded successfully');
     return url;
   } catch (e) {
-  console.warn('❌ Avatar upload failed:', e.code || '', e.message || e);
-  return null;
+    console.error('❌ Avatar upload error:', e.code, e.message);
+    return null;
   }
 }
 
@@ -3801,7 +3806,6 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             usernameLower: username.toLowerCase(),
             displayName: displayName.trim() || null,
             email: c.user.email,
-            profilePublic: true,
             tokens: 3,
             subscription: null,
             createdAt: Date.now()
@@ -9882,7 +9886,8 @@ const App = () => {
       const newFreeShop = user.freeShopTries - 1;
       setUser(prev => ({ ...prev, freeShopTries: newFreeShop }));
       if (db && authUser?.uid) {
-        db.collection('users').doc(authUser.uid).set({ freeShopTries: newFreeShop }, { merge: true }).catch(console.warn);
+        db.collection('users').doc(authUser.uid).update({ freeShopTries: newFreeShop })
+          .catch(e => console.error('❌ freeShopTries save error:', e.code, e.message));
       }
       setToast({ open: true, type: 'success', title: '🎁 Ücretsiz hak kullanıldı', message: `Kalan: ${newFreeShop}` });
       return true;
@@ -9892,7 +9897,8 @@ const App = () => {
       const newFreeCombo = user.freeComboTries - 1;
       setUser(prev => ({ ...prev, freeComboTries: newFreeCombo }));
       if (db && authUser?.uid) {
-        db.collection('users').doc(authUser.uid).set({ freeComboTries: newFreeCombo }, { merge: true }).catch(console.warn);
+        db.collection('users').doc(authUser.uid).update({ freeComboTries: newFreeCombo })
+          .catch(e => console.error('❌ freeComboTries save error:', e.code, e.message));
       }
       setToast({ open: true, type: 'success', title: '🎨 Kombin hakkı kullanıldı', message: `Kalan: ${newFreeCombo}` });
       return true;
@@ -9909,7 +9915,9 @@ const App = () => {
           subscription: { ...prev.subscription, remainingCredits: newRemaining }
         }));
         if (db && authUser?.uid) {
-          db.collection('users').doc(authUser.uid).set({ 'subscription.remainingCredits': newRemaining }, { merge: true }).catch(console.warn);
+          db.collection('users').doc(authUser.uid).update({ 
+            'subscription.remainingCredits': newRemaining 
+          }).catch(e => console.error('❌ subscription.remainingCredits save error:', e.code, e.message));
         }
         setToast({ open: true, type: 'info', title: '💎 Premium kredi kullanıldı', message: `Kalan: ${newRemaining}` });
         return true;
@@ -9923,7 +9931,8 @@ const App = () => {
     const newCredits = currentCredits - 1;
     setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).set({ credits: newCredits }, { merge: true }).catch(console.warn);
+      db.collection('users').doc(authUser.uid).update({ credits: newCredits })
+        .catch(e => console.error('❌ credits save error:', e.code, e.message));
     }
     setToast({ open: true, type: 'info', title: t('creditUsed'), message: `${t('creditsRemaining')}: ${newCredits}` });
     return true;
@@ -9933,7 +9942,8 @@ const App = () => {
     const newCredits = (user?.credits || 0) + amount;
     setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).set({ credits: newCredits }, { merge: true }).catch(console.warn);
+      db.collection('users').doc(authUser.uid).update({ credits: newCredits })
+        .catch(e => console.error('❌ addCredits save error:', e.code, e.message));
     }
   };
   
@@ -9949,7 +9959,8 @@ const App = () => {
     const newVideoTokens = currentVideoTokens - 1;
     setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
     if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens }).catch(() => {});
+      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens })
+        .catch(e => console.error('❌ videoTokens save error:', e.code, e.message));
     }
     setToast({ open: true, type: 'info', title: '🎬 Video kredisi kullanıldı', message: `Kalan: ${newVideoTokens}` });
     return true;
@@ -9959,7 +9970,8 @@ const App = () => {
     const newVideoTokens = (user?.videoTokens || 0) + amount;
     setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
     if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens }).catch(() => {});
+      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens })
+        .catch(e => console.error('❌ addVideoTokens save error:', e.code, e.message));
     }
   };
   
@@ -9990,7 +10002,7 @@ const App = () => {
             startDate: Date.now(),
             endDate: Date.now() + (30 * 24 * 60 * 60 * 1000)
           }
-        }).catch(() => {});
+        }).catch(e => console.error('❌ subscription save error:', e.code, e.message));
       }
       setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: 'Premium üye oldunuz!' });
     } else if (type === 'credits') {
@@ -10002,7 +10014,8 @@ const App = () => {
     } else if (type === 'clothingUpload') {
       setUser(prev => ({ ...prev, clothingUploadPurchased: true }));
       if (db && authUser?.uid) {
-        db.collection('users').doc(authUser.uid).update({ clothingUploadPurchased: true }).catch(() => {});
+        db.collection('users').doc(authUser.uid).update({ clothingUploadPurchased: true })
+          .catch(e => console.error('❌ clothingUploadPurchased save error:', e.code, e.message));
       }
       setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: '100 kıyafet hakkı aktifleştirildi!' });
     } else if (type === 'cart') {
@@ -10179,7 +10192,10 @@ const App = () => {
 
   // Load user-specific data AFTER auth is confirmed - onSnapshot ile CANLI dinleme
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false); // NEW: Prevents race condition
   const avatarDownloadedRef = React.useRef(false); // useRef kullan - render'lar arası persist eder
+  const isFirstSnapshotRef = React.useRef(true); // NEW: Track first snapshot to prevent overwrites
+  const pendingSaveRef = React.useRef(false); // NEW: Track if we're currently saving to prevent loops
   
   useEffect(() => {
     if (!authUser) {
@@ -10194,7 +10210,9 @@ const App = () => {
       setTryHistory([]);
       setTryOnCache({});
       setDataLoaded(false);
+      setInitialLoadComplete(false);
       avatarDownloadedRef.current = false; // Reset on logout
+      isFirstSnapshotRef.current = true; // Reset on logout
       return;
     }
     
@@ -10203,6 +10221,7 @@ const App = () => {
     
     // Set loading state
     setLoadingAvatar(true);
+    isFirstSnapshotRef.current = true; // Reset for new user
     
     // Kayıt sırasında gelen username ve displayName
     const initialUserData = authUser.username ? {
@@ -10221,22 +10240,33 @@ const App = () => {
       console.warn('⚠️ Firestore bağlantısı yok');
       setLoadingAvatar(false);
       setDataLoaded(true);
+      setInitialLoadComplete(true);
       return;
     }
     
     // Firestore'dan CANLI dinleme başlat (onSnapshot)
     const unsubscribe = db.collection('users').doc(userId).onSnapshot(
       async (doc) => {
-        console.log('📡 onSnapshot triggered, exists:', doc.exists);
+        // CRITICAL FIX: Skip if we're currently saving (prevents read-after-write loop)
+        if (pendingSaveRef.current) {
+          console.log('⏭️ Skipping snapshot - save in progress');
+          return;
+        }
+        
+        console.log('📡 onSnapshot triggered, exists:', doc.exists, 'isFirst:', isFirstSnapshotRef.current);
         
         if (doc.exists) {
           const data = doc.data();
-          console.log('📦 Firestore data:', Object.keys(data));
+          console.log('📦 Firestore data keys:', Object.keys(data));
+          
+          // CRITICAL FIX: Only load data on FIRST snapshot or if local state is empty
+          // This prevents remote overwrites after local changes
+          const shouldLoadData = isFirstSnapshotRef.current;
           
           // Avatar'ı sadece bir kez indir (her snapshot'ta değil)
           let baseAvatarDataUrl = null;
           
-          if (!avatarDownloadedRef.current) {
+          if (!avatarDownloadedRef.current && data.baseAvatarStorageUrl) {
             console.log('🖼️ Avatar indiriliyor...');
             try {
               baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
@@ -10265,7 +10295,7 @@ const App = () => {
             }).catch(e => console.warn('Free tries reset error:', e));
           }
           
-          // User state'i güncelle
+          // User state'i güncelle - ALWAYS update user for credits etc
           setUser(prev => {
             const newUser = {
               username: data.username,
@@ -10291,26 +10321,32 @@ const App = () => {
               hairType: data.params?.hairType || data.hairType,
               hijab: data.params?.hijab || data.hijab || false,
               // Mevcut avatar'ı koru veya yenisini ekle
-              baseAvatar: baseAvatarDataUrl || prev?.baseAvatar || null
+              baseAvatar: baseAvatarDataUrl || prev?.baseAvatar || data.baseAvatarDataUrl || null
             };
             return newUser;
           });
           
-          // Diğer verileri güncelle
-          if (data.closet && Array.isArray(data.closet)) {
-            setCloset(data.closet);
-            console.log('👕 Closet loaded:', data.closet.length, 'items');
+          // CRITICAL FIX: Only load arrays on FIRST snapshot
+          if (shouldLoadData) {
+            console.log('📥 Initial load - populating state from Firestore');
+            if (data.closet && Array.isArray(data.closet)) {
+              setCloset(data.closet);
+              console.log('👕 Closet loaded:', data.closet.length, 'items');
+            }
+            if (data.savedCombos && Array.isArray(data.savedCombos)) setSavedCombos(data.savedCombos);
+            if (data.favorites && Array.isArray(data.favorites)) setFavorites(data.favorites);
+            if (data.tryHistory && Array.isArray(data.tryHistory)) setTryHistory(data.tryHistory);
+            if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
+            
+            isFirstSnapshotRef.current = false; // Mark first load complete
+          } else {
+            console.log('⏭️ Subsequent snapshot - preserving local state');
           }
-          if (data.savedCombos && Array.isArray(data.savedCombos)) setSavedCombos(data.savedCombos);
-          if (data.favorites && Array.isArray(data.favorites)) setFavorites(data.favorites);
-          if (data.tryHistory && Array.isArray(data.tryHistory)) setTryHistory(data.tryHistory);
-          if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
           
           setLoadingAvatar(false);
-          setTimeout(() => {
-            setDataLoaded(true);
-            console.log('✅ Veri senkronizasyonu aktif');
-          }, 2000);
+          setDataLoaded(true);
+          // Small delay before enabling saves to prevent immediate re-save
+          setTimeout(() => setInitialLoadComplete(true), 500);
           
         } else {
           // Kullanıcı Firestore'da yok - yeni profil oluştur
@@ -10324,40 +10360,47 @@ const App = () => {
                   ...initialUserData,
                   createdAt: Date.now()
                 });
+                isFirstSnapshotRef.current = false;
               })
               .catch(e => {
-                console.error('❌ Profil oluşturma hatası:', e);
+                console.error('❌ Profil oluşturma hatası:', e.code, e.message);
                 setUser({ username: authUser.username || null });
               });
           } else {
             // initialUserData yok - sadece temel bilgilerle devam et
             console.log('⚠️ initialUserData yok, temel profil oluşturuluyor');
             const basicProfile = {
-            email: authUser.email,
-            profilePublic: true, // <--- BUNU EKLE: Rules dosyan buna bakıyor
-            credits: 0,
-            videoTokens: 0,
-            freeShopTries: 5,
-            freeComboTries: 3,
-            lastFreeReset: new Date().toDateString(),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              email: authUser.email,
+              credits: 0,
+              videoTokens: 0,
+              freeShopTries: 5,
+              freeComboTries: 3,
+              lastFreeReset: new Date().toDateString(),
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             db.collection('users').doc(userId).set(basicProfile)
-              .then(() => setUser({ ...basicProfile, createdAt: Date.now() }))
-              .catch(e => console.error('Basic profile error:', e));
+              .then(() => {
+                setUser({ ...basicProfile, createdAt: Date.now() });
+                isFirstSnapshotRef.current = false;
+              })
+              .catch(e => console.error('Basic profile error:', e.code, e.message));
           }
           
           setLoadingAvatar(false);
           setDataLoaded(true);
+          setTimeout(() => setInitialLoadComplete(true), 500);
         }
       },
       (error) => {
-        console.error('❌ Firestore onSnapshot error:', error);
+        console.error('❌ Firestore onSnapshot error:', error.code, error.message);
         setLoadingAvatar(false);
-        // setDataLoaded(true); // KALDIRILDI: Hata varsa sakın kaydetme tetikleyicisini açma!
+        setDataLoaded(true);
+        setInitialLoadComplete(true);
         
-        // Kullanıcıya hata olduğunu göster ki boş veriyle işlem yapıp veritabanını bozmasın
-        setToast({ open: true, type: 'error', title: 'Bağlantı Hatası', message: 'Veriler yüklenemedi. Lütfen sayfayı yenileyin.' });
+        // Hata durumunda bile UI'ı aç
+        if (initialUserData) {
+          setUser(initialUserData);
+        }
       }
     );
     
@@ -10388,7 +10431,7 @@ const App = () => {
 
   // Save user to localStorage and Firestore (user-specific)
   useEffect(() => {
-    if (user && authUser) {
+    if (user && authUser && initialLoadComplete) {
       const userId = authUser.uid;
       localStorage.setItem(`trai_user_${userId}`, JSON.stringify(user));
       // Sync to Firestore if logged in
@@ -10425,56 +10468,159 @@ const App = () => {
         }
         
         if (avatarData && avatarData.startsWith('data:image')) {
+          pendingSaveRef.current = true;
           uploadAvatarToStorage(userId, avatarData).then(storageUrl => {
-            // Save to Firestore with storage URL reference
+            // Save to Firestore with storage URL reference AND backup base64
             db.collection('users').doc(userId).set({
               ...userData,
-              baseAvatarStorageUrl: storageUrl
-            }, { merge: true }).catch(() => {});
+              baseAvatarStorageUrl: storageUrl || null,
+              baseAvatarDataUrl: avatarData.substring(0, 500000) // Store truncated backup (500KB max)
+            }, { merge: true })
+              .then(() => {
+                console.log('✅ User data saved to Firestore');
+                pendingSaveRef.current = false;
+              })
+              .catch(e => {
+                console.error('❌ User save error:', e.code, e.message);
+                pendingSaveRef.current = false;
+              });
           });
         } else {
           // Just save without baseAvatar
-          db.collection('users').doc(userId).set(userData, { merge: true }).catch(() => {});
+          pendingSaveRef.current = true;
+          db.collection('users').doc(userId).set(userData, { merge: true })
+            .then(() => {
+              console.log('✅ User data saved (no avatar)');
+              pendingSaveRef.current = false;
+            })
+            .catch(e => {
+              console.error('❌ User save error:', e.code, e.message);
+              pendingSaveRef.current = false;
+            });
         }
       }
     }
-  }, [user, authUser]);
+  }, [user, authUser, initialLoadComplete]);
 
- // Save closet to localStorage AND Firestore (user-specific) - only after initial load
- useEffect(() => {
-    if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).set({ closet }, { merge: true }).catch(console.warn);
+  // Save closet to Firestore (user-specific) - with debounce
+  const closetSaveTimeoutRef = React.useRef(null);
+  useEffect(() => {
+    if (authUser && initialLoadComplete && db && closet) {
+      // Clear previous timeout
+      if (closetSaveTimeoutRef.current) clearTimeout(closetSaveTimeoutRef.current);
+      
+      // Debounce: wait 1 second before saving
+      closetSaveTimeoutRef.current = setTimeout(() => {
+        console.log('💾 Saving closet:', closet.length, 'items');
+        pendingSaveRef.current = true;
+        db.collection('users').doc(authUser.uid).update({ closet })
+          .then(() => {
+            console.log('✅ Closet saved');
+            pendingSaveRef.current = false;
+          })
+          .catch(e => {
+            console.error('❌ Closet save error:', e.code, e.message);
+            pendingSaveRef.current = false;
+          });
+      }, 1000);
     }
-  }, [closet, authUser, dataLoaded]);
+    return () => {
+      if (closetSaveTimeoutRef.current) clearTimeout(closetSaveTimeoutRef.current);
+    };
+  }, [closet, authUser, initialLoadComplete]);
 
-  // Save settings to Firestore
+  // Save settings to Firestore - with debounce
+  const settingsSaveTimeoutRef = React.useRef(null);
   useEffect(() => {
-    if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).set({ settings }, { merge: true }).catch(console.warn);
+    if (authUser && initialLoadComplete && db) {
+      if (settingsSaveTimeoutRef.current) clearTimeout(settingsSaveTimeoutRef.current);
+      settingsSaveTimeoutRef.current = setTimeout(() => {
+        pendingSaveRef.current = true;
+        db.collection('users').doc(authUser.uid).update({ settings })
+          .then(() => {
+            console.log('✅ Settings saved');
+            pendingSaveRef.current = false;
+          })
+          .catch(e => {
+            console.error('❌ Settings save error:', e.code, e.message);
+            pendingSaveRef.current = false;
+          });
+      }, 1000);
     }
-  }, [settings, authUser, dataLoaded]);
+    return () => {
+      if (settingsSaveTimeoutRef.current) clearTimeout(settingsSaveTimeoutRef.current);
+    };
+  }, [settings, authUser, initialLoadComplete]);
 
-  // Save savedCombos to Firestore
+  // Save savedCombos to Firestore - with debounce
+  const combosSaveTimeoutRef = React.useRef(null);
   useEffect(() => {
-    if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).set({ savedCombos }, { merge: true }).catch(console.warn);
+    if (authUser && initialLoadComplete && db) {
+      if (combosSaveTimeoutRef.current) clearTimeout(combosSaveTimeoutRef.current);
+      combosSaveTimeoutRef.current = setTimeout(() => {
+        pendingSaveRef.current = true;
+        db.collection('users').doc(authUser.uid).update({ savedCombos })
+          .then(() => {
+            console.log('✅ Saved combos saved');
+            pendingSaveRef.current = false;
+          })
+          .catch(e => {
+            console.error('❌ Combos save error:', e.code, e.message);
+            pendingSaveRef.current = false;
+          });
+      }, 1000);
     }
-  }, [savedCombos, authUser, dataLoaded]);
+    return () => {
+      if (combosSaveTimeoutRef.current) clearTimeout(combosSaveTimeoutRef.current);
+    };
+  }, [savedCombos, authUser, initialLoadComplete]);
 
-  // Save favorites to Firestore
+  // Save favorites to Firestore - with debounce
+  const favoritesSaveTimeoutRef = React.useRef(null);
   useEffect(() => {
-    if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).set({ favorites }, { merge: true }).catch(console.warn);
-      }
-  }, [favorites, authUser, dataLoaded]);
+    if (authUser && initialLoadComplete && db) {
+      if (favoritesSaveTimeoutRef.current) clearTimeout(favoritesSaveTimeoutRef.current);
+      favoritesSaveTimeoutRef.current = setTimeout(() => {
+        pendingSaveRef.current = true;
+        db.collection('users').doc(authUser.uid).update({ favorites })
+          .then(() => {
+            console.log('✅ Favorites saved');
+            pendingSaveRef.current = false;
+          })
+          .catch(e => {
+            console.error('❌ Favorites save error:', e.code, e.message);
+            pendingSaveRef.current = false;
+          });
+      }, 1000);
+    }
+    return () => {
+      if (favoritesSaveTimeoutRef.current) clearTimeout(favoritesSaveTimeoutRef.current);
+    };
+  }, [favorites, authUser, initialLoadComplete]);
 
-  // Save tryHistory to Firestore (limit to last 30)
+  // Save tryHistory to Firestore (limit to last 30) - with debounce
+  const historySaveTimeoutRef = React.useRef(null);
   useEffect(() => {
-    if (authUser && dataLoaded && db) {
-      db.collection('users').doc(authUser.uid).set({ tryHistory: tryHistory.slice(0, 30) }, { merge: true }).catch(console.warn);
+    if (authUser && initialLoadComplete && db) {
+      if (historySaveTimeoutRef.current) clearTimeout(historySaveTimeoutRef.current);
+      historySaveTimeoutRef.current = setTimeout(() => {
+        pendingSaveRef.current = true;
+        db.collection('users').doc(authUser.uid).update({ tryHistory: tryHistory.slice(0, 30) })
+          .then(() => {
+            console.log('✅ Try history saved');
+            pendingSaveRef.current = false;
+          })
+          .catch(e => {
+            console.error('❌ History save error:', e.code, e.message);
+            pendingSaveRef.current = false;
+          });
+      }, 1000);
     }
     window.tryHistoryRef = tryHistory;
-  }, [tryHistory, authUser, dataLoaded]);
+    return () => {
+      if (historySaveTimeoutRef.current) clearTimeout(historySaveTimeoutRef.current);
+    };
+  }, [tryHistory, authUser, initialLoadComplete]);
 
   // Save posts to localStorage (shared across users)
   useEffect(() => {
@@ -10486,17 +10632,10 @@ const App = () => {
   
   // Add custom clothing to closet
   const addCustomClothing = async (item) => {
-    // Add to local state
-    setCloset(prev => [...prev, item]);
-    
-    // Save to Firestore if available
-    if (db && authUser?.uid) {
-      try {
-        await db.collection('users').doc(authUser.uid).collection('customClothes').doc(item.id).set(item);
-      } catch (e) {
-        console.error('Error saving custom clothing:', e);
-      }
-    }
+    // Add to local state - closet will be automatically saved via useEffect
+    setCloset(prev => [...prev, { ...item, isCustom: true, addedAt: Date.now() }]);
+    console.log('👕 Custom clothing added:', item.name);
+    // No need for separate Firestore save - the closet useEffect handles it
   };
 
   // Get base avatar - prefer from Storage, fallback to local
@@ -10657,13 +10796,16 @@ const App = () => {
         const userId = authUser.uid;
         // Delete from Firestore
         if (db) {
-          await db.collection('users').doc(userId).delete().catch(() => {});
+          await db.collection('users').doc(userId).delete()
+            .catch(e => console.error('❌ User doc delete error:', e.code, e.message));
         }
         // Delete from Storage
         if (storage) {
           try {
             await storage.ref(`avatars/${userId}/base-avatar.png`).delete();
-          } catch {}
+          } catch (e) {
+            console.warn('⚠️ Avatar delete error (may not exist):', e.code);
+          }
         }
         // Clear all localStorage
         localStorage.removeItem(`trai_user_${userId}`);
