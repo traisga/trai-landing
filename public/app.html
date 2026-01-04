@@ -10258,6 +10258,35 @@ const App = () => {
         if (doc.exists) {
           const data = doc.data();
           console.log('📦 Firestore data keys:', Object.keys(data));
+          console.log('👤 Username from Firestore:', data.username, '| DisplayName:', data.displayName);
+          
+          // CRITICAL FIX: If username is missing, try to fetch from usernames collection
+          let resolvedUsername = data.username;
+          let resolvedDisplayName = data.displayName;
+          
+          if (!resolvedUsername) {
+            console.log('⚠️ Username missing in users doc, searching in usernames collection...');
+            try {
+              const usernamesSnapshot = await db.collection('usernames')
+                .where('uid', '==', userId)
+                .limit(1)
+                .get();
+              
+              if (!usernamesSnapshot.empty) {
+                const usernameDoc = usernamesSnapshot.docs[0];
+                resolvedUsername = usernameDoc.data().username || usernameDoc.id;
+                console.log('✅ Found username from usernames collection:', resolvedUsername);
+                
+                // Also update the users doc to include username for future
+                db.collection('users').doc(userId).update({
+                  username: resolvedUsername,
+                  usernameLower: resolvedUsername.toLowerCase()
+                }).catch(e => console.warn('Could not update users doc with username:', e.message));
+              }
+            } catch (e) {
+              console.warn('Could not fetch from usernames collection:', e.message);
+            }
+          }
           
           // CRITICAL FIX: Only load data on FIRST snapshot or if local state is empty
           // This prevents remote overwrites after local changes
@@ -10298,8 +10327,8 @@ const App = () => {
           // User state'i güncelle - ALWAYS update user for credits etc
           setUser(prev => {
             const newUser = {
-              username: data.username,
-              displayName: data.displayName,
+              username: resolvedUsername || prev?.username || null,
+              displayName: resolvedDisplayName || prev?.displayName || null,
               profilePhoto: data.profilePhoto,
               email: data.email,
               credits: data.credits ?? 0,
