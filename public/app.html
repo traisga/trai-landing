@@ -6963,7 +6963,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 };
 
 // ============ PROFILE (EXPANDED) ============
-const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications }) => {
+const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat }) => {
   const [tab, setTab] = useState('profile'); // profile, avatar, friends, settings, messages
   const [showAddFriend, setShowAddFriend] = useState(false);
   const profilePhotoRef = useRef(null);
@@ -7024,7 +7024,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   };
   const [friendUsername, setFriendUsername] = useState('');
   const [friendSearchResult, setFriendSearchResult] = useState({ searching: false, found: null, error: null });
-  const [selectedChat, setSelectedChat] = useState(null); // { type: 'dm' | 'group', id, name, members }
   const [newMessage, setNewMessage] = useState('');
   const [showEditParams, setShowEditParams] = useState(false);
   const [editParams, setEditParams] = useState({});
@@ -7032,9 +7031,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [selectedGroupMembers, setSelectedGroupMembers] = useState([]);
-  const [messageRequests, setMessageRequests] = useState([]); // Pending DM requests from non-followers
   const [groups, setGroups] = useState([]); // { id, name, members: [], messages: [], createdAt }
-  const [dmChats, setDmChats] = useState([]); // { id visitorId, name, avatar, messages: [], approved: true/false }
 
   // Search friend by username
   const searchFriendByUsername = async (username) => {
@@ -7123,9 +7120,13 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     setShowEditParams(false);
   };
 
+  // Loading state for follow request
+  const [sendingFollowRequest, setSendingFollowRequest] = useState(false);
+
   // Send Follow Request - NEW SYSTEM
   const sendFollowRequest = async () => {
     if (!friendSearchResult.found || !authUser?.uid || !db) return;
+    if (sendingFollowRequest) return; // Prevent double-click
     
     const foundUser = friendSearchResult.found;
     const myUid = authUser.uid;
@@ -7142,6 +7143,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       alert('Bu kullanıcıyı zaten takip ediyorsun!');
       return;
     }
+    
+    setSendingFollowRequest(true);
     
     try {
       const requestData = {
@@ -7178,15 +7181,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       
       console.log('✅ Follow request sent');
       
-      // Update local state
-      setSentFollowRequests(prev => [...prev, {
-        uid: targetUid,
-        username: foundUser.username,
-        displayName: foundUser.displayName,
-        profilePhoto: foundUser.profilePhoto,
-        status: 'pending'
-      }]);
-      
+      // Don't update local state - let the listener handle it
       setFriendUsername('');
       setFriendSearchResult({ searching: false, found: null, error: null });
       setShowAddFriend(false);
@@ -7195,6 +7190,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     } catch (e) {
       console.error('❌ Follow request error:', e);
       alert('Takip isteği gönderilemedi: ' + e.message);
+    } finally {
+      setSendingFollowRequest(false);
     }
   };
   
@@ -7260,18 +7257,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       
       console.log('✅ Follow request accepted - mutual follow created');
       
-      // Update local state
-      setFollowRequests(prev => prev.filter(r => r.fromUid !== fromUid));
-      setFriends(prev => [...prev, {
-        id: fromUid,
-        uid: fromUid,
-        username: request.fromUsername,
-        displayName: request.fromDisplayName,
-        name: request.fromDisplayName || request.fromUsername,
-        avatar: request.fromPhoto,
-        profilePhoto: request.fromPhoto,
-        status: 'mutual'
-      }]);
+      // Don't update local state - let the real-time listeners handle it
+      // This prevents duplicate entries
       
     } catch (e) {
       console.error('❌ Accept request error:', e);
@@ -7454,28 +7441,68 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   };
   
   // Start new DM
-  const startDM = (person) => {
-    const isFollowing = friends.some(f => f.uid === person.uid);
-    const existingChat = dmChats.find(c => c.recipientId === person.uid);
+  const startDM = async (person) => {
+    if (!authUser?.uid || !db) return;
+    
+    const myUid = authUser.uid;
+    const recipientUid = person.uid;
+    
+    // Create consistent chat ID (sorted UIDs)
+    const chatId = [myUid, recipientUid].sort().join('_');
+    
+    // Check if chat already exists in local state
+    const existingChat = dmChats.find(c => c.id === chatId);
     
     if (existingChat) {
       setSelectedChat({ type: 'dm', ...existingChat });
-    } else {
-      // If not following, message will need approval
-      const newChat = {
-        id: Date.now(),
+      setShowNewChat(false);
+      return;
+    }
+    
+    // Check if chat exists in Firestore
+    try {
+      const chatDoc = await db.collection('chats').doc(chatId).get();
+      
+      if (chatDoc.exists) {
+        // Chat exists, load it
+        const data = chatDoc.data();
+        setSelectedChat({
+          type: 'dm',
+          id: chatId,
+          recipientId: recipientUid,
+          name: person.displayName || person.username || person.name,
+          avatar: person.avatar || person.profilePhoto,
+          messages: [], // Will be loaded by the message listener
+          approved: true
+        });
+      } else {
+        // Create new chat placeholder - will be created in Firestore when first message is sent
+        setSelectedChat({
+          type: 'dm',
+          id: chatId,
+          recipientId: recipientUid,
+          name: person.displayName || person.username || person.name,
+          avatar: person.avatar || person.profilePhoto,
+          messages: [],
+          approved: true,
+          isNew: true
+        });
+      }
+    } catch (e) {
+      console.error('❌ Error checking chat:', e);
+      // Fallback - create new chat
+      setSelectedChat({
         type: 'dm',
-        recipientId: person.uid,
-        name: person.displayName || person.username,
+        id: chatId,
+        recipientId: recipientUid,
+        name: person.displayName || person.username || person.name,
         avatar: person.avatar || person.profilePhoto,
         messages: [],
-        approved: isFollowing // Auto-approved if following each other
-      };
-      setSelectedChat(newChat);
-      if (!isFollowing) {
-        // This will show a warning that message needs approval
-      }
+        approved: true,
+        isNew: true
+      });
     }
+    
     setShowNewChat(false);
   };
   
@@ -7661,7 +7688,13 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
           {tabs.map(t => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => {
+                setTab(t.id);
+                // Clear selected chat when switching to messages tab to show chat list
+                if (t.id === 'messages') {
+                  setSelectedChat(null);
+                }
+              }}
               className={`flex-1 py-2 px-1 rounded-xl text-[10px] font-semibold flex flex-col items-center justify-center gap-0.5 transition ${
                 tab === t.id ? 'bg-brand text-white' : 'text-slate-500 hover:text-slate-600'
               }`}
@@ -10181,6 +10214,8 @@ const App = () => {
   const [followRequests, setFollowRequests] = useState([]); // Incoming follow requests
   const [sentFollowRequests, setSentFollowRequests] = useState([]); // Outgoing pending requests
   const [notifications, setNotifications] = useState([]); // All notifications
+  const [dmChats, setDmChats] = useState([]); // DM conversations
+  const [selectedChat, setSelectedChat] = useState(null); // Currently open chat
   const [settings, setSettings] = useState({
     profilePublic: true,
     combosPublic: true,
@@ -10965,8 +11000,34 @@ const App = () => {
       .where('participants', 'array-contains', userId)
       .orderBy('lastMessageTime', 'desc')
       .onSnapshot(
-        (snapshot) => {
+        async (snapshot) => {
           const chatsList = [];
+          const userAvatars = {};
+          
+          // First, collect all other user IDs
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const otherUserId = data.participants.find(p => p !== userId);
+            if (otherUserId && !userAvatars[otherUserId]) {
+              userAvatars[otherUserId] = null; // Mark for fetching
+            }
+          });
+          
+          // Fetch avatars for all other users
+          const otherUserIds = Object.keys(userAvatars);
+          for (const uid of otherUserIds) {
+            try {
+              const userDoc = await db.collection('users').doc(uid).get();
+              if (userDoc.exists) {
+                const userData = userDoc.data();
+                userAvatars[uid] = userData.profilePhoto || userData.baseAvatarStorageUrl || null;
+              }
+            } catch (e) {
+              console.log('Could not fetch avatar for', uid);
+            }
+          }
+          
+          // Build chat list with avatars
           snapshot.forEach(doc => {
             const data = doc.data();
             const otherUserId = data.participants.find(p => p !== userId);
@@ -10974,6 +11035,7 @@ const App = () => {
               id: doc.id,
               recipientId: otherUserId,
               name: data.participantNames?.[otherUserId] || 'Kullanıcı',
+              avatar: userAvatars[otherUserId] || null,
               lastMessage: data.lastMessage,
               lastMessageTime: data.lastMessageTime?.toMillis?.() || Date.now(),
               lastMessageBy: data.lastMessageBy,
@@ -10981,12 +11043,13 @@ const App = () => {
               approved: true
             });
           });
+          
           console.log('✅ Chats loaded:', chatsList.length);
           // Merge with existing local state to preserve loaded messages
           setDmChats(prev => {
             return chatsList.map(chat => {
               const existing = prev.find(c => c.id === chat.id);
-              return existing ? { ...chat, messages: existing.messages } : chat;
+              return existing ? { ...chat, messages: existing.messages, avatar: chat.avatar || existing.avatar } : chat;
             });
           });
         },
@@ -11637,6 +11700,10 @@ const App = () => {
               setSentFollowRequests={setSentFollowRequests}
               notifications={notifications}
               setNotifications={setNotifications}
+              dmChats={dmChats}
+              setDmChats={setDmChats}
+              selectedChat={selectedChat}
+              setSelectedChat={setSelectedChat}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -11773,6 +11840,10 @@ const App = () => {
               setSentFollowRequests={setSentFollowRequests}
               notifications={notifications}
               setNotifications={setNotifications}
+              dmChats={dmChats}
+              setDmChats={setDmChats}
+              selectedChat={selectedChat}
+              setSelectedChat={setSelectedChat}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
