@@ -7132,12 +7132,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     const targetUid = foundUser.uid;
     
     try {
-      // Create batch write for atomic operation
-      const batch = db.batch();
-      
       // Add to my following list
-      const followingRef = db.collection('users').doc(myUid).collection('following').doc(targetUid);
-      batch.set(followingRef, {
+      await db.collection('users').doc(myUid).collection('following').doc(targetUid).set({
         uid: targetUid,
         username: foundUser.username,
         displayName: foundUser.displayName,
@@ -7146,8 +7142,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       });
       
       // Add to their followers list
-      const followersRef = db.collection('users').doc(targetUid).collection('followers').doc(myUid);
-      batch.set(followersRef, {
+      await db.collection('users').doc(targetUid).collection('followers').doc(myUid).set({
         uid: myUid,
         username: user.username,
         displayName: user.displayName,
@@ -7155,18 +7150,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         followedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       
-      // Update follower/following counts
-      const myUserRef = db.collection('users').doc(myUid);
-      batch.update(myUserRef, {
-        followingCount: firebase.firestore.FieldValue.increment(1)
-      });
-      
-      const targetUserRef = db.collection('users').doc(targetUid);
-      batch.update(targetUserRef, {
-        followersCount: firebase.firestore.FieldValue.increment(1)
-      });
-      
-      await batch.commit();
       console.log('✅ Follow successful');
       
       // Update local state
@@ -7200,28 +7183,12 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     const myUid = authUser.uid;
     
     try {
-      const batch = db.batch();
-      
       // Remove from my following
-      const followingRef = db.collection('users').doc(myUid).collection('following').doc(targetUid);
-      batch.delete(followingRef);
+      await db.collection('users').doc(myUid).collection('following').doc(targetUid).delete();
       
       // Remove from their followers
-      const followersRef = db.collection('users').doc(targetUid).collection('followers').doc(myUid);
-      batch.delete(followersRef);
+      await db.collection('users').doc(targetUid).collection('followers').doc(myUid).delete();
       
-      // Update counts
-      const myUserRef = db.collection('users').doc(myUid);
-      batch.update(myUserRef, {
-        followingCount: firebase.firestore.FieldValue.increment(-1)
-      });
-      
-      const targetUserRef = db.collection('users').doc(targetUid);
-      batch.update(targetUserRef, {
-        followersCount: firebase.firestore.FieldValue.increment(-1)
-      });
-      
-      await batch.commit();
       console.log('✅ Unfollow successful');
       
       // Update local state
