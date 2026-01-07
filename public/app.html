@@ -6963,7 +6963,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 };
 
 // ============ PROFILE (EXPANDED) ============
-const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage }) => {
+const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications }) => {
   const [tab, setTab] = useState('profile'); // profile, avatar, friends, settings, messages
   const [showAddFriend, setShowAddFriend] = useState(false);
   const profilePhotoRef = useRef(null);
@@ -7035,11 +7035,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const [messageRequests, setMessageRequests] = useState([]); // Pending DM requests from non-followers
   const [groups, setGroups] = useState([]); // { id, name, members: [], messages: [], createdAt }
   const [dmChats, setDmChats] = useState([]); // { id visitorId, name, avatar, messages: [], approved: true/false }
-  
-  // Follow Request System
-  const [followRequests, setFollowRequests] = useState([]); // Incoming follow requests
-  const [sentFollowRequests, setSentFollowRequests] = useState([]); // Outgoing pending requests
-  const [notifications, setNotifications] = useState([]); // All notifications
 
   // Search friend by username
   const searchFriendByUsername = async (username) => {
@@ -10183,6 +10178,9 @@ const App = () => {
   // Social features state
   const [friends, setFriends] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [followRequests, setFollowRequests] = useState([]); // Incoming follow requests
+  const [sentFollowRequests, setSentFollowRequests] = useState([]); // Outgoing pending requests
+  const [notifications, setNotifications] = useState([]); // All notifications
   const [settings, setSettings] = useState({
     profilePublic: true,
     combosPublic: true,
@@ -11633,6 +11631,12 @@ const App = () => {
               setMessages={setMessages}
               settings={settings}
               setSettings={setSettings}
+              followRequests={followRequests}
+              setFollowRequests={setFollowRequests}
+              sentFollowRequests={sentFollowRequests}
+              setSentFollowRequests={setSentFollowRequests}
+              notifications={notifications}
+              setNotifications={setNotifications}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -11763,6 +11767,12 @@ const App = () => {
               setMessages={setMessages}
               settings={settings}
               setSettings={setSettings}
+              followRequests={followRequests}
+              setFollowRequests={setFollowRequests}
+              sentFollowRequests={sentFollowRequests}
+              setSentFollowRequests={setSentFollowRequests}
+              notifications={notifications}
+              setNotifications={setNotifications}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
