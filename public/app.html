@@ -449,7 +449,7 @@ const TRANSLATIONS = {
     blondeHair: "Sarı",
     redHair: "Kızıl",
     grayHair: "Gri / Beyaz",
-    hijabOption: "Türban",
+    hijabOption: "Başörtüsü",
     hairLengthSelect: "Saç Uzunluğunuzu Seçin",
     hairLength: "Saç Uzunluğu",
     veryShortHair: "Çok Kısa",
@@ -2114,11 +2114,11 @@ const AI = {
       plus: "plus-size"
     }[params.bodyType] || "average";
 
-    // Türban/Hijab kontrolü
+    // Başörtüsü/Hijab kontrolü
     const hijabInstruction = params.hijab ? `
 - HIJAB/HEADSCARF: The person wears a modern, elegant hijab. Style the hijab in contemporary Turkish fashion - elegantly wrapped with a sophisticated look. Choose a neutral color (white, beige, or soft gray) that complements the base outfit. The hijab should look natural, stylish, and high-quality.` : '';
 
-    // Saç bilgisi (türban yoksa)
+    // Saç bilgisi (başörtüsü yoksa)
     const hairInstruction = !params.hijab ? `
 - Hair: ${params.hairColor || 'natural'} color, ${params.hairLength || 'medium'} length, ${params.hairType || 'natural'} texture. Preserve the exact hair from reference photos.` : '';
 
@@ -2208,7 +2208,7 @@ Output: Professional full-body fashion catalog photography showing complete figu
     // Dynamic background based on selection
     const bgDescription = backgroundValue || 'Clean white professional photography studio with seamless backdrop';
     
-    // Türban/Hijab desteği
+    // Başörtüsü/Hijab desteği
     const hijabInstruction = userParams.hijab ? `
 8. HIJAB/HEADSCARF: The person wears a hijab/headscarf. Add a modern, stylish hijab that complements the outfit colors and style. The hijab should be elegantly wrapped in contemporary Turkish fashion style, matching or complementing the ${item.color} garment. Ensure the hijab fabric and texture look realistic and high-quality.` : '';
     
@@ -2282,7 +2282,7 @@ Output: High-quality full-body fashion photograph, 8K resolution, photorealistic
     // Dynamic background based on selection
     const bgDescription = backgroundValue || 'Clean white professional photography studio with seamless backdrop';
     
-    // Türban/Hijab talimatı - tüm promptlara eklenecek
+    // Başörtüsü/Hijab talimatı - tüm promptlara eklenecek
     const hijabInstruction = userParams.hijab ? `
 HIJAB REQUIREMENT: The person wears a hijab/headscarf. Add a modern, elegant hijab that complements the outfit colors. Style it in contemporary Turkish fashion - elegantly wrapped and matching the overall look. The hijab color should harmonize with the garments being worn.` : '';
 
@@ -3594,17 +3594,17 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     if (name.length < 3) errors.push('En az 3 karakter olmalı');
     if (name.length > 20) errors.push('En fazla 20 karakter olmalı');
     
-    // Only alphanumeric and underscore
-    if (!/^[a-zA-Z0-9_]*$/.test(name)) errors.push('Sadece harf, rakam ve alt çizgi (_) kullanılabilir');
+    // Allowed characters: letters, numbers, underscore, dot, dash
+    if (!/^[a-zA-Z0-9_.\-]*$/.test(name)) errors.push('Sadece harf, rakam, alt çizgi (_), nokta (.) ve tire (-) kullanılabilir');
     
-    // Must start with letter
-    if (name.length > 0 && !/^[a-zA-Z]/.test(name)) errors.push('Harf ile başlamalı');
+    // Must start with letter or number
+    if (name.length > 0 && !/^[a-zA-Z0-9]/.test(name)) errors.push('Harf veya rakam ile başlamalı');
     
-    // No consecutive underscores
-    if (/__/.test(name)) errors.push('Ardışık alt çizgi kullanılamaz');
+    // No consecutive special characters
+    if (/[_.\-]{2,}/.test(name)) errors.push('Ardışık özel karakter kullanılamaz');
     
-    // Cannot end with underscore
-    if (name.endsWith('_')) errors.push('Alt çizgi ile bitemez');
+    // Cannot end with special character
+    if (/[_.\-]$/.test(name)) errors.push('Özel karakter ile bitemez');
     
     // Profanity filter - common Turkish and English bad words
     const badWords = [
@@ -4532,7 +4532,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
                 
                 {params.hijab && (
                   <div className="bg-purple-50 rounded-lg p-3 text-xs text-purple-700">
-                    <span className="font-medium">Türban Modu:</span> Avatarınız modern türban stiliyle oluşturulacak. Kombin denemelerinde kıyafetlerinizle uyumlu türban önerilecek.
+                    <span className="font-medium">Başörtüsü Modu:</span> Avatarınız modern başörtüsü stiliyle oluşturulacak. Kombin denemelerinde kıyafetlerinizle uyumlu başörtüsü önerilecek.
                   </div>
                 )}
               </div>
