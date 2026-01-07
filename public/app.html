@@ -7123,73 +7123,213 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     setShowEditParams(false);
   };
 
-  // Follow user
-  const addFriend = () => {
-    if (!friendSearchResult.found) return;
+  // Follow user - REAL FIRESTORE
+  const addFriend = async () => {
+    if (!friendSearchResult.found || !authUser?.uid || !db) return;
     
     const foundUser = friendSearchResult.found;
-    const newFollowing = {
-      id: Date.now(),
-      uid: foundUser.uid,
-      username: foundUser.username,
-      name: foundUser.displayName || foundUser.username,
-      avatar: foundUser.profilePhoto || foundUser.baseAvatarStorageUrl,
-      status: 'following', // following, pending (for DM requests)
-      addedAt: Date.now()
-    };
-    setFriends(prev => [...prev, newFollowing]);
-    setFriendUsername('');
-    setFriendSearchResult({ searching: false, found: null, error: null });
-    setShowAddFriend(false);
-  };
-
-  const removeFriend = (id) => {
-    if (confirm('Takibi bırakmak istiyor musun?')) {
-      setFriends(prev => prev.filter(f => f.id !== id));
+    const myUid = authUser.uid;
+    const targetUid = foundUser.uid;
+    
+    try {
+      // Create batch write for atomic operation
+      const batch = db.batch();
+      
+      // Add to my following list
+      const followingRef = db.collection('users').doc(myUid).collection('following').doc(targetUid);
+      batch.set(followingRef, {
+        uid: targetUid,
+        username: foundUser.username,
+        displayName: foundUser.displayName,
+        profilePhoto: foundUser.profilePhoto || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // Add to their followers list
+      const followersRef = db.collection('users').doc(targetUid).collection('followers').doc(myUid);
+      batch.set(followersRef, {
+        uid: myUid,
+        username: user.username,
+        displayName: user.displayName,
+        profilePhoto: user.profilePhoto || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // Update follower/following counts
+      const myUserRef = db.collection('users').doc(myUid);
+      batch.update(myUserRef, {
+        followingCount: firebase.firestore.FieldValue.increment(1)
+      });
+      
+      const targetUserRef = db.collection('users').doc(targetUid);
+      batch.update(targetUserRef, {
+        followersCount: firebase.firestore.FieldValue.increment(1)
+      });
+      
+      await batch.commit();
+      console.log('✅ Follow successful');
+      
+      // Update local state
+      const newFollowing = {
+        id: targetUid,
+        uid: targetUid,
+        username: foundUser.username,
+        displayName: foundUser.displayName,
+        name: foundUser.displayName || foundUser.username,
+        avatar: foundUser.profilePhoto || foundUser.baseAvatarStorageUrl,
+        profilePhoto: foundUser.profilePhoto,
+        status: 'following',
+        addedAt: Date.now()
+      };
+      setFriends(prev => [...prev, newFollowing]);
+      setFriendUsername('');
+      setFriendSearchResult({ searching: false, found: null, error: null });
+      setShowAddFriend(false);
+      
+    } catch (e) {
+      console.error('❌ Follow error:', e);
+      alert('Takip işlemi başarısız: ' + e.message);
     }
   };
 
-  const sendMessage = () => {
-    if (!newMessage.trim() || !selectedChat) return;
+  // Unfollow user - REAL FIRESTORE
+  const removeFriend = async (targetUid) => {
+    if (!confirm('Takibi bırakmak istiyor musun?')) return;
+    if (!authUser?.uid || !db) return;
+    
+    const myUid = authUser.uid;
+    
+    try {
+      const batch = db.batch();
+      
+      // Remove from my following
+      const followingRef = db.collection('users').doc(myUid).collection('following').doc(targetUid);
+      batch.delete(followingRef);
+      
+      // Remove from their followers
+      const followersRef = db.collection('users').doc(targetUid).collection('followers').doc(myUid);
+      batch.delete(followersRef);
+      
+      // Update counts
+      const myUserRef = db.collection('users').doc(myUid);
+      batch.update(myUserRef, {
+        followingCount: firebase.firestore.FieldValue.increment(-1)
+      });
+      
+      const targetUserRef = db.collection('users').doc(targetUid);
+      batch.update(targetUserRef, {
+        followersCount: firebase.firestore.FieldValue.increment(-1)
+      });
+      
+      await batch.commit();
+      console.log('✅ Unfollow successful');
+      
+      // Update local state
+      setFriends(prev => prev.filter(f => f.uid !== targetUid && f.id !== targetUid));
+      
+    } catch (e) {
+      console.error('❌ Unfollow error:', e);
+      alert('İşlem başarısız: ' + e.message);
+    }
+  };
+
+  // Send message - REAL FIRESTORE
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedChat || !authUser?.uid || !db) return;
+    
+    const myUid = authUser.uid;
+    const recipientUid = selectedChat.recipientId || selectedChat.uid;
+    
+    // Create chat ID (sorted UIDs for consistency)
+    const chatId = selectedChat.type === 'group' 
+      ? selectedChat.id 
+      : [myUid, recipientUid].sort().join('_');
     
     const msg = {
-      id: Date.now(),
-      senderId: authUser?.uid,
+      senderId: myUid,
       senderName: user.username || user.displayName,
-      text: newMessage,
-      timestamp: Date.now()
+      senderPhoto: user.profilePhoto || null,
+      text: newMessage.trim(),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      read: false
     };
     
-    if (selectedChat.type === 'group') {
-      // Add to group messages
-      setGroups(prev => prev.map(g => 
-        g.id === selectedChat.id 
-          ? { ...g, messages: [...(g.messages || []), msg] }
-          : g
-      ));
-    } else {
-      // DM message
-      setDmChats(prev => {
-        const existing = prev.find(c => c.id === selectedChat.id);
-        if (existing) {
-          return prev.map(c => c.id === selectedChat.id 
-            ? { ...c, messages: [...(c.messages || []), msg] }
-            : c
-          );
-        } else {
-          // New chat
-          return [...prev, { 
-            id: selectedChat.id, 
-            recipientId: selectedChat.recipientId,
-            name: selectedChat.name, 
-            avatar: selectedChat.avatar,
-            messages: [msg],
-            approved: selectedChat.approved !== false
-          }];
-        }
-      });
+    try {
+      if (selectedChat.type === 'group') {
+        // Group message
+        await db.collection('groups').doc(chatId).collection('messages').add(msg);
+        
+        // Update group's lastMessage
+        await db.collection('groups').doc(chatId).update({
+          lastMessage: newMessage.trim(),
+          lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+          lastMessageBy: myUid
+        });
+      } else {
+        // DM message
+        const chatRef = db.collection('chats').doc(chatId);
+        
+        // Create/update chat document
+        await chatRef.set({
+          participants: [myUid, recipientUid],
+          participantNames: {
+            [myUid]: user.username || user.displayName,
+            [recipientUid]: selectedChat.name
+          },
+          lastMessage: newMessage.trim(),
+          lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+          lastMessageBy: myUid,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        
+        // Add message to subcollection
+        await chatRef.collection('messages').add(msg);
+        
+        console.log('✅ Message sent');
+      }
+      
+      // Update local state immediately for responsiveness
+      const localMsg = {
+        id: Date.now(),
+        senderId: myUid,
+        senderName: user.username || user.displayName,
+        text: newMessage.trim(),
+        timestamp: Date.now()
+      };
+      
+      if (selectedChat.type === 'group') {
+        setGroups(prev => prev.map(g => 
+          g.id === selectedChat.id 
+            ? { ...g, messages: [...(g.messages || []), localMsg] }
+            : g
+        ));
+      } else {
+        setDmChats(prev => {
+          const existing = prev.find(c => c.id === chatId);
+          if (existing) {
+            return prev.map(c => c.id === chatId 
+              ? { ...c, messages: [...(c.messages || []), localMsg] }
+              : c
+            );
+          } else {
+            return [...prev, { 
+              id: chatId, 
+              recipientId: recipientUid,
+              name: selectedChat.name, 
+              avatar: selectedChat.avatar,
+              messages: [localMsg],
+              approved: true
+            }];
+          }
+        });
+      }
+      
+      setNewMessage('');
+      
+    } catch (e) {
+      console.error('❌ Send message error:', e);
+      alert('Mesaj gönderilemedi: ' + e.message);
     }
-    setNewMessage('');
   };
 
   const getChatMessages = (chatId, type = 'dm') => {
@@ -10439,6 +10579,169 @@ const App = () => {
       unsubscribe();
     };
   }, [authUser]);
+
+  // Load following list from Firestore - REAL TIME
+  useEffect(() => {
+    if (!authUser?.uid || !db) return;
+    
+    const userId = authUser.uid;
+    console.log('👥 Loading following list...');
+    
+    const unsubscribe = db.collection('users').doc(userId).collection('following')
+      .orderBy('followedAt', 'desc')
+      .onSnapshot(
+        (snapshot) => {
+          const followingList = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            followingList.push({
+              id: doc.id,
+              uid: doc.id,
+              username: data.username,
+              displayName: data.displayName,
+              name: data.displayName || data.username,
+              avatar: data.profilePhoto,
+              profilePhoto: data.profilePhoto,
+              status: 'following',
+              addedAt: data.followedAt?.toMillis?.() || Date.now()
+            });
+          });
+          console.log('✅ Following loaded:', followingList.length);
+          setFriends(followingList);
+        },
+        (error) => {
+          console.error('❌ Following load error:', error);
+        }
+      );
+    
+    return () => unsubscribe();
+  }, [authUser]);
+
+  // Load DM chats from Firestore - REAL TIME
+  useEffect(() => {
+    if (!authUser?.uid || !db) return;
+    
+    const userId = authUser.uid;
+    console.log('💬 Loading chats...');
+    
+    const unsubscribe = db.collection('chats')
+      .where('participants', 'array-contains', userId)
+      .orderBy('lastMessageTime', 'desc')
+      .onSnapshot(
+        (snapshot) => {
+          const chatsList = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const otherUserId = data.participants.find(p => p !== userId);
+            chatsList.push({
+              id: doc.id,
+              recipientId: otherUserId,
+              name: data.participantNames?.[otherUserId] || 'Kullanıcı',
+              lastMessage: data.lastMessage,
+              lastMessageTime: data.lastMessageTime?.toMillis?.() || Date.now(),
+              lastMessageBy: data.lastMessageBy,
+              messages: [], // Will be loaded when chat is opened
+              approved: true
+            });
+          });
+          console.log('✅ Chats loaded:', chatsList.length);
+          // Merge with existing local state to preserve loaded messages
+          setDmChats(prev => {
+            return chatsList.map(chat => {
+              const existing = prev.find(c => c.id === chat.id);
+              return existing ? { ...chat, messages: existing.messages } : chat;
+            });
+          });
+        },
+        (error) => {
+          console.error('❌ Chats load error:', error);
+        }
+      );
+    
+    return () => unsubscribe();
+  }, [authUser]);
+
+  // Load messages when a chat is selected
+  const loadChatMessages = async (chatId) => {
+    if (!db || !chatId) return;
+    
+    try {
+      const messagesRef = db.collection('chats').doc(chatId).collection('messages')
+        .orderBy('timestamp', 'asc')
+        .limit(100);
+      
+      const snapshot = await messagesRef.get();
+      const messagesList = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        messagesList.push({
+          id: doc.id,
+          senderId: data.senderId,
+          senderName: data.senderName,
+          text: data.text,
+          timestamp: data.timestamp?.toMillis?.() || Date.now(),
+          read: data.read
+        });
+      });
+      
+      console.log('✅ Messages loaded:', messagesList.length);
+      
+      // Update dmChats with loaded messages
+      setDmChats(prev => prev.map(c => 
+        c.id === chatId ? { ...c, messages: messagesList } : c
+      ));
+      
+      return messagesList;
+    } catch (e) {
+      console.error('❌ Load messages error:', e);
+      return [];
+    }
+  };
+
+  // Load messages when a chat is selected - REAL TIME LISTENER
+  useEffect(() => {
+    if (!selectedChat || !db || selectedChat.type === 'group') return;
+    
+    const chatId = selectedChat.id;
+    if (!chatId || typeof chatId !== 'string' || !chatId.includes('_')) return;
+    
+    console.log('📨 Starting real-time message listener for:', chatId);
+    
+    const unsubscribe = db.collection('chats').doc(chatId).collection('messages')
+      .orderBy('timestamp', 'asc')
+      .limit(100)
+      .onSnapshot(
+        (snapshot) => {
+          const messagesList = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            messagesList.push({
+              id: doc.id,
+              senderId: data.senderId,
+              senderName: data.senderName,
+              text: data.text,
+              timestamp: data.timestamp?.toMillis?.() || Date.now(),
+              read: data.read
+            });
+          });
+          
+          console.log('📨 Messages updated:', messagesList.length);
+          
+          // Update dmChats with loaded messages
+          setDmChats(prev => prev.map(c => 
+            c.id === chatId ? { ...c, messages: messagesList } : c
+          ));
+        },
+        (error) => {
+          console.error('❌ Message listener error:', error);
+        }
+      );
+    
+    return () => {
+      console.log('🔌 Message listener unsubscribed');
+      unsubscribe();
+    };
+  }, [selectedChat?.id]);
 
   // Günlük öneri kontrolü - kullanıcı ve dolap yüklendikten sonra
   useEffect(() => {
