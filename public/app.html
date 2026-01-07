@@ -7035,6 +7035,11 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const [messageRequests, setMessageRequests] = useState([]); // Pending DM requests from non-followers
   const [groups, setGroups] = useState([]); // { id, name, members: [], messages: [], createdAt }
   const [dmChats, setDmChats] = useState([]); // { id visitorId, name, avatar, messages: [], approved: true/false }
+  
+  // Follow Request System
+  const [followRequests, setFollowRequests] = useState([]); // Incoming follow requests
+  const [sentFollowRequests, setSentFollowRequests] = useState([]); // Outgoing pending requests
+  const [notifications, setNotifications] = useState([]); // All notifications
 
   // Search friend by username
   const searchFriendByUsername = async (username) => {
@@ -7123,26 +7128,92 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     setShowEditParams(false);
   };
 
-  // Follow user - REAL FIRESTORE
-  const addFriend = async () => {
+  // Send Follow Request - NEW SYSTEM
+  const sendFollowRequest = async () => {
     if (!friendSearchResult.found || !authUser?.uid || !db) return;
     
     const foundUser = friendSearchResult.found;
     const myUid = authUser.uid;
     const targetUid = foundUser.uid;
     
+    // Check if already sent request
+    if (sentFollowRequests.some(r => r.uid === targetUid)) {
+      alert('Zaten takip isteği gönderdin!');
+      return;
+    }
+    
+    // Check if already following
+    if (friends.some(f => f.uid === targetUid)) {
+      alert('Bu kullanıcıyı zaten takip ediyorsun!');
+      return;
+    }
+    
     try {
-      // Add to my following list
-      await db.collection('users').doc(myUid).collection('following').doc(targetUid).set({
+      const requestData = {
+        fromUid: myUid,
+        fromUsername: user.username,
+        fromDisplayName: user.displayName,
+        fromPhoto: user.profilePhoto || null,
+        toUid: targetUid,
+        toUsername: foundUser.username,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Add to target's incoming requests
+      await db.collection('users').doc(targetUid).collection('followRequests').doc(myUid).set(requestData);
+      
+      // Add to my sent requests
+      await db.collection('users').doc(myUid).collection('sentFollowRequests').doc(targetUid).set({
+        ...requestData,
+        toPhoto: foundUser.profilePhoto || null
+      });
+      
+      // Create notification for target user
+      await db.collection('users').doc(targetUid).collection('notifications').add({
+        type: 'follow_request',
+        fromUid: myUid,
+        fromUsername: user.username,
+        fromDisplayName: user.displayName,
+        fromPhoto: user.profilePhoto || null,
+        message: `${user.username || user.displayName} seni takip etmek istiyor`,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      console.log('✅ Follow request sent');
+      
+      // Update local state
+      setSentFollowRequests(prev => [...prev, {
         uid: targetUid,
         username: foundUser.username,
         displayName: foundUser.displayName,
-        profilePhoto: foundUser.profilePhoto || null,
-        followedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+        profilePhoto: foundUser.profilePhoto,
+        status: 'pending'
+      }]);
       
-      // Add to their followers list
-      await db.collection('users').doc(targetUid).collection('followers').doc(myUid).set({
+      setFriendUsername('');
+      setFriendSearchResult({ searching: false, found: null, error: null });
+      setShowAddFriend(false);
+      alert('Takip isteği gönderildi!');
+      
+    } catch (e) {
+      console.error('❌ Follow request error:', e);
+      alert('Takip isteği gönderilemedi: ' + e.message);
+    }
+  };
+  
+  // Accept Follow Request
+  const acceptFollowRequest = async (request) => {
+    if (!authUser?.uid || !db) return;
+    
+    const myUid = authUser.uid;
+    const fromUid = request.fromUid;
+    
+    try {
+      // Add each other to following/followers
+      // They follow me
+      await db.collection('users').doc(fromUid).collection('following').doc(myUid).set({
         uid: myUid,
         username: user.username,
         displayName: user.displayName,
@@ -7150,46 +7221,125 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         followedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       
-      console.log('✅ Follow successful');
+      // I'm in their following, they're in my followers
+      await db.collection('users').doc(myUid).collection('followers').doc(fromUid).set({
+        uid: fromUid,
+        username: request.fromUsername,
+        displayName: request.fromDisplayName,
+        profilePhoto: request.fromPhoto || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // MUTUAL: I also follow them back automatically
+      await db.collection('users').doc(myUid).collection('following').doc(fromUid).set({
+        uid: fromUid,
+        username: request.fromUsername,
+        displayName: request.fromDisplayName,
+        profilePhoto: request.fromPhoto || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      await db.collection('users').doc(fromUid).collection('followers').doc(myUid).set({
+        uid: myUid,
+        username: user.username,
+        displayName: user.displayName,
+        profilePhoto: user.profilePhoto || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // Delete the request
+      await db.collection('users').doc(myUid).collection('followRequests').doc(fromUid).delete();
+      await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(myUid).delete();
+      
+      // Send notification to requester
+      await db.collection('users').doc(fromUid).collection('notifications').add({
+        type: 'follow_accepted',
+        fromUid: myUid,
+        fromUsername: user.username,
+        fromDisplayName: user.displayName,
+        fromPhoto: user.profilePhoto || null,
+        message: `${user.username || user.displayName} takip isteğini kabul etti`,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      console.log('✅ Follow request accepted - mutual follow created');
       
       // Update local state
-      const newFollowing = {
-        id: targetUid,
-        uid: targetUid,
-        username: foundUser.username,
-        displayName: foundUser.displayName,
-        name: foundUser.displayName || foundUser.username,
-        avatar: foundUser.profilePhoto || foundUser.baseAvatarStorageUrl,
-        profilePhoto: foundUser.profilePhoto,
-        status: 'following',
-        addedAt: Date.now()
-      };
-      setFriends(prev => [...prev, newFollowing]);
-      setFriendUsername('');
-      setFriendSearchResult({ searching: false, found: null, error: null });
-      setShowAddFriend(false);
+      setFollowRequests(prev => prev.filter(r => r.fromUid !== fromUid));
+      setFriends(prev => [...prev, {
+        id: fromUid,
+        uid: fromUid,
+        username: request.fromUsername,
+        displayName: request.fromDisplayName,
+        name: request.fromDisplayName || request.fromUsername,
+        avatar: request.fromPhoto,
+        profilePhoto: request.fromPhoto,
+        status: 'mutual'
+      }]);
       
     } catch (e) {
-      console.error('❌ Follow error:', e);
-      alert('Takip işlemi başarısız: ' + e.message);
+      console.error('❌ Accept request error:', e);
+      alert('İşlem başarısız: ' + e.message);
     }
   };
-
-  // Unfollow user - REAL FIRESTORE
-  const removeFriend = async (targetUid) => {
-    if (!confirm('Takibi bırakmak istiyor musun?')) return;
+  
+  // Reject Follow Request
+  const rejectFollowRequest = async (request) => {
+    if (!authUser?.uid || !db) return;
+    
+    const myUid = authUser.uid;
+    const fromUid = request.fromUid;
+    
+    try {
+      // Delete the request
+      await db.collection('users').doc(myUid).collection('followRequests').doc(fromUid).delete();
+      await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(myUid).delete();
+      
+      console.log('✅ Follow request rejected');
+      
+      // Update local state
+      setFollowRequests(prev => prev.filter(r => r.fromUid !== fromUid));
+      
+    } catch (e) {
+      console.error('❌ Reject request error:', e);
+      alert('İşlem başarısız: ' + e.message);
+    }
+  };
+  
+  // Cancel Sent Follow Request
+  const cancelFollowRequest = async (targetUid) => {
     if (!authUser?.uid || !db) return;
     
     const myUid = authUser.uid;
     
     try {
-      // Remove from my following
-      await db.collection('users').doc(myUid).collection('following').doc(targetUid).delete();
+      await db.collection('users').doc(targetUid).collection('followRequests').doc(myUid).delete();
+      await db.collection('users').doc(myUid).collection('sentFollowRequests').doc(targetUid).delete();
       
-      // Remove from their followers
-      await db.collection('users').doc(targetUid).collection('followers').doc(myUid).delete();
+      console.log('✅ Follow request cancelled');
+      setSentFollowRequests(prev => prev.filter(r => r.uid !== targetUid));
       
-      console.log('✅ Unfollow successful');
+    } catch (e) {
+      console.error('❌ Cancel request error:', e);
+    }
+  };
+
+  // Unfollow user - Removes MUTUAL follow
+  const removeFriend = async (targetUid) => {
+    if (!confirm('Takibi bırakmak istiyor musun? Karşılıklı takip sonlanacak.')) return;
+    if (!authUser?.uid || !db) return;
+    
+    const myUid = authUser.uid;
+    
+    try {
+      // Remove mutual follow - both directions
+      await db.collection('users').doc(myUid).collection('following').doc(targetUid).delete().catch(() => {});
+      await db.collection('users').doc(myUid).collection('followers').doc(targetUid).delete().catch(() => {});
+      await db.collection('users').doc(targetUid).collection('following').doc(myUid).delete().catch(() => {});
+      await db.collection('users').doc(targetUid).collection('followers').doc(myUid).delete().catch(() => {});
+      
+      console.log('✅ Mutual unfollow successful');
       
       // Update local state
       setFriends(prev => prev.filter(f => f.uid !== targetUid && f.id !== targetUid));
@@ -7781,9 +7931,82 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         {/* FRIENDS TAB */}
         {tab === 'followers' && (
           <div className="p-4 space-y-4 fade-in">
+            {/* Follow Requests Section */}
+            {followRequests.length > 0 && (
+              <div className="glass rounded-2xl p-4">
+                <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-brand text-white rounded-full flex items-center justify-center text-xs">{followRequests.length}</span>
+                  Takip İstekleri
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {followRequests.map(req => (
+                    <div key={req.fromUid} className="flex items-center gap-3 p-2 bg-white/50 rounded-xl">
+                      <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center overflow-hidden">
+                        {req.fromPhoto ? (
+                          <img src={req.fromPhoto} className="w-full h-full rounded-xl object-cover" />
+                        ) : (
+                          <span className="text-sm">👤</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm truncate">{req.fromDisplayName || req.fromUsername}</div>
+                        <div className="text-xs text-slate-500">@{req.fromUsername}</div>
+                      </div>
+                      <div className="flex gap-1">
+                        <button 
+                          onClick={() => acceptFollowRequest(req)} 
+                          className="p-2 rounded-xl bg-green-500 text-white hover:bg-green-600"
+                          title="Kabul Et"
+                        >
+                          <Icon name="check" size={16} />
+                        </button>
+                        <button 
+                          onClick={() => rejectFollowRequest(req)} 
+                          className="p-2 rounded-xl bg-red-500 text-white hover:bg-red-600"
+                          title="Reddet"
+                        >
+                          <Icon name="x" size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pending Sent Requests */}
+            {sentFollowRequests.length > 0 && (
+              <div className="glass rounded-2xl p-4">
+                <h3 className="font-bold text-sm mb-3 text-slate-600">Gönderilen İstekler ({sentFollowRequests.length})</h3>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {sentFollowRequests.map(req => (
+                    <div key={req.uid} className="flex items-center gap-3 p-2 bg-white/50 rounded-xl">
+                      <div className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center overflow-hidden">
+                        {req.profilePhoto ? (
+                          <img src={req.profilePhoto} className="w-full h-full rounded-lg object-cover" />
+                        ) : (
+                          <span className="text-xs">👤</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">@{req.username}</div>
+                        <div className="text-xs text-amber-600">Beklemede...</div>
+                      </div>
+                      <button 
+                        onClick={() => cancelFollowRequest(req.uid)} 
+                        className="text-xs text-red-500 hover:text-red-600"
+                      >
+                        İptal
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Follow User Button */}
             <button onClick={() => setShowAddFriend(true)} className="w-full btn-primary py-4 rounded-xl font-semibold flex items-center justify-center gap-2">
-              <Icon name="userPlus" size={18} />{t('follow')}
+              <Icon name="userPlus" size={18} />Kullanıcı Bul
             </button>
 
             {/* Following List */}
@@ -7793,10 +8016,11 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                   <Icon name="users" size={28} className="text-slate-400" />
                 </div>
                 <p className="font-semibold text-slate-500">{t('notFollowingAnyone')}</p>
-                <p className="text-sm text-slate-400 mt-1">Kullanıcı ara ve takip et</p>
+                <p className="text-sm text-slate-400 mt-1">Kullanıcı ara ve takip isteği gönder</p>
               </div>
             ) : (
               <div className="space-y-2">
+                <h3 className="font-bold text-sm text-slate-600">Arkadaşlar ({friends.length})</h3>
                 {friends.map(friend => (
                   <div key={friend.id} className="glass rounded-2xl p-4 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center overflow-hidden">
@@ -7832,7 +8056,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
                 <div className="w-full max-w-sm glass rounded-3xl p-6 scale-in">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg">{t('followUser')}</h3>
+                    <h3 className="font-bold text-lg">Kullanıcı Bul</h3>
                     <button onClick={() => { setShowAddFriend(false); setFriendUsername(''); setFriendSearchResult({ searching: false, found: null, error: null }); }} className="p-2 rounded-xl hover:bg-slate-200/60">
                       <Icon name="x" size={20} />
                     </button>
@@ -7844,7 +8068,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                     <input
                       type="text"
                       value={friendUsername}
-                      onChange={e => setFriendUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                      onChange={e => setFriendUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.\-]/g, ''))}
                       placeholder="kullanici_adi"
                       className="pl-10 pr-10"
                       maxLength={20}
@@ -7887,11 +8111,11 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                   <div className="flex gap-3">
                     <button onClick={() => { setShowAddFriend(false); setFriendUsername(''); setFriendSearchResult({ searching: false, found: null, error: null }); }} className="flex-1 btn-ghost py-3 rounded-xl font-semibold">{t('cancel')}</button>
                     <button 
-                      onClick={addFriend} 
-                      disabled={!friendSearchResult.found}
+                      onClick={sendFollowRequest} 
+                      disabled={!friendSearchResult.found || sentFollowRequests.some(r => r.uid === friendSearchResult.found?.uid)}
                       className="flex-1 btn-primary py-3 rounded-xl font-semibold disabled:opacity-50"
                     >
-                      {t('follow')}
+                      {sentFollowRequests.some(r => r.uid === friendSearchResult.found?.uid) ? 'İstek Gönderildi' : 'İstek Gönder'}
                     </button>
                   </div>
                 </div>
@@ -10623,6 +10847,109 @@ const App = () => {
         },
         (error) => {
           console.error('❌ Following load error:', error);
+        }
+      );
+    
+    return () => unsubscribe();
+  }, [authUser]);
+
+  // Load incoming follow requests - REAL TIME
+  useEffect(() => {
+    if (!authUser?.uid || !db) return;
+    
+    const userId = authUser.uid;
+    console.log('📩 Loading follow requests...');
+    
+    const unsubscribe = db.collection('users').doc(userId).collection('followRequests')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(
+        (snapshot) => {
+          const requests = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            requests.push({
+              id: doc.id,
+              fromUid: data.fromUid,
+              fromUsername: data.fromUsername,
+              fromDisplayName: data.fromDisplayName,
+              fromPhoto: data.fromPhoto,
+              status: data.status,
+              createdAt: data.createdAt?.toMillis?.() || Date.now()
+            });
+          });
+          console.log('✅ Follow requests loaded:', requests.length);
+          setFollowRequests(requests);
+        },
+        (error) => {
+          console.error('❌ Follow requests load error:', error);
+        }
+      );
+    
+    return () => unsubscribe();
+  }, [authUser]);
+
+  // Load sent follow requests - REAL TIME
+  useEffect(() => {
+    if (!authUser?.uid || !db) return;
+    
+    const userId = authUser.uid;
+    
+    const unsubscribe = db.collection('users').doc(userId).collection('sentFollowRequests')
+      .onSnapshot(
+        (snapshot) => {
+          const requests = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            requests.push({
+              uid: doc.id,
+              username: data.toUsername,
+              displayName: data.toDisplayName,
+              profilePhoto: data.toPhoto,
+              status: data.status
+            });
+          });
+          console.log('✅ Sent follow requests loaded:', requests.length);
+          setSentFollowRequests(requests);
+        },
+        (error) => {
+          console.error('❌ Sent requests load error:', error);
+        }
+      );
+    
+    return () => unsubscribe();
+  }, [authUser]);
+
+  // Load notifications - REAL TIME
+  useEffect(() => {
+    if (!authUser?.uid || !db) return;
+    
+    const userId = authUser.uid;
+    console.log('🔔 Loading notifications...');
+    
+    const unsubscribe = db.collection('users').doc(userId).collection('notifications')
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+      .onSnapshot(
+        (snapshot) => {
+          const notifs = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            notifs.push({
+              id: doc.id,
+              type: data.type,
+              fromUid: data.fromUid,
+              fromUsername: data.fromUsername,
+              fromPhoto: data.fromPhoto,
+              message: data.message,
+              read: data.read,
+              createdAt: data.createdAt?.toMillis?.() || Date.now()
+            });
+          });
+          console.log('✅ Notifications loaded:', notifs.length);
+          setNotifications(notifs);
+        },
+        (error) => {
+          console.error('❌ Notifications load error:', error);
         }
       );
     
