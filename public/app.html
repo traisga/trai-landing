@@ -7424,6 +7424,51 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   // Get pending requests count
   const pendingRequestsCount = dmChats.filter(c => !c.approved && c.messages?.length > 0).length;
 
+  // Load messages when a chat is selected - REAL TIME LISTENER
+  useEffect(() => {
+    if (!selectedChat || !db || selectedChat.type === 'group') return;
+    
+    const chatId = selectedChat.id;
+    if (!chatId || typeof chatId !== 'string' || !chatId.includes('_')) return;
+    
+    console.log('📨 Starting real-time message listener for:', chatId);
+    
+    const unsubscribe = db.collection('chats').doc(chatId).collection('messages')
+      .orderBy('timestamp', 'asc')
+      .limit(100)
+      .onSnapshot(
+        (snapshot) => {
+          const messagesList = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            messagesList.push({
+              id: doc.id,
+              senderId: data.senderId,
+              senderName: data.senderName,
+              text: data.text,
+              timestamp: data.timestamp?.toMillis?.() || Date.now(),
+              read: data.read
+            });
+          });
+          
+          console.log('📨 Messages updated:', messagesList.length);
+          
+          // Update dmChats with loaded messages
+          setDmChats(prev => prev.map(c => 
+            c.id === chatId ? { ...c, messages: messagesList } : c
+          ));
+        },
+        (error) => {
+          console.error('❌ Message listener error:', error);
+        }
+      );
+    
+    return () => {
+      console.log('🔌 Message listener unsubscribed');
+      unsubscribe();
+    };
+  }, [selectedChat?.id]);
+
   const tabs = [
     { id: 'profile', icon: 'user', label: t('profile') },
     { id: 'avatar', icon: 'sparkles', label: t('myTwin') },
@@ -10697,51 +10742,6 @@ const App = () => {
       return [];
     }
   };
-
-  // Load messages when a chat is selected - REAL TIME LISTENER
-  useEffect(() => {
-    if (!selectedChat || !db || selectedChat.type === 'group') return;
-    
-    const chatId = selectedChat.id;
-    if (!chatId || typeof chatId !== 'string' || !chatId.includes('_')) return;
-    
-    console.log('📨 Starting real-time message listener for:', chatId);
-    
-    const unsubscribe = db.collection('chats').doc(chatId).collection('messages')
-      .orderBy('timestamp', 'asc')
-      .limit(100)
-      .onSnapshot(
-        (snapshot) => {
-          const messagesList = [];
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            messagesList.push({
-              id: doc.id,
-              senderId: data.senderId,
-              senderName: data.senderName,
-              text: data.text,
-              timestamp: data.timestamp?.toMillis?.() || Date.now(),
-              read: data.read
-            });
-          });
-          
-          console.log('📨 Messages updated:', messagesList.length);
-          
-          // Update dmChats with loaded messages
-          setDmChats(prev => prev.map(c => 
-            c.id === chatId ? { ...c, messages: messagesList } : c
-          ));
-        },
-        (error) => {
-          console.error('❌ Message listener error:', error);
-        }
-      );
-    
-    return () => {
-      console.log('🔌 Message listener unsubscribed');
-      unsubscribe();
-    };
-  }, [selectedChat?.id]);
 
   // Günlük öneri kontrolü - kullanıcı ve dolap yüklendikten sonra
   useEffect(() => {
