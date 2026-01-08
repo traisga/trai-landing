@@ -1578,7 +1578,9 @@ const Icons = {
   mapPin:<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>,
   truck:<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>,
   arrowLeft:<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>,
-  creditCard:<><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></>
+  creditCard:<><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></>,
+  externalLink:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
+  info:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>
 };
 
 // ============ LOGO ============
@@ -1741,9 +1743,12 @@ async function loadImageWithCORS(imageUrl, timeout = 15000) {
 }
 
 // Preload all product images
+// Preload DISABLED - Too many products (5000+) kills performance
+// Images now load on-demand with lazy loading
 async function preloadAllProductImages() {
-  const products = typeof MODO_PRODUCTS !== 'undefined' ? MODO_PRODUCTS : [];
-  debugLog('Preload', `${products.length} ürün görseli yükleniyor...`, 'info');
+  // Only preload first 25 MODO products for AI features
+  const products = typeof MODO_PRODUCTS !== 'undefined' ? MODO_PRODUCTS.slice(0, 25) : [];
+  debugLog('Preload', `${products.length} MODO görseli yükleniyor (AI için)...`, 'info');
   
   let loaded = 0;
   for (const product of products) {
@@ -1756,10 +1761,10 @@ async function preloadAllProductImages() {
   debugLog('Preload', `${loaded}/${products.length} görsel yüklendi`, 'success');
 }
 
-// Start preloading
+// Start preloading (only MODO products)
 if (typeof window !== 'undefined') {
   window.addEventListener('load', () => {
-    setTimeout(preloadAllProductImages, 1500);
+    setTimeout(preloadAllProductImages, 2000);
   });
 }
 
@@ -2827,13 +2832,9 @@ OUTPUT SPECS:
 };
 
 // ============ PRODUCT CATALOG ============
-const BRANDS = [
-  { id: 'modo', name: 'MODO', featured: true },
-  { id: 'zara', name: 'ZARA' },
-  { id: 'hm', name: 'H&M' },
-  { id: 'mango', name: 'MANGO' },
-  { id: 'massimo', name: 'MASSIMO DUTTI' },
-  { id: 'cos', name: 'COS' }
+// Static brands (will be merged with dynamic ones)
+const STATIC_BRANDS = [
+  { id: 'modo', name: 'MODO', featured: true }
 ];
 
 // MODO Demo Products - ImgBB Hosted Images (CORS-free)
@@ -3204,6 +3205,35 @@ const TRENDYOL_DATA = (typeof TRENDYOL_PRODUCTS !== 'undefined') ? TRENDYOL_PROD
 const ALL_PRODUCTS = [...MODO_PRODUCTS, ...TRENDYOL_DATA.map((p, i) => ({ ...p, id: MODO_PRODUCTS.length + i + 1 }))];
 
 console.log(`📦 Ürün Veritabanı: ${MODO_PRODUCTS.length} MODO + ${TRENDYOL_DATA.length} Trendyol = ${ALL_PRODUCTS.length} toplam`);
+
+// Generate BRANDS dynamically from ALL_PRODUCTS
+const BRANDS = (() => {
+  const brandMap = new Map();
+  
+  // Add static brands first
+  STATIC_BRANDS.forEach(b => brandMap.set(b.id, b));
+  
+  // Extract unique brands from products
+  ALL_PRODUCTS.forEach(p => {
+    const brandId = p.brandId || p.brandName?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'other';
+    const brandName = p.brandName || 'Diğer';
+    
+    if (!brandMap.has(brandId)) {
+      brandMap.set(brandId, { id: brandId, name: brandName });
+    }
+  });
+  
+  // Sort alphabetically (but keep MODO first as featured)
+  const brands = Array.from(brandMap.values());
+  brands.sort((a, b) => {
+    if (a.featured) return -1;
+    if (b.featured) return 1;
+    return a.name.localeCompare(b.name, 'tr');
+  });
+  
+  console.log(`🏷️ ${brands.length} marka bulundu`);
+  return brands;
+})();
 
 const BACKGROUNDS = [
   { id: 'studio', value: 'Clean white professional photography studio with seamless backdrop' },
@@ -4798,7 +4828,7 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
         {isInCart && <div className="absolute top-2 right-2 bg-brand2/80 p-1.5 rounded-lg"><Icon name="shop" size={10} /></div>}
       </div>
       <div className="p-3">
-        <div className="text-brand2 font-bold text-sm">{product.price} ₺</div>
+        <div className="text-brand2 font-bold text-sm">{product.priceNum > 0 ? product.price : 'Fiyat Yok'}</div>
         <div className="text-xs text-slate-600 truncate">{product.name}</div>
         {product.description && <div className="text-[10px] text-slate-400 truncate mt-0.5">{product.description}</div>}
         <div className="mt-3 space-y-2">
@@ -4831,7 +4861,7 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
                 <img src={product.image} alt="" className="w-12 h-12 rounded-lg object-cover" />
                 <div>
                   <p className="font-semibold text-sm">{product.name}</p>
-                  <p className="text-brand2 font-bold">{product.price} ₺</p>
+                  <p className="text-brand2 font-bold">{product.priceNum > 0 ? product.price : 'Fiyat Yok'}</p>
                 </div>
               </div>
               <button onClick={() => setShowSizeModal(false)} className="p-2 rounded-xl hover:bg-slate-100">
@@ -4865,6 +4895,10 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
 const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, cart, onShowCart, onShowSubscription }) => {
   const [search, setSearch] = useState('');
   const [brand, setBrand] = useState('all');
+  
+  // Pagination
+  const [visibleCount, setVisibleCount] = useState(20);
+  const LOAD_MORE_COUNT = 20;
   
   // Aşamalı filtreler
   const [genderFilter, setGenderFilter] = useState('all'); // all, male, female, kids
@@ -4927,9 +4961,12 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
       f = f.filter(p => p.gender === genderFilter || p.gender === 'unisex');
     }
     
-    // Marka filtresi
+    // Marka filtresi (check both brandId and generated brandId from brandName)
     if (brand !== 'all') {
-      f = f.filter(p => p.brandId === brand);
+      f = f.filter(p => {
+        const productBrandId = p.brandId || p.brandName?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'other';
+        return productBrandId === brand;
+      });
     }
     
     // Kategori filtresi
@@ -4954,6 +4991,14 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
     }
     
     return f;
+  }, [genderFilter, brand, categoryFilter, typeFilter, search]);
+
+  // Paginated products (only show visibleCount)
+  const visibleProducts = useMemo(() => products.slice(0, visibleCount), [products, visibleCount]);
+  
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(20);
   }, [genderFilter, brand, categoryFilter, typeFilter, search]);
 
   // Kategori listesi (erkek için elbise gösterme)
@@ -5195,11 +5240,35 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {products.map(p => (
-              <ProductCard key={p.id} product={p} onTryOn={onTryOn} onAddToCloset={onAddToCloset} onAdvice={onAdvice} isInCloset={closetIds.has(p.id)} onAddToCart={onAddToCart} isInCart={cart?.some(c => c.id === p.id)} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              {visibleProducts.map(p => (
+                <ProductCard key={p.id} product={p} onTryOn={onTryOn} onAddToCloset={onAddToCloset} onAdvice={onAdvice} isInCloset={closetIds.has(p.id)} onAddToCart={onAddToCart} isInCart={cart?.some(c => c.id === p.id)} />
+              ))}
+            </div>
+            
+            {/* Load More Button */}
+            {visibleCount < products.length && (
+              <div className="mt-6 text-center">
+                <button 
+                  onClick={() => setVisibleCount(prev => prev + LOAD_MORE_COUNT)}
+                  className="btn-primary px-8 py-3 rounded-2xl font-semibold"
+                >
+                  Daha Fazla Göster ({visibleCount}/{products.length})
+                </button>
+                <p className="text-xs text-slate-400 mt-2">
+                  {products.length - visibleCount} ürün daha var
+                </p>
+              </div>
+            )}
+            
+            {/* All loaded indicator */}
+            {visibleCount >= products.length && products.length > 20 && (
+              <p className="text-center text-xs text-slate-400 mt-6">
+                Tüm ürünler gösteriliyor ({products.length})
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -8692,226 +8761,246 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
 
 // ============ MODALS ============
 
-// Cart Modal
-const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, onCheckout, total, savedAddresses, onSaveAddress }) => {
-  const [step, setStep] = useState('cart'); // cart, delivery, payment
-  const [deliveryInfo, setDeliveryInfo] = useState({
-    fullName: '',
-    phone: '',
-    address: '',
-    city: '',
-    district: '',
-    postalCode: ''
-  });
-  const [saveAddressChecked, setSaveAddressChecked] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showTermsDoc, setShowTermsDoc] = useState(null);
+// Cart Modal - Trendyol Checkout System
+const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) => {
+  const [clickedItems, setClickedItems] = useState([]);
+  const [stockStatus, setStockStatus] = useState({}); // { productId: 'checking' | 'available' | 'unavailable' }
+  const [checkingStock, setCheckingStock] = useState(false);
   
   if (!open) return null;
   
-  const isDeliveryValid = deliveryInfo.fullName && deliveryInfo.phone && deliveryInfo.address && deliveryInfo.city;
+  // Check if all items have been clicked (added to Trendyol cart)
+  const isAllClicked = cart.length > 0 && cart.every(item => clickedItems.includes(item.id));
   
-  const handleProceed = () => {
-    if (step === 'cart') {
-      setStep('delivery');
-    } else if (step === 'delivery') {
-      if (saveAddressChecked && onSaveAddress) {
-        onSaveAddress(deliveryInfo);
-      }
-      onCheckout(deliveryInfo);
+  // Calculate total price
+  const totalPrice = cart.reduce((sum, item) => {
+    const price = item.priceNum || 0;
+    return sum + (price * (item.quantity || 1));
+  }, 0);
+  
+  // Handle product click - open Trendyol link
+  const handleProductClick = (item) => {
+    // Open Trendyol product page
+    if (item.link) {
+      window.open(item.link, '_blank');
+    }
+    
+    // Mark as clicked
+    if (!clickedItems.includes(item.id)) {
+      setClickedItems(prev => [...prev, item.id]);
     }
   };
   
-  const useAddress = (addr) => {
-    setDeliveryInfo(addr);
+  // Go to Trendyol cart
+  const handleGoToTrendyolCart = () => {
+    window.open('https://www.trendyol.com/sepet', '_blank');
   };
+  
+  // Reset clicked items when modal opens
+  useEffect(() => {
+    if (open) {
+      setClickedItems([]);
+    }
+  }, [open]);
   
   return (
     <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-end justify-center">
-      <div className="w-full max-w-lg bg-surface rounded-t-3xl max-h-[90vh] flex flex-col fade-in">
-        <div className="p-5 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {step !== 'cart' && (
-              <button onClick={() => setStep('cart')} className="p-2 -ml-2 rounded-xl hover:bg-slate-100">
-                <Icon name="arrowLeft" size={20} />
-              </button>
-            )}
-            <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center">
-              <Icon name={step === 'cart' ? 'shop' : 'truck'} size={20} className="text-brand2" />
+      <div className="w-full max-w-lg bg-surface rounded-t-3xl max-h-[90vh] flex flex-col slide-up">
+        
+        {/* Header */}
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-5 rounded-t-3xl text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
+                <Icon name="shop" size={24} />
+              </div>
+              <div>
+                <h2 className="font-bold text-lg">Kombini Tamamla</h2>
+                <p className="text-orange-100 text-sm">
+                  {cart.length} ürün • Trendyol'a yönlendirileceksin
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="font-bold">{step === 'cart' ? t('cart') : t('deliveryInfo')}</h2>
-              <p className="text-xs text-slate-400">
-                {step === 'cart' ? `${cart.length} ${t('itemsInCart')}` : t('orderSummary')}
-              </p>
-            </div>
+            <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/20 transition">
+              <Icon name="x" size={20} />
+            </button>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-200/60">
-            <Icon name="x" size={20} />
-          </button>
+          
+          {/* Progress indicator */}
+          {cart.length > 0 && (
+            <div className="mt-4">
+              <div className="flex justify-between text-xs text-orange-100 mb-2">
+                <span>Sepete eklenen ürünler</span>
+                <span>{clickedItems.length}/{cart.length}</span>
+              </div>
+              <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-white rounded-full transition-all duration-300"
+                  style={{ width: `${(clickedItems.length / cart.length) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
         
-        <div className="flex-1 overflow-y-auto">
-          {/* Step: Cart */}
-          {step === 'cart' && (
-            <div className="p-4 space-y-3">
-              {cart.length === 0 ? (
-                <div className="text-center py-12">
-                  <Icon name="shop" size={48} className="mx-auto text-slate-300 mb-4" />
-                  <p className="text-slate-500">{t('cartEmpty')}</p>
+        {/* Products List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {cart.length === 0 ? (
+            <div className="text-center py-12">
+              <Icon name="shop" size={48} className="mx-auto text-slate-300 mb-4" />
+              <p className="text-slate-500 font-medium">Sepetiniz boş</p>
+              <p className="text-slate-400 text-sm mt-1">Keşfet'ten ürün ekleyin</p>
+            </div>
+          ) : (
+            <>
+              {/* Instructions */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-3">
+                <div className="text-blue-500 mt-0.5">
+                  <Icon name="info" size={18} />
                 </div>
-              ) : (
-                cart.map(item => (
-                  <div key={item.id} className="glass rounded-xl p-3 flex gap-3">
-                    <img src={item.image} alt="" className="w-16 h-20 rounded-lg object-cover" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">{item.name}</p>
-                      <p className="text-xs text-slate-500">{item.brandName} {item.selectedSize && `• Beden: ${item.selectedSize}`}</p>
-                      <p className="text-brand2 font-bold text-sm mt-1">{item.price} ₺</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <button onClick={() => onUpdateQuantity(item.id, (item.quantity || 1) - 1)} className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
-                          <Icon name="minus" size={12} />
-                        </button>
-                        <span className="text-sm font-bold w-6 text-center">{item.quantity || 1}</span>
-                        <button onClick={() => onUpdateQuantity(item.id, (item.quantity || 1) + 1)} className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
-                          <Icon name="plus" size={12} />
-                        </button>
-                        <button onClick={() => onRemove(item.id)} className="ml-auto text-red-400 hover:text-red-500">
+                <div className="text-sm">
+                  <p className="font-semibold text-blue-700">Nasıl çalışır?</p>
+                  <p className="text-blue-600 text-xs mt-1">
+                    Her ürüne tıklayarak Trendyol'da sepetine ekle. Tüm ürünleri ekledikten sonra tek seferde öde!
+                  </p>
+                </div>
+              </div>
+              
+              {/* Product Cards */}
+              {cart.map((item, index) => {
+                const isClicked = clickedItems.includes(item.id);
+                const hasLink = !!item.link;
+                
+                return (
+                  <div 
+                    key={item.id}
+                    className={`rounded-xl border-2 p-3 transition-all ${
+                      isClicked 
+                        ? 'border-green-400 bg-green-50' 
+                        : 'border-slate-200 hover:border-orange-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex gap-3">
+                      {/* Product Image */}
+                      <div className="relative">
+                        <img 
+                          src={item.image} 
+                          alt={item.name}
+                          className="w-20 h-24 rounded-lg object-cover"
+                        />
+                        {isClicked && (
+                          <div className="absolute inset-0 bg-green-500/20 rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                              <Icon name="check" size={16} className="text-white" />
+                            </div>
+                          </div>
+                        )}
+                        {/* Step number */}
+                        <div className={`absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          isClicked ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'
+                        }`}>
+                          {index + 1}
+                        </div>
+                      </div>
+                      
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-slate-500 font-semibold">{item.brandName}</p>
+                        <p className="font-medium text-sm text-slate-800 line-clamp-2">{item.name}</p>
+                        {item.selectedSize && (
+                          <p className="text-xs text-slate-400 mt-0.5">Beden: {item.selectedSize}</p>
+                        )}
+                        <p className="text-orange-600 font-bold mt-1">
+                          {item.priceNum > 0 ? `${item.priceNum.toLocaleString('tr-TR')} TL` : 'Fiyat için tıkla'}
+                        </p>
+                      </div>
+                      
+                      {/* Action Button */}
+                      <div className="flex flex-col items-end justify-between">
+                        <button
+                          onClick={() => onRemove(item.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-500 transition"
+                        >
                           <Icon name="trash" size={16} />
                         </button>
+                        
+                        {hasLink ? (
+                          <button
+                            onClick={() => handleProductClick(item)}
+                            className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                              isClicked 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-slate-900 text-white hover:bg-slate-700'
+                            }`}
+                          >
+                            {isClicked ? (
+                              <>
+                                <Icon name="check" size={14} />
+                                Eklendi
+                              </>
+                            ) : (
+                              <>
+                                Sepete Ekle
+                                <Icon name="externalLink" size={12} />
+                              </>
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400">Link yok</span>
+                        )}
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          )}
-          
-          {/* Step: Delivery */}
-          {step === 'delivery' && (
-            <div className="p-4 space-y-4">
-              {/* Saved Addresses */}
-              {savedAddresses && savedAddresses.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold">{t('savedAddresses')}</p>
-                  {savedAddresses.map((addr, i) => (
-                    <button 
-                      key={i}
-                      onClick={() => useAddress(addr)}
-                      className="w-full text-left glass rounded-xl p-3 hover:ring-2 hover:ring-brand2 transition"
-                    >
-                      <p className="font-medium text-sm">{addr.fullName}</p>
-                      <p className="text-xs text-slate-500">{addr.address}, {addr.district}/{addr.city}</p>
-                    </button>
-                  ))}
-                  <div className="border-t border-slate-200 pt-3 mt-3">
-                    <p className="text-sm font-semibold">{t('addNewAddress')}</p>
-                  </div>
-                </div>
-              )}
-              
-              {/* Delivery Form */}
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs text-slate-500 mb-1 block">{t('fullName')} *</label>
-                  <input 
-                    type="text" 
-                    value={deliveryInfo.fullName}
-                    onChange={e => setDeliveryInfo(prev => ({ ...prev, fullName: e.target.value }))}
-                    placeholder="Ad Soyad"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-500 mb-1 block">{t('phone')} *</label>
-                  <input 
-                    type="tel" 
-                    value={deliveryInfo.phone}
-                    onChange={e => setDeliveryInfo(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="05XX XXX XX XX"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-500 mb-1 block">{t('address')} *</label>
-                  <textarea 
-                    value={deliveryInfo.address}
-                    onChange={e => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
-                    placeholder="Mahalle, Sokak, Bina No, Daire"
-                    rows={2}
-                    className="resize-none"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-slate-500 mb-1 block">{t('city')} *</label>
-                    <input 
-                      type="text" 
-                      value={deliveryInfo.city}
-                      onChange={e => setDeliveryInfo(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="İstanbul"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-500 mb-1 block">{t('district')}</label>
-                    <input 
-                      type="text" 
-                      value={deliveryInfo.district}
-                      onChange={e => setDeliveryInfo(prev => ({ ...prev, district: e.target.value }))}
-                      placeholder="Kadıköy"
-                    />
-                  </div>
-                </div>
-                
-                {/* Save Address Checkbox */}
-                <label className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={saveAddressChecked}
-                    onChange={e => setSaveAddressChecked(e.target.checked)}
-                    className="w-4 h-4 accent-brand"
-                  />
-                  <span className="text-sm">{t('saveAddress')}</span>
-                </label>
-              </div>
-              
-              {/* Legal Consents */}
-              <div className="border-t border-slate-200 pt-4 space-y-3">
-                <p className="text-sm font-semibold">{t('legalConsent')}</p>
-                <label className="flex items-start gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={termsAccepted}
-                    onChange={e => setTermsAccepted(e.target.checked)}
-                    className="w-4 h-4 accent-brand mt-0.5"
-                  />
-                  <span className="text-xs text-slate-600">
-                    <button onClick={() => setShowTermsDoc('sales')} className="text-brand2 underline">{t('distanceSalesAgreement')}</button>
-                    {' '}{t('and')}{' '}
-                    <button onClick={() => setShowTermsDoc('info')} className="text-brand2 underline">{t('preliminaryInfo')}</button>
-                    {currentLanguage === 'tr' ? "'nı okudum, kabul ediyorum." : " I have read and accept."}
-                  </span>
-                </label>
-              </div>
-            </div>
+                );
+              })}
+            </>
           )}
         </div>
         
+        {/* Footer */}
         {cart.length > 0 && (
-          <div className="p-5 border-t border-slate-200 space-y-3">
+          <div className="p-5 border-t border-slate-200 bg-slate-50 space-y-3">
+            {/* Total */}
             <div className="flex justify-between items-center">
-              <span className="text-slate-500">{t('cartTotal')}</span>
-              <span className="text-xl font-bold text-brand2">{total.toLocaleString()} ₺</span>
+              <span className="text-slate-500">Tahmini Toplam:</span>
+              <span className="text-2xl font-bold text-slate-900">
+                {totalPrice > 0 ? `${totalPrice.toLocaleString('tr-TR')} TL` : '—'}
+              </span>
             </div>
-            <button 
-              onClick={handleProceed}
-              disabled={step === 'delivery' && (!isDeliveryValid || !termsAccepted)}
-              className="w-full btn-primary py-4 rounded-xl font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+            
+            {/* Go to Trendyol Cart Button */}
+            <button
+              onClick={handleGoToTrendyolCart}
+              disabled={!isAllClicked}
+              className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
+                isAllClicked 
+                  ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/30' 
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
             >
-              <Icon name={step === 'cart' ? 'truck' : 'creditCard'} size={18} />
-              {step === 'cart' ? t('continueToPayment') : t('proceedToCheckout')}
+              {isAllClicked ? (
+                <>
+                  <Icon name="externalLink" size={20} />
+                  Trendyol Sepetine Git
+                </>
+              ) : (
+                <>
+                  <Icon name="shop" size={20} />
+                  Önce Ürünleri Sepete Ekle
+                </>
+              )}
             </button>
-            {step === 'cart' && (
-              <p className="text-[10px] text-slate-400 text-center">{t('affiliateNotice')}</p>
+            
+            {!isAllClicked && (
+              <p className="text-xs text-center text-slate-400">
+                Butonu aktifleştirmek için yukarıdaki tüm ürünlere tıklayıp Trendyol sepetine ekle
+              </p>
             )}
+            
+            {/* Disclaimer */}
+            <p className="text-[10px] text-slate-400 text-center">
+              Bu uygulama Trendyol'un resmi uygulaması değildir. Satın alma işlemi Trendyol üzerinden gerçekleşir.
+            </p>
           </div>
         )}
       </div>
@@ -11915,17 +12004,14 @@ const App = () => {
       />
       <AdviceModal open={advice.open} item={advice.item || {}} advice={advice.text} loading={advice.loading} onClose={() => setAdvice({ open: false })} />
       
-      {/* Cart Modal */}
+      {/* Cart Modal - Trendyol Checkout */}
       <CartModal 
         open={showCart} 
         cart={cart} 
         onClose={() => setShowCart(false)} 
         onRemove={removeFromCart}
         onUpdateQuantity={updateCartQuantity}
-        onCheckout={(deliveryInfo) => { setShowCart(false); setPaymentType('cart'); setShowPayment(true); }}
         total={cartTotal}
-        savedAddresses={savedAddresses}
-        onSaveAddress={(addr) => setSavedAddresses(prev => [...prev, addr])}
       />
       
       {/* Subscription Modal */}
