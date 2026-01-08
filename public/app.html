@@ -10189,16 +10189,48 @@ const BottomNav = ({ tab, setTab, hasNotifications }) => (
 // ============ MAIN APP ============
 const App = () => {
   const [products, setProducts] = useState([]); 
+// App fonksiyonunun içindeki useEffect'i bununla değiştir:
 
-    // 👇 USE EFFECT KODUN DA BURADA DURACAK 👇
-    useEffect(() => {
-        if (window.PRODUCT_DB && window.PRODUCT_DB.length > 0) {
-            console.log("✅ Veri Yüklendi:", window.PRODUCT_DB.length);
-            setProducts(window.PRODUCT_DB);
-        } else {
-            console.log("❌ Veri Bulunamadı! products.js yüklenmemiş olabilir.");
-        }
-    }, []);
+useEffect(() => {
+  if (window.PRODUCT_DB && window.PRODUCT_DB.length > 0) {
+    console.log("🚀 Veritabanı bulundu:", window.PRODUCT_DB.length, "ürün.");
+    
+    // 1. Ana listeyi doldur
+    setProducts(window.PRODUCT_DB);
+
+    // 2. EĞER KODUNDA AYRI STATE'LER VARSA ONLARI DA DOLDURMALIYIZ
+    // (Senin kodunda setBottoms, setTops gibi şeyler varsa bu satırlar hayat kurtarır)
+    
+    // Alt Giyimleri Ayıkla
+    const bottomsData = window.PRODUCT_DB.filter(p => 
+        p.mainCategory === 'Alt Giyim' || 
+        p.category.includes('Pantolon') || 
+        p.category.includes('Etek') || 
+        p.category.includes('Şort')
+    );
+    if (typeof setBottoms === 'function') setBottoms(bottomsData);
+
+    // Üst Giyimleri Ayıkla
+    const topsData = window.PRODUCT_DB.filter(p => 
+        p.mainCategory === 'Üst Giyim' || 
+        p.category.includes('T-Shirt') || 
+        p.category.includes('Gömlek') || 
+        p.category.includes('Kazak')
+    );
+    if (typeof setTops === 'function') setTops(topsData);
+
+    // Dış Giyimleri Ayıkla
+    const outerwearData = window.PRODUCT_DB.filter(p => 
+        p.mainCategory === 'Dış Giyim' || 
+        p.category.includes('Mont') || 
+        p.category.includes('Ceket')
+    );
+    if (typeof setOuterwear === 'function') setOuterwear(outerwearData);
+
+  } else {
+    console.error("❌ Veri boş veya products.js yüklenemedi!");
+  }
+}, []);
   const [toast, setToast] = useState({ open: false });
   const [authUser, setAuthUser] = useState(null);
   const [user, setUser] = useState(null);
