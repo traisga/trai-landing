@@ -236,6 +236,18 @@
 <script src="products.js"></script>
   
 <script type="text/babel">
+// 1. Eğer kodunda bu satır yoksa ekle (Varsa değiştirme):
+  const [products, setProducts] = React.useState([]); 
+
+  // 2. Veriyi Yükleyen Kod:
+  React.useEffect(() => {
+    if (window.PRODUCT_DB && window.PRODUCT_DB.length > 0) {
+      console.log("Veri Yüklendi:", window.PRODUCT_DB.length);
+      setProducts(window.PRODUCT_DB);
+    } else {
+      console.log("Veri Bulunamadı! products.js yüklenmemiş olabilir.");
+    }
+  }, []);
 const { useEffect, useMemo, useRef, useState } = React;
 
 // ============ GLOBAL ERROR HANDLER ============
