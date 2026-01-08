@@ -8764,8 +8764,15 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
 // Cart Modal - Trendyol Checkout System
 const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) => {
   const [clickedItems, setClickedItems] = useState([]);
-  const [stockStatus, setStockStatus] = useState({}); // { productId: 'checking' | 'available' | 'unavailable' }
+  const [stockStatus, setStockStatus] = useState({});
   const [checkingStock, setCheckingStock] = useState(false);
+  
+  // Reset clicked items when modal opens - MUST be before conditional return
+  useEffect(() => {
+    if (open) {
+      setClickedItems([]);
+    }
+  }, [open]);
   
   if (!open) return null;
   
@@ -8795,13 +8802,6 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
   const handleGoToTrendyolCart = () => {
     window.open('https://www.trendyol.com/sepet', '_blank');
   };
-  
-  // Reset clicked items when modal opens
-  useEffect(() => {
-    if (open) {
-      setClickedItems([]);
-    }
-  }, [open]);
   
   return (
     <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-end justify-center">
