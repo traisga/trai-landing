@@ -771,9 +771,10 @@ const TRANSLATIONS = {
     subscription: "Abonelik",
     premium: "Premium",
     premiumMember: "Premium Üye",
+    freeMember: "Ücretsiz Üye",
     freemium: "Ücretsiz",
     freeTriesLeft: "Ücretsiz Hak",
-    dailyFreeTries: "Günlük Ücretsiz",
+    weeklyFreeTries: "Haftalık Deneme",
     comboFreeTries: "Kombin Hakkı",
     monthlySubscription: "Aylık Premium",
     monthlyCredits: "Aylık Kredi",
@@ -793,7 +794,31 @@ const TRANSLATIONS = {
     creditsRemaining: "Kalan kredi",
     freeTrieUsed: "Ücretsiz hak kullanıldı",
     noFreeTries: "Ücretsiz hakkınız kalmadı",
-    // Video kaldırıldı - sadece görsel deneme
+    
+    // Video Tab
+    videoTab: "Video",
+    videoTokens: "Video Hakkı",
+    videoTryOn: "Video Deneme",
+    videoTryOnDesc: "6 saniyelik moda videosu oluştur",
+    videoPackages: "Video Paketleri",
+    videoPackage5: "5 Video Paketi",
+    videoPackage10: "10 Video Paketi",
+    videoPackageDesc5: "Kısa video denemeleri",
+    videoPackageDesc10: "%5 indirimli avantaj paketi",
+    videoCreating: "Video oluşturuluyor...",
+    videoReady: "Videonuz hazır!",
+    needMoreVideoTokens: "Video paketi satın alın.",
+    videoTokenUsed: "1 video hakkı kullanıldı",
+    videoTokensRemaining: "Kalan video hakkı",
+    purchaseFromProfile: "Profilden satın alabilirsiniz",
+    
+    // Paywall
+    paywallTitle: "Premium Özellik",
+    paywallDesc: "Bu özelliği kullanmak için paket satın alın",
+    weeklyTriesUsed: "Haftalık deneme haklarınız azalıyor!",
+    comboTriesLow: "Kombin haklarınız azalıyor!",
+    videoNeedPackage: "Video oluşturmak için paket gerekli",
+    
     whereWillYouWear: "Ortam Seç",
     selectBackground: "Kombinini nerede görmek istersin?",
     noItemsFound: "Ürün bulunamadı",
@@ -1596,6 +1621,16 @@ const Icon = ({name, size=24, className=""}) => (
 
 // ============ HELPERS ============
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Hafta numarası hesapla (haftalık reset için)
+function getWeekNumber() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now - start;
+  const oneWeek = 604800000; // 7 gün milisaniye
+  const weekNum = Math.floor(diff / oneWeek);
+  return `${now.getFullYear()}-W${weekNum}`;
+}
 
 function dataUrlToInlinePart(dataUrl, fallbackMime = "image/png") {
   if (!dataUrl || typeof dataUrl !== "string") return null;
@@ -5046,13 +5081,18 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
           <p className="text-xs font-bold bg-brand bg-clip-text text-transparent">{t('slogan')}</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Tokens/Premium Button */}
+          {/* Weekly Tries Display */}
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 border border-green-200">
+            <span className="text-green-500 text-xs">🎨</span>
+            <span className="text-[10px] font-bold text-green-700">{user?.freeShopTries || 0}</span>
+          </div>
+          {/* Credits Display */}
           <button 
             onClick={onShowSubscription}
             className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-200 hover:from-amber-200 hover:to-amber-100 transition"
           >
-            <span className="text-amber-500">🪙</span>
-            <span className="text-xs font-bold text-amber-700">{user?.tokens || 0}</span>
+            <span className="text-amber-500">💎</span>
+            <span className="text-xs font-bold text-amber-700">{user?.credits || 0}</span>
           </button>
           {/* Cart Button */}
           <button 
@@ -5627,11 +5667,10 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
     { id: 'studio', icon: 'sparkles', label: t('studioTab') || 'Stüdyo', count: 0 },
     { id: 'items', icon: 'hanger', label: t('productsTab'), count: closet.length },
     { id: 'upload', icon: 'plus', label: t('addClothing'), count: customClothesCount },
-    { id: 'video', icon: 'film', label: t('videoTab'), count: user?.videoTokens || 0 },
+    { id: 'video', icon: 'film', label: 'Video', count: user?.videoTokens || 0 },
     { id: 'weather', icon: 'sun', label: t('weatherTab'), count: 0 },
     { id: 'combos', icon: 'layers', label: t('combosTab'), count: savedCombos.length },
-    { id: 'favorites', icon: 'heart', label: t('favoritesTab'), count: favorites.length },
-    { id: 'history', icon: 'clock', label: t('historyTab'), count: tryHistory.length }
+    { id: 'favorites', icon: 'heart', label: t('favoritesTab'), count: favorites.length }
   ];
 
   if (!closet.length && tab === 'items') {
@@ -7834,7 +7873,9 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-slate-200">
                   <span className="text-slate-500 text-sm">Üyelik</span>
-                  <span className="text-sm font-medium text-brand2">Premium ✨</span>
+                  <span className={`text-sm font-medium ${user.subscription?.active || (user.credits || 0) > 0 ? 'text-brand2' : 'text-slate-600'}`}>
+                    {user.subscription?.active ? 'Premium ✨' : (user.credits || 0) > 0 ? 'Kredili Üye' : t('freeMember')}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-slate-500 text-sm">Katılım</span>
@@ -9008,9 +9049,118 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
   );
 };
 
+// Paywall Modal - Strategic paywall for premium features
+const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
+  if (!open) return null;
+  
+  const paywallContent = {
+    weeklyTries: {
+      icon: '🎨',
+      title: 'Haftalık Hakların Azalıyor!',
+      desc: 'Daha fazla deneme için paket satın al',
+      highlight: `Kalan: ${user?.freeShopTries || 0} hak`,
+      recommendedPlan: 'premium',
+      plans: ['premium', 'urgent']
+    },
+    comboTries: {
+      icon: '✨',
+      title: 'Kombin Hakların Azalıyor!',
+      desc: 'Daha fazla kombin oluşturmak için paket al',
+      highlight: `Kalan: ${user?.freeComboTries || 0} hak`,
+      recommendedPlan: 'premium',
+      plans: ['premium', 'urgent']
+    },
+    videoAccess: {
+      icon: '🎬',
+      title: 'Video Özelliği',
+      desc: 'Moda videoları oluşturmak için video paketi gerekli',
+      highlight: 'Video hakkınız yok',
+      recommendedPlan: 'video5',
+      plans: ['video5', 'video10']
+    },
+    clothingUpload: {
+      icon: '👕',
+      title: 'Kendi Kıyafetlerini Ekle',
+      desc: 'Dolabındaki kıyafetleri yükleyip sanal deneme yap',
+      highlight: 'Ücretsiz: 10 kıyafet',
+      recommendedPlan: 'clothingUpload',
+      plans: ['clothingUpload']
+    }
+  };
+  
+  const content = paywallContent[type] || paywallContent.weeklyTries;
+  
+  const planDetails = {
+    premium: { name: 'Premium Üyelik', price: 119, amount: '80 hak', icon: '💎' },
+    urgent: { name: 'Acil Paket', price: 29, amount: '10 hak', icon: '⚡' },
+    video5: { name: '5 Video', price: 89, amount: '5 video', icon: '🎬' },
+    video10: { name: '10 Video', price: 169, amount: '10 video', icon: '🎬' },
+    clothingUpload: { name: 'Kıyafet Yükleme', price: 99, amount: '100 kıyafet', icon: '👕' }
+  };
+  
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden scale-in">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-brand to-purple-600 p-6 text-white text-center">
+          <div className="text-5xl mb-3">{content.icon}</div>
+          <h2 className="text-xl font-bold">{content.title}</h2>
+          <p className="text-white/80 text-sm mt-1">{content.desc}</p>
+          <div className="mt-3 inline-block bg-white/20 px-4 py-1.5 rounded-full text-sm font-semibold">
+            {content.highlight}
+          </div>
+        </div>
+        
+        {/* Plans */}
+        <div className="p-4 space-y-3">
+          {content.plans.map(planId => {
+            const plan = planDetails[planId];
+            const isRecommended = planId === content.recommendedPlan;
+            return (
+              <button
+                key={planId}
+                onClick={() => onPurchase(planId)}
+                className={`w-full p-4 rounded-2xl border-2 flex items-center gap-4 transition-all ${
+                  isRecommended 
+                    ? 'border-brand bg-brand/5 ring-2 ring-brand/20' 
+                    : 'border-slate-200 hover:border-brand/50'
+                }`}
+              >
+                <div className="text-3xl">{plan.icon}</div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold">{plan.name}</span>
+                    {isRecommended && (
+                      <span className="text-[10px] bg-brand text-white px-2 py-0.5 rounded-full">ÖNERİLEN</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500">{plan.amount}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-brand">{plan.price}₺</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        
+        {/* Close */}
+        <div className="p-4 pt-0">
+          <button
+            onClick={onClose}
+            className="w-full py-3 text-slate-500 font-medium"
+          >
+            Şimdi Değil
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Subscription Modal
 const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loading }) => {
-  const [selectedPlan, setSelectedPlan] = useState('credits40');
+  const [selectedPlan, setSelectedPlan] = useState('premium');
   const [paymentMethod, setPaymentMethod] = useState('card');
   
   if (!open) return null;
@@ -9018,47 +9168,38 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
   const plans = [
     {
       id: 'premium',
-      name: 'Premium Abonelik',
-      price: 399,
-      type: 'subscription',
+      name: 'Premium Üyelik',
+      price: 119,
+      type: 'credits',
+      amount: 80,
+      desc: 'En popüler paket',
       features: [
-        { icon: '🎨', text: '100 Kredi / Ay' },
-        { icon: '🚫', text: t('adFreeExperience') },
-        { icon: '💎', text: 'Öncelikli Destek' }
+        { icon: '🎨', text: '80 Kombin ve Dene Hakkı' },
+        { icon: '✨', text: 'Hem Keşfet hem Stüdyo' },
+        { icon: '💎', text: 'Sınırsız Geçerlilik' }
       ],
       popular: true,
       badge: 'EN AVANTAJLI'
     },
     {
-      id: 'credits40',
-      name: '40 Kredi Paketi',
-      price: 199,
+      id: 'urgent',
+      name: 'Acil Paket',
+      price: 29,
       type: 'credits',
-      amount: 40,
-      desc: 'Hem keşfet hem stüdyoda kullan',
-      features: [
-        { icon: '🎨', text: '40 Deneme Hakkı' },
-        { icon: '✨', text: 'Sınırsız Geçerlilik' }
-      ]
-    },
-    {
-      id: 'credits5',
-      name: '5 Kredi Paketi',
-      price: 50,
-      type: 'credits',
-      amount: 5,
+      amount: 10,
       desc: 'Hızlı deneme için',
       features: [
-        { icon: '⚡', text: '5 Deneme Hakkı' }
+        { icon: '⚡', text: '10 Kombin ve Dene Hakkı' },
+        { icon: '🚀', text: 'Anında kullanım' }
       ]
     },
     {
       id: 'video5',
-      name: '5 Video Paketi',
-      price: 300,
+      name: 'Video Paketi',
+      price: 89,
       type: 'videoTokens',
       amount: 5,
-      desc: 'Kısa süreli video denemeleri',
+      desc: '5 video oluşturma hakkı',
       features: [
         { icon: '🎬', text: '5 Video Deneme' },
         { icon: '⏱️', text: '6 saniyelik moda videosu' }
@@ -9066,20 +9207,20 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
     },
     {
       id: 'video10',
-      name: '10 Video Paketi',
-      price: 570,
+      name: 'Video Paketi+',
+      price: 169,
       type: 'videoTokens',
       amount: 10,
-      desc: '%5 indirimli avantajlı paket',
+      desc: '10 video oluşturma hakkı',
       features: [
         { icon: '🎬', text: '10 Video Deneme' },
-        { icon: '💰', text: '%5 indirim' }
+        { icon: '💰', text: 'Birim fiyat avantajı' }
       ],
-      badge: 'AVANTAJLI'
+      badge: 'TASARRUF'
     },
     {
       id: 'clothingUpload',
-      name: '100 Kıyafet Paketi',
+      name: 'Kıyafet Yükleme',
       price: 99,
       type: 'clothingUpload',
       amount: 100,
@@ -9359,19 +9500,24 @@ const PaymentModal = ({ open, onClose, onComplete, amount, type, tokenAmount, lo
   );
 };
 
-const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed, onShareToDM }) => {
+const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed, onShareToDM, onAddToCart, onSaveCombo }) => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [saved, setSaved] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
   const imageRef = React.useRef(null);
   
-  // Reset zoom when modal opens
+  // Reset state when modal opens
   React.useEffect(() => {
     if (open) {
       setZoom(1);
       setPosition({ x: 0, y: 0 });
+      setSaved(false);
+      setAddedToCart(false);
+      setShowShareOptions(false);
     }
   }, [open]);
   
@@ -9510,34 +9656,78 @@ const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed
         </div>
       )}
       
-      {/* Share buttons - with DM option */}
-      <div className="flex-shrink-0 p-3 border-t border-white/10 safe-bottom bg-slate-900">
+      {/* Action buttons - Sepete Ekle, Kaydet, Paylaş */}
+      <div className="flex-shrink-0 p-3 border-t border-white/10 safe-bottom bg-slate-900 space-y-2">
+        {/* Primary Actions */}
+        <div className="flex gap-2">
+          {/* Add to Cart - Tüm ürünleri sepete ekle */}
+          {items && items.length > 0 && (
+            <button 
+              onClick={() => {
+                if (onAddToCart && !addedToCart) {
+                  items.forEach(itm => onAddToCart(itm));
+                  setAddedToCart(true);
+                }
+              }}
+              disabled={addedToCart}
+              className={`flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition ${
+                addedToCart 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-orange-500 hover:bg-orange-600 text-white'
+              }`}
+            >
+              <Icon name={addedToCart ? 'check' : 'shop'} size={16} />
+              {addedToCart ? 'Sepete Eklendi' : `Sepete Ekle (${items.length})`}
+            </button>
+          )}
+          
+          {/* Save Combo */}
+          <button 
+            onClick={() => {
+              if (onSaveCombo && !saved) {
+                onSaveCombo({ image, items: items || (item ? [item] : []) });
+                setSaved(true);
+              }
+            }}
+            disabled={saved}
+            className={`flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition ${
+              saved 
+                ? 'bg-green-500 text-white' 
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+          >
+            <Icon name={saved ? 'check' : 'heart'} size={16} />
+            {saved ? 'Kaydedildi' : 'Kombini Kaydet'}
+          </button>
+        </div>
+        
+        {/* Share Options */}
         {showShareOptions ? (
           <div className="space-y-2">
             <div className="flex gap-2">
               <button 
                 onClick={() => { onShareToFeed(); setShowShareOptions(false); }}
-                className="flex-1 btn-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"
+                className="flex-1 btn-primary py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"
               >
-                <Icon name="users" size={16} />Akışta Paylaş
+                <Icon name="users" size={14} />Akışta Paylaş
               </button>
               <button 
                 onClick={() => { onShareToDM && onShareToDM(); setShowShareOptions(false); }}
-                className="flex-1 bg-brand py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm text-white"
+                className="flex-1 bg-brand py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm text-white"
               >
-                <Icon name="mail" size={16} />{t('sendDM')}
+                <Icon name="mail" size={14} />DM Gönder
               </button>
             </div>
             <div className="flex gap-2">
               <button 
                 onClick={() => { onShare(); setShowShareOptions(false); }}
-                className="flex-1 bg-white/10 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm text-white"
+                className="flex-1 bg-white/10 py-2 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm text-white"
               >
                 <Icon name="share" size={14} />Dışa Aktar
               </button>
               <button 
                 onClick={() => setShowShareOptions(false)}
-                className="px-6 py-2.5 rounded-xl text-white/50 bg-white/5"
+                className="px-6 py-2 rounded-xl text-white/50 bg-white/5"
               >
                 İptal
               </button>
@@ -9546,7 +9736,7 @@ const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed
         ) : (
           <button 
             onClick={() => setShowShareOptions(true)} 
-            className="w-full btn-primary py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
+            className="w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white"
           >
             <Icon name="share" size={16} />Paylaş
           </button>
@@ -10354,6 +10544,10 @@ const App = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [tokenAmount, setTokenAmount] = useState(0);
   const [tokenPrice, setTokenPrice] = useState(0);
+  
+  // Paywall state
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallType, setPaywallType] = useState(null); // 'weeklyTries', 'comboTries', 'videoAccess', 'clothingUpload'
 
   // Check cooldown before AI request
   // Cart functions
@@ -10396,6 +10590,14 @@ const App = () => {
           .catch(e => console.error('❌ freeShopTries save error:', e.code, e.message));
       }
       setToast({ open: true, type: 'success', title: '🎁 Ücretsiz hak kullanıldı', message: `Kalan: ${newFreeShop}` });
+      
+      // Paywall: Haftalık hakların %30'una düştüğünde göster
+      if (newFreeShop <= 3 && newFreeShop > 0) {
+        setTimeout(() => {
+          setPaywallType('weeklyTries');
+          setShowPaywall(true);
+        }, 1500);
+      }
       return true;
     }
     
@@ -10407,6 +10609,14 @@ const App = () => {
           .catch(e => console.error('❌ freeComboTries save error:', e.code, e.message));
       }
       setToast({ open: true, type: 'success', title: '🎨 Kombin hakkı kullanıldı', message: `Kalan: ${newFreeCombo}` });
+      
+      // Paywall: Kombin haklarının %33'üne düştüğünde göster
+      if (newFreeCombo === 1) {
+        setTimeout(() => {
+          setPaywallType('comboTries');
+          setShowPaywall(true);
+        }, 1500);
+      }
       return true;
     }
     
@@ -10429,11 +10639,13 @@ const App = () => {
         return true;
       }
       
-      setToast({ open: true, type: 'error', title: t('insufficientCredits'), message: t('needMoreCredits') });
-      setShowSubscription(true);
+      // Hiç hak yok - Paywall göster
+      setPaywallType(source === 'shop' ? 'weeklyTries' : 'comboTries');
+      setShowPaywall(true);
       return false;
     }
     
+    // Satın alınmış kredi kullan
     const newCredits = currentCredits - 1;
     setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
@@ -10441,6 +10653,17 @@ const App = () => {
         .catch(e => console.error('❌ credits save error:', e.code, e.message));
     }
     setToast({ open: true, type: 'info', title: t('creditUsed'), message: `${t('creditsRemaining')}: ${newCredits}` });
+    return true;
+  };
+  
+  // Video kredi kontrolü - Paywall ile
+  const checkVideoAccess = () => {
+    const videoTokens = user?.videoTokens || 0;
+    if (videoTokens <= 0) {
+      setPaywallType('videoAccess');
+      setShowPaywall(true);
+      return false;
+    }
     return true;
   };
   
@@ -10736,9 +10959,10 @@ const App = () => {
       email: authUser.email || null,
       credits: 0,
       videoTokens: 0,
-      freeShopTries: 5,
-      freeComboTries: 3,
-      lastFreeReset: new Date().toDateString(),
+      freeShopTries: 10,  // Haftalık 10 deneme hakkı
+      freeComboTries: 3,   // Tek seferlik 3 kombin hakkı
+      lastFreeReset: getWeekNumber(), // Haftalık reset
+      subscription: null,  // Yeni kullanıcılar ücretsiz üye
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     } : null;
     
@@ -10817,16 +11041,17 @@ const App = () => {
           }
           
           // Günlük ücretsiz hakları kontrol et
-          const today = new Date().toDateString();
-          let freeShopTries = data.freeShopTries ?? 5;
+          // Haftalık reset kontrolü
+          const currentWeek = getWeekNumber();
+          let freeShopTries = data.freeShopTries ?? 10;
           const freeComboTries = data.freeComboTries ?? 3;
           
-          if (data.lastFreeReset !== today) {
-            freeShopTries = 5;
+          if (data.lastFreeReset !== currentWeek) {
+            freeShopTries = 10;  // Haftalık 10 hak
             // Firestore'a kaydet (async, bekleme)
             db.collection('users').doc(userId).update({ 
-              freeShopTries: 5, 
-              lastFreeReset: today 
+              freeShopTries: 10, 
+              lastFreeReset: currentWeek 
             }).catch(e => console.warn('Free tries reset error:', e));
           }
           
@@ -10841,7 +11066,7 @@ const App = () => {
               videoTokens: data.videoTokens ?? 0,
               freeShopTries: freeShopTries,
               freeComboTries: freeComboTries,
-              lastFreeReset: today,
+              lastFreeReset: currentWeek,
               subscription: data.subscription || null,
               clothingUploadPurchased: data.clothingUploadPurchased || false,
               // Avatar parametreleri
@@ -11973,6 +12198,18 @@ const App = () => {
         items={result.items}
         onClose={() => setResult({ open: false })} 
         onShare={async () => { await shareImage(result.image); }}
+        onAddToCart={addToCart}
+        onSaveCombo={(combo) => {
+          const newCombo = {
+            id: Date.now(),
+            name: `Kombin ${savedCombos.length + 1}`,
+            image: combo.image,
+            items: combo.items,
+            createdAt: Date.now()
+          };
+          setSavedCombos(prev => [newCombo, ...prev]);
+          setToast({ open: true, type: 'success', title: 'Kaydedildi!', message: 'Kombin favorilere eklendi' });
+        }}
         onShareToFeed={() => {
           // Sosyal akışa paylaş
           const newPost = {
@@ -12012,6 +12249,19 @@ const App = () => {
         onRemove={removeFromCart}
         onUpdateQuantity={updateCartQuantity}
         total={cartTotal}
+      />
+      
+      {/* Paywall Modal */}
+      <PaywallModal 
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        type={paywallType}
+        user={user}
+        onPurchase={(planId) => {
+          setShowPaywall(false);
+          // Plan seçimine göre SubscriptionModal'a yönlendir
+          setShowSubscription(true);
+        }}
       />
       
       {/* Subscription Modal */}
