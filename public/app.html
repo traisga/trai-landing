@@ -234,11 +234,8 @@
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-storage-compat.js"></script>
 
 <script src="products.js"></script>
-  
-<script type="text/babel">
-// 1. Eğer kodunda bu satır yoksa ekle (Varsa değiştirme):
-  const [products, setProducts] = React.useState([]); 
 
+<script type="text/babel">
 const { useEffect, useMemo, useRef, useState } = React;
 
 // ============ GLOBAL ERROR HANDLER ============
@@ -10191,15 +10188,17 @@ const BottomNav = ({ tab, setTab, hasNotifications }) => (
 
 // ============ MAIN APP ============
 const App = () => {
-    // 2. Veriyi Yükleyen Kod:
-  React.useEffect(() => {
-    if (window.PRODUCT_DB && window.PRODUCT_DB.length > 0) {
-      console.log("Veri Yüklendi:", window.PRODUCT_DB.length);
-      setProducts(window.PRODUCT_DB);
-    } else {
-      console.log("Veri Bulunamadı! products.js yüklenmemiş olabilir.");
-    }
-  }, []);
+  const [products, setProducts] = useState([]); 
+
+    // 👇 USE EFFECT KODUN DA BURADA DURACAK 👇
+    useEffect(() => {
+        if (window.PRODUCT_DB && window.PRODUCT_DB.length > 0) {
+            console.log("✅ Veri Yüklendi:", window.PRODUCT_DB.length);
+            setProducts(window.PRODUCT_DB);
+        } else {
+            console.log("❌ Veri Bulunamadı! products.js yüklenmemiş olabilir.");
+        }
+    }, []);
   const [toast, setToast] = useState({ open: false });
   const [authUser, setAuthUser] = useState(null);
   const [user, setUser] = useState(null);
@@ -12125,7 +12124,6 @@ const App = () => {
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-
 </script>
 </body>
 </html>
