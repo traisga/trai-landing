@@ -234,7 +234,7 @@
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-storage-compat.js"></script>
 
 <!-- Trendyol Products Database -->
-<script src="trendyol-data.js"></script>
+<script src="trendyol_products.js"></script>
 
 <script type="text/babel">
 const { useEffect, useMemo, useRef, useState } = React;
@@ -2052,23 +2052,48 @@ async function uploadAndShareImage(dataUrl, authUser, storage) {
     
     console.log('✅ Image uploaded for sharing:', imageUrl);
     
-    // Try to share with the URL
+    // Create share text with trai.style link
+    const shareText = `TrAi Style ile oluşturduğum kombine bak! ✨\n\n🔗 Görsel: ${imageUrl}\n\n📱 Sen de dene: https://trai.style`;
+    
+    // Try to share with native share API
     if (navigator.share) {
+      try {
+        // First try with file
+        const imgResponse = await fetch(dataUrl);
+        const imgBlob = await imgResponse.blob();
+        const file = new File([imgBlob], `trai-kombin-${timestamp}.jpg`, { type: 'image/jpeg' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: "TrAi Style Kombin",
+            text: "TrAi Style ile oluşturduğum kombine bak! ✨ Sen de dene → trai.style",
+            files: [file]
+          });
+          return true;
+        }
+      } catch(e) {
+        // File share failed, try URL only
+      }
+      
+      // Fallback: share URL only
       await navigator.share({
         title: "TrAi Style Kombin",
         text: "TrAi Style ile oluşturduğum kombine bak! ✨",
-        url: imageUrl
+        url: `https://trai.style?combo=${timestamp}`
       });
       return true;
     }
     
-    // Fallback: Copy URL to clipboard
+    // Fallback: Copy share text to clipboard
     if (navigator.clipboard) {
-      await navigator.clipboard.writeText(imageUrl);
+      await navigator.clipboard.writeText(shareText);
       return { copied: true, url: imageUrl };
     }
     
-    return openImageInNewTabSafe(dataUrl);
+    // Last resort: open in new tab
+    window.open(imageUrl, '_blank');
+    return { opened: true, url: imageUrl };
+    
   } catch (err) {
     console.error('Upload and share error:', err);
     return shareImage(dataUrl);
@@ -6307,7 +6332,6 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                     {onAddToCart && (combo.items || []).length > 0 && (
                       <button 
                         onClick={() => {
-                          // Use addMultipleToCart if available (asks size for each item)
                           if (window.addMultipleToCart) {
                             window.addMultipleToCart(combo.items || []);
                           } else {
@@ -6316,8 +6340,51 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                         }}
                         className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
                       >
-                        <Icon name="shop" size={14} />Sepete Ekle
+                        <Icon name="shop" size={14} />Sepet
                       </button>
+                    )}
+                  </div>
+                  {/* Share buttons */}
+                  <div className="flex gap-2 mt-2">
+                    {combo.image && (
+                      <>
+                        <button 
+                          onClick={() => {
+                            if (onShareToFeed) {
+                              onShareToFeed({ image: combo.image, items: combo.items });
+                            }
+                          }}
+                          className="flex-1 glass py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-slate-200/60"
+                        >
+                          <Icon name="globe" size={12} />Akışta Paylaş
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            // External share with Firebase upload
+                            if (combo.image && window.uploadAndShareImage) {
+                              const result = await window.uploadAndShareImage(combo.image, authUser, window.storage);
+                              if (result?.copied) {
+                                setToast({ open: true, type: 'success', title: 'Link Kopyalandı!', message: 'Paylaşım linki panoya kopyalandı' });
+                              }
+                            } else {
+                              await shareImage(combo.image);
+                            }
+                          }}
+                          className="flex-1 glass py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-slate-200/60"
+                        >
+                          <Icon name="share" size={12} />Harici
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (window.openDMShareModal) {
+                              window.openDMShareModal(combo.image, combo.items);
+                            }
+                          }}
+                          className="flex-1 glass py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-slate-200/60"
+                        >
+                          <Icon name="mail" size={12} />DM
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -7581,8 +7648,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const tabs = [
     { id: 'profile', icon: 'user', label: t('profile') },
     { id: 'avatar', icon: 'sparkles', label: t('myTwin') },
-    { id: 'followers', icon: 'users', label: t('following') },
-    { id: 'messages', icon: 'mail', label: t('messages') },
     { id: 'settings', icon: 'settings', label: t('settings') }
   ];
 
@@ -9351,50 +9416,45 @@ const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
   if (!open) return null;
   
   // Check remaining tries
-  const remainingTries = (user?.freeShopTries || 0) + (user?.freeComboTries || 0) + (user?.credits || 0);
+  const remainingTries = (user?.freeShopTries || 0) + (user?.credits || 0);
   
   const paywallContent = {
     weeklyTries: {
-      icon: '🎨',
       title: 'Deneme Hakların Azalıyor!',
-      desc: 'Daha fazla deneme hakkı için paket al',
-      highlight: `Kalan: ${remainingTries} hak`,
+      desc: 'Kıyafetleri üzerinde denemek için hak gerekli',
+      highlight: `Kalan: ${remainingTries} deneme hakkı`,
       gradient: 'from-brand to-purple-600',
       recommendedPlan: 'bronze',
       plans: ['starter', 'bronze', 'silver']
     },
     comboTries: {
-      icon: '✨',
       title: 'Kombin Hakların Azalıyor!',
-      desc: 'Daha fazla kombin denemesi için paket al',
-      highlight: `Kalan: ${remainingTries} hak`,
+      desc: 'Kombin oluşturup denemek için hak gerekli',
+      highlight: `Kalan: ${remainingTries} deneme hakkı`,
       gradient: 'from-purple-500 to-pink-500',
       recommendedPlan: 'silver',
       plans: ['bronze', 'silver', 'gold']
     },
     noCredits: {
-      icon: '💎',
       title: 'Deneme Hakkın Bitti!',
-      desc: 'Devam etmek için paket satın al',
-      highlight: 'Kalan: 0 hak',
+      desc: 'Kıyafetleri sanal olarak denemek için paket al',
+      highlight: 'Kalan: 0 deneme hakkı',
       gradient: 'from-amber-500 to-orange-500',
       recommendedPlan: 'starter',
       plans: ['starter', 'bronze', 'silver']
     },
     videoAccess: {
-      icon: '🎬',
       title: 'Video Paketi Gerekli',
-      desc: 'Moda videoları oluşturmak için video paketi al',
-      highlight: `Video: ${user?.videoTokens || 0} hak`,
+      desc: 'Kombinlerinle kısa moda videoları oluştur',
+      highlight: `Video hakkı: ${user?.videoTokens || 0}`,
       gradient: 'from-blue-500 to-cyan-500',
       recommendedPlan: 'video5',
       plans: ['video5', 'video10']
     },
     clothingUpload: {
-      icon: '👕',
-      title: 'Kıyafet Yükleme Limiti',
-      desc: 'Daha fazla kıyafet yüklemek için paket al',
-      highlight: `Limit: ${user?.clothingUploadLimit || 5} kıyafet`,
+      title: 'Kıyafet Yükleme Limiti Doldu',
+      desc: 'Kendi kıyafetlerini fotoğraflayıp yükle, AI ile üzerinde dene',
+      highlight: `Yüklenen: ${user?.clothingUploadCount || 0}/${user?.clothingUploadLimit || 5}`,
       gradient: 'from-green-500 to-teal-500',
       recommendedPlan: 'bronze',
       plans: ['starter', 'bronze', 'silver']
@@ -9404,20 +9464,49 @@ const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
   const content = paywallContent[type] || paywallContent.weeklyTries;
   
   const planDetails = {
-    starter: { name: 'Başlangıç', price: 29, amount: '10 deneme + 10 kıyafet', icon: '⚡', desc: 'Hızlı başla' },
-    bronze: { name: 'Bronze', price: 69, amount: '30 deneme + 30 kıyafet', icon: '🥉', desc: 'Aylık' },
-    silver: { name: 'Silver', price: 119, amount: '70 deneme + 70 kıyafet', icon: '🥈', desc: 'Popüler' },
-    gold: { name: 'Gold', price: 169, amount: '150 deneme + 150 kıyafet', icon: '🥇', desc: 'Watermark yok' },
-    video5: { name: '5 Video', price: 149, amount: '5 video hakkı', icon: '🎬', desc: 'Video paketi' },
-    video10: { name: '10 Video', price: 249, amount: '10 video hakkı', icon: '🎬', desc: 'Avantajlı' }
+    starter: { 
+      name: 'Başlangıç', 
+      price: 29, 
+      features: ['10 sanal deneme hakkı', '10 kıyafet yükleme hakkı', 'Tek seferlik'],
+      desc: 'Tek seferlik paket' 
+    },
+    bronze: { 
+      name: 'Bronze', 
+      price: 69, 
+      features: ['30 sanal deneme hakkı', '30 kıyafet yükleme hakkı', 'Aylık yenilenir'],
+      desc: 'Aylık abonelik' 
+    },
+    silver: { 
+      name: 'Silver', 
+      price: 119, 
+      features: ['70 sanal deneme hakkı', '70 kıyafet yükleme hakkı', 'Full HD çıktı', 'Aylık yenilenir'],
+      desc: 'En popüler' 
+    },
+    gold: { 
+      name: 'Gold', 
+      price: 169, 
+      features: ['150 sanal deneme hakkı', '150 kıyafet yükleme hakkı', '4K çıktı', 'Watermark YOK', 'Aylık yenilenir'],
+      desc: 'Tam deneyim' 
+    },
+    video5: { 
+      name: '5 Video Paketi', 
+      price: 149, 
+      features: ['5 video oluşturma hakkı', '6 saniyelik moda videoları'],
+      desc: 'Video paketi' 
+    },
+    video10: { 
+      name: '10 Video Paketi', 
+      price: 249, 
+      features: ['10 video oluşturma hakkı', '6 saniyelik moda videoları', '%17 tasarruf'],
+      desc: 'Avantajlı paket' 
+    }
   };
   
   return (
     <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden scale-in">
-        {/* Header with dynamic gradient */}
-        <div className={`bg-gradient-to-br ${content.gradient} p-6 text-white text-center`}>
-          <div className="text-5xl mb-3">{content.icon}</div>
+        {/* Header */}
+        <div className={`bg-gradient-to-br ${content.gradient} p-5 text-white text-center`}>
           <h2 className="text-xl font-bold">{content.title}</h2>
           <p className="text-white/80 text-sm mt-1">{content.desc}</p>
           <div className="mt-3 inline-block bg-white/20 px-4 py-1.5 rounded-full text-sm font-semibold">
@@ -9426,7 +9515,7 @@ const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
         </div>
         
         {/* Plans */}
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-2 max-h-[50vh] overflow-y-auto">
           {content.plans.map(planId => {
             const plan = planDetails[planId];
             const isRecommended = planId === content.recommendedPlan;
@@ -9434,24 +9523,25 @@ const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
               <button
                 key={planId}
                 onClick={() => onPurchase(planId)}
-                className={`w-full p-3 rounded-2xl border-2 flex items-center gap-3 transition-all ${
+                className={`w-full p-3 rounded-2xl border-2 text-left transition-all ${
                   isRecommended 
                     ? 'border-brand bg-brand/5 ring-2 ring-brand/20' 
                     : 'border-slate-200 hover:border-brand/50'
                 }`}
               >
-                <div className="text-2xl">{plan.icon}</div>
-                <div className="flex-1 text-left">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm">{plan.name}</span>
+                    <span className="font-bold">{plan.name}</span>
                     {isRecommended && (
                       <span className="text-[9px] bg-brand text-white px-1.5 py-0.5 rounded-full">ÖNERİLEN</span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">{plan.amount}</p>
-                </div>
-                <div className="text-right">
                   <span className="text-lg font-bold text-brand">{plan.price}₺</span>
+                </div>
+                <div className="space-y-0.5">
+                  {plan.features.map((f, i) => (
+                    <p key={i} className="text-[11px] text-slate-500">• {f}</p>
+                  ))}
                 </div>
               </button>
             );
@@ -9463,7 +9553,6 @@ const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
           <button
             onClick={() => {
               onClose();
-              // Trigger full subscription modal
               if (window.showSubscriptionModal) window.showSubscriptionModal();
             }}
             className="w-full py-2 text-brand text-sm font-medium"
@@ -9625,12 +9714,12 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
         <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-brand/10 to-purple-500/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-brand2 flex items-center justify-center">
-                <span className="text-2xl">✨</span>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-brand2 flex items-center justify-center text-white text-xl font-bold">
+                TrAi
               </div>
               <div>
-                <h2 className="font-bold text-lg">Premium'a Geç</h2>
-                <p className="text-xs text-slate-500">Sınırsız stil, sınırsız deneyim</p>
+                <h2 className="font-bold text-lg">Paket Satın Al</h2>
+                <p className="text-xs text-slate-500">Sanal deneme ve kıyafet yükleme hakları</p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-200/60">
@@ -9641,17 +9730,14 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
           {/* Current Status */}
           <div className="flex gap-3 mt-3 text-xs">
             <div className="flex items-center gap-1 bg-white/60 px-2 py-1 rounded-lg">
-              <span>🎨</span>
               <span className="font-bold">{(user?.freeShopTries || 0) + (user?.credits || 0)}</span>
               <span className="text-slate-500">deneme</span>
             </div>
             <div className="flex items-center gap-1 bg-white/60 px-2 py-1 rounded-lg">
-              <span>👕</span>
               <span className="font-bold">{user?.clothingUploadCount || 0}/{user?.clothingUploadLimit || 5}</span>
               <span className="text-slate-500">kıyafet</span>
             </div>
             <div className="flex items-center gap-1 bg-white/60 px-2 py-1 rounded-lg">
-              <span>🎬</span>
               <span className="font-bold">{user?.videoTokens || 0}</span>
               <span className="text-slate-500">video</span>
             </div>
@@ -9666,7 +9752,7 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
               activeTab === 'subscription' ? 'bg-brand text-white' : 'text-slate-500 hover:bg-slate-100'
             }`}
           >
-            🎨 Deneme Paketleri
+            Deneme Paketleri
           </button>
           <button
             onClick={() => { setActiveTab('video'); setSelectedPlan('video5'); }}
@@ -9674,7 +9760,7 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
               activeTab === 'video' ? 'bg-brand text-white' : 'text-slate-500 hover:bg-slate-100'
             }`}
           >
-            🎬 Video Paketleri
+            Video Paketleri
           </button>
         </div>
         
@@ -10310,7 +10396,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   const tabs = [
     { id: 'feed', icon: 'globe', label: t('social') },
     { id: 'friends', icon: 'users', label: t('following') },
-    { id: 'messages', icon: 'mail', label: t('messagesLabel') },
+    { id: 'messages', icon: 'mail', label: 'DM' },
     { id: 'create', icon: 'plusCircle', label: t('share') }
   ];
   
@@ -10934,7 +11020,27 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 dmChats.map(chat => (
                   <button
                     key={chat.id}
-                    onClick={() => setSelectedChat(chat)}
+                    onClick={async () => {
+                      // Load messages from Firebase when selecting chat
+                      setSelectedChat({ ...chat, messages: [], loading: true });
+                      if (db && chat.id) {
+                        try {
+                          const messagesSnap = await db.collection('chats').doc(chat.id)
+                            .collection('messages')
+                            .orderBy('createdAt', 'asc')
+                            .limit(100)
+                            .get();
+                          const messages = messagesSnap.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                          }));
+                          setSelectedChat(prev => prev?.id === chat.id ? { ...prev, messages, loading: false } : prev);
+                        } catch(err) {
+                          console.error('Messages load error:', err);
+                          setSelectedChat(prev => prev?.id === chat.id ? { ...prev, loading: false } : prev);
+                        }
+                      }
+                    }}
                     className="w-full flex items-center gap-3 p-3 glass rounded-xl text-left hover:bg-slate-100"
                   >
                     <img 
@@ -10969,21 +11075,31 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               
               {/* Messages */}
               <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-3">
-                {(selectedChat.messages || []).map(msg => {
-                  const isMine = msg.senderId === authUser?.uid;
-                  return (
-                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl ${
-                        isMine ? 'bg-brand text-white rounded-br-md' : 'glass rounded-bl-md'
-                      }`}>
-                        <p className="text-sm">{msg.text}</p>
-                        {msg.image && (
-                          <img src={msg.image} className="mt-2 rounded-lg max-w-full" />
-                        )}
+                {selectedChat.loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+                  </div>
+                ) : (selectedChat.messages || []).length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-sm">
+                    Henüz mesaj yok. İlk mesajı sen gönder!
+                  </div>
+                ) : (
+                  (selectedChat.messages || []).map(msg => {
+                    const isMine = msg.senderId === authUser?.uid;
+                    return (
+                      <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl ${
+                          isMine ? 'bg-brand text-white rounded-br-md' : 'glass rounded-bl-md'
+                        }`}>
+                          <p className="text-sm">{msg.text}</p>
+                          {msg.image && (
+                            <img src={msg.image} className="mt-2 rounded-lg max-w-full max-h-48 object-contain" />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
               
               {/* Message Input */}
@@ -11411,6 +11527,20 @@ const App = () => {
     window.addMultipleToCart = addMultipleToCart;
     return () => { delete window.addMultipleToCart; };
   }, []);
+  
+  // Expose DM share modal and upload function globally
+  useEffect(() => {
+    window.openDMShareModal = (image, items) => {
+      setDmShareModal({ open: true, image, items: items || [] });
+    };
+    window.uploadAndShareImage = uploadAndShareImage;
+    window.storage = storage;
+    return () => { 
+      delete window.openDMShareModal; 
+      delete window.uploadAndShareImage;
+      delete window.storage;
+    };
+  }, [storage]);
   
   const removeFromCart = (productId) => {
     setCart(prev => prev.filter(p => p.id !== productId));
