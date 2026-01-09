@@ -1990,24 +1990,89 @@ function openImageInNewTabSafe(dataUrl) {
   return true;
 }
 
-async function shareImage(dataUrl) {
+async function shareImage(dataUrl, options = {}) {
   // Validate dataUrl format
   if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
+    console.error('Invalid image data');
     return false;
   }
   
   try {
-    if (navigator.share) {
+    // Try native share with file first (mobile)
+    if (navigator.share && navigator.canShare) {
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const file = new File([blob], `trai-${Date.now()}.png`, { type: "image/png" });
-      await navigator.share({ title: "TrAi", text: "TrAi ile oluşturuldu ✨", files: [file] });
+      const file = new File([blob], `trai-style-${Date.now()}.png`, { type: "image/png" });
+      
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ 
+          title: "TrAi Style", 
+          text: "TrAi Style ile oluşturdum ✨ Sende dene → trai.style", 
+          files: [file] 
+        });
+        return true;
+      }
+    }
+    
+    // Fallback: Share with just text and URL (no file)
+    if (navigator.share) {
+      try {
+        await navigator.share({ 
+          title: "TrAi Style", 
+          text: "TrAi Style ile kendi kombinimi oluşturdum! ✨", 
+          url: "https://trai.style" 
+        });
+        return true;
+      } catch (shareErr) {
+        console.log('Share cancelled or failed:', shareErr);
+      }
+    }
+  } catch (err) {
+    console.log('Native share not available:', err);
+  }
+  
+  // Final fallback: Open in new tab
+  return openImageInNewTabSafe(dataUrl);
+}
+
+// Upload image to Firebase and get shareable URL
+async function uploadAndShareImage(dataUrl, authUser, storage) {
+  if (!dataUrl || !dataUrl.startsWith('data:image') || !storage || !authUser?.uid) {
+    return shareImage(dataUrl);
+  }
+  
+  try {
+    // Upload to Firebase Storage
+    const timestamp = Date.now();
+    const storageRef = storage.ref(`shared_combos/${authUser.uid}/${timestamp}.jpg`);
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    await storageRef.put(blob);
+    const imageUrl = await storageRef.getDownloadURL();
+    
+    console.log('✅ Image uploaded for sharing:', imageUrl);
+    
+    // Try to share with the URL
+    if (navigator.share) {
+      await navigator.share({
+        title: "TrAi Style Kombin",
+        text: "TrAi Style ile oluşturduğum kombine bak! ✨",
+        url: imageUrl
+      });
       return true;
     }
-  } catch {}
-  
-  // Fallback: Open in new tab safely
-  return openImageInNewTabSafe(dataUrl);
+    
+    // Fallback: Copy URL to clipboard
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(imageUrl);
+      return { copied: true, url: imageUrl };
+    }
+    
+    return openImageInNewTabSafe(dataUrl);
+  } catch (err) {
+    console.error('Upload and share error:', err);
+    return shareImage(dataUrl);
+  }
 }
 
 function safeJsonParse(x, fallback) {
@@ -5014,20 +5079,19 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
         {/* 1. AŞAMA: Cinsiyet Filtresi - Her zaman görünür */}
         <div className="flex gap-2">
           {[
-            { v: 'all', lKey: 'all', icon: '🏷️' },
-            { v: 'male', lKey: 'male', icon: '👔' },
-            { v: 'female', lKey: 'female', icon: '👗' }
+            { v: 'all', lKey: 'all' },
+            { v: 'male', lKey: 'male' },
+            { v: 'female', lKey: 'female' }
           ].map(g => (
             <button 
               key={g.v} 
               onClick={() => handleGenderChange(g.v)} 
-              className={`flex-1 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 genderFilter === g.v 
                   ? 'bg-brand text-white shadow-md' 
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              <span className="text-sm">{g.icon}</span>
               {t(g.lKey)}
             </button>
           ))}
@@ -5262,10 +5326,36 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [occasion, setOccasion] = useState(null);
 
-  // Kategorilere ayır
-  const tops = closet.filter(i => i.category === 'top');
+  // Kategorilere ayır - Kazak/Sweatshirt/Hırka türleri üst giyime taşınıyor
+  const isTopClothing = (item) => {
+    const type = (item.type || '').toLowerCase();
+    const subType = (item.subType || '').toLowerCase();
+    const name = (item.name || '').toLowerCase();
+    
+    // Bu türler dış giyim değil, üst giyim
+    const topTypes = ['kazak', 'sweatshirt', 'süveter', 'triko', 'örme'];
+    return topTypes.some(t => type.includes(t) || subType.includes(t) || name.includes(t));
+  };
+  
+  const isRealOuterwear = (item) => {
+    const type = (item.type || '').toLowerCase();
+    const subType = (item.subType || '').toLowerCase();
+    const name = (item.name || '').toLowerCase();
+    
+    // Gerçek dış giyim türleri
+    const outerwearTypes = ['mont', 'ceket', 'kaban', 'parka', 'trençkot', 'yağmurluk', 'palto', 'blazer', 'yelek'];
+    return outerwearTypes.some(t => type.includes(t) || subType.includes(t) || name.includes(t));
+  };
+  
+  // Doğru kategorilere ayır
+  const tops = closet.filter(i => 
+    i.category === 'top' || 
+    (i.category === 'outerwear' && isTopClothing(i))
+  );
   const bottoms = closet.filter(i => i.category === 'bottom');
-  const outerwears = closet.filter(i => i.category === 'outerwear');
+  const outerwears = closet.filter(i => 
+    i.category === 'outerwear' && !isTopClothing(i) && isRealOuterwear(i)
+  );
   const fullbodies = closet.filter(i => i.category === 'fullbody');
   
   // Alt kategorilere göre grupla
@@ -5282,8 +5372,8 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
   };
   
   const bottomsGrouped = groupBySubType(bottoms, ['Kot', 'Pantolon', 'Şort', 'Etek', 'Eşofman']);
-  const topsGrouped = groupBySubType(tops, ['T-Shirt', 'Gömlek', 'Kazak', 'Bluz', 'Sweatshirt']);
-  const outerwearGrouped = groupBySubType(outerwears, ['Mont', 'Ceket', 'Kaban', 'Hırka']);
+  const topsGrouped = groupBySubType(tops, ['T-Shirt', 'Gömlek', 'Kazak', 'Sweatshirt', 'Bluz', 'Hırka']);
+  const outerwearGrouped = groupBySubType(outerwears, ['Mont', 'Ceket', 'Kaban', 'Blazer', 'Yelek']);
 
   // Toggle selection based on category
   const toggle = item => {
@@ -5865,7 +5955,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                             e.dataTransfer.effectAllowed = 'copy';
                           }}
                           onClick={() => toggle(item)}
-                          className={`draggable-item flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                          className={`draggable-item flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                             selected.outerwear?.id === item.id 
                               ? 'border-blue-500 ring-2 ring-blue-500/30 scale-95' 
                               : 'border-transparent hover:border-slate-300'
@@ -5892,7 +5982,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                             e.dataTransfer.effectAllowed = 'copy';
                           }}
                           onClick={() => toggle(item)}
-                          className={`draggable-item flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                          className={`draggable-item flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                             selected.fullbody?.id === item.id 
                               ? 'border-brand ring-2 ring-brand/30 scale-95' 
                               : 'border-transparent hover:border-slate-300'
@@ -8942,25 +9032,33 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
   
   // Open all products at once
   const handleOpenAllProducts = () => {
-    const newPopups = [];
-    cart.forEach((item, index) => {
-      if (item.link && !clickedItems.includes(item.id)) {
-        setTimeout(() => {
-          const url = buildTrendyolUrl(item);
-          if (url) {
-            const popup = window.open(
-              url, 
-              `trendyol_${item.id}`, 
-              `width=500,height=700,left=${100 + index * 30},top=${100 + index * 30},scrollbars=yes`
-            );
-            if (popup) newPopups.push(popup);
-          }
-          setClickedItems(prev => [...prev, item.id]);
-        }, index * 600);
-      }
-    });
-    setOpenPopups(prev => [...prev, ...newPopups]);
+    const itemsToOpen = cart.filter(item => item.link && !clickedItems.includes(item.id));
+    
+    if (itemsToOpen.length === 0) return;
+    
+    // Mark all as clicked immediately
+    const newClickedIds = itemsToOpen.map(item => item.id);
+    setClickedItems(prev => [...prev, ...newClickedIds]);
     setCurrentStep(2);
+    
+    // Open each item with staggered timing
+    itemsToOpen.forEach((item, index) => {
+      setTimeout(() => {
+        const url = buildTrendyolUrl(item);
+        if (url) {
+          const left = 100 + (index % 3) * 520;
+          const top = 50 + Math.floor(index / 3) * 50;
+          const popup = window.open(
+            url, 
+            `trendyol_${item.id}_${Date.now()}`, 
+            `width=500,height=700,left=${left},top=${top},scrollbars=yes,resizable=yes`
+          );
+          if (popup) {
+            setOpenPopups(prev => [...prev, popup]);
+          }
+        }
+      }, index * 800); // 800ms delay between each
+    });
   };
   
   // Close all opened popups
@@ -10075,8 +10173,8 @@ const AdviceModal = ({ open, item, advice, loading, onClose }) => {
 };
 
 // ============ SOCIAL FEED ============
-const SocialFeed = ({ user, authUser, friends, posts, setPosts, setToast }) => {
-  const [tab, setTab] = useState('feed'); // feed, myPosts, create
+const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests }) => {
+  const [tab, setTab] = useState('feed'); // feed, myPosts, create, friends, messages
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState('');
   const [askFeedback, setAskFeedback] = useState(false);
@@ -10085,6 +10183,12 @@ const SocialFeed = ({ user, authUser, friends, posts, setPosts, setToast }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [comment, setComment] = useState('');
   const [shareModal, setShareModal] = useState({ open: false, post: null });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
+  const [showNewChat, setShowNewChat] = useState(false);
 
   const myPosts = posts.filter(p => p.authorId === authUser?.uid);
   const feedPosts = posts.filter(p => 
@@ -10205,9 +10309,110 @@ const SocialFeed = ({ user, authUser, friends, posts, setPosts, setToast }) => {
 
   const tabs = [
     { id: 'feed', icon: 'globe', label: t('social') },
-    { id: 'myPosts', icon: 'image', label: t('myPosts') },
+    { id: 'friends', icon: 'users', label: t('following') },
+    { id: 'messages', icon: 'mail', label: t('messagesLabel') },
     { id: 'create', icon: 'plusCircle', label: t('share') }
   ];
+  
+  // Search for users to follow
+  const searchUsers = async (query) => {
+    if (!query || query.length < 2 || !db) return;
+    setSearching(true);
+    try {
+      const snapshot = await db.collection('users')
+        .where('username', '>=', query.toLowerCase())
+        .where('username', '<=', query.toLowerCase() + '\uf8ff')
+        .limit(10)
+        .get();
+      
+      const results = [];
+      snapshot.forEach(doc => {
+        if (doc.id !== authUser?.uid) {
+          results.push({ id: doc.id, ...doc.data() });
+        }
+      });
+      setSearchResults(results);
+    } catch (err) {
+      console.error('Search error:', err);
+    }
+    setSearching(false);
+  };
+  
+  // Follow a user
+  const followUser = async (targetUser) => {
+    if (!db || !authUser?.uid) return;
+    try {
+      // Add to sent requests
+      await db.collection('users').doc(targetUser.id).collection('followRequests').add({
+        fromUserId: authUser.uid,
+        fromUsername: user?.username || user?.displayName,
+        fromAvatar: user?.profilePhoto || user?.baseAvatar,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      setSentFollowRequests(prev => [...prev, targetUser.id]);
+      setToast({ open: true, type: 'success', title: 'İstek Gönderildi', message: `@${targetUser.username}'e takip isteği gönderildi` });
+    } catch (err) {
+      console.error('Follow error:', err);
+    }
+  };
+  
+  // Accept follow request
+  const acceptRequest = async (request) => {
+    if (!db || !authUser?.uid) return;
+    try {
+      // Add to friends
+      const newFriend = {
+        id: request.fromUserId,
+        username: request.fromUsername,
+        displayName: request.fromUsername,
+        avatar: request.fromAvatar
+      };
+      setFriends(prev => [...prev, newFriend]);
+      
+      // Remove request
+      await db.collection('users').doc(authUser.uid).collection('followRequests').doc(request.id).delete();
+      setFollowRequests(prev => prev.filter(r => r.id !== request.id));
+      
+      setToast({ open: true, type: 'success', title: 'Kabul Edildi', message: `${request.fromUsername} artık seni takip ediyor` });
+    } catch (err) {
+      console.error('Accept error:', err);
+    }
+  };
+  
+  // Send message
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedChat || !db || !authUser?.uid) return;
+    
+    try {
+      const chatId = selectedChat.id;
+      const messageData = {
+        senderId: authUser.uid,
+        senderName: user?.displayName || user?.username || 'Kullanıcı',
+        text: newMessage.trim(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: Date.now()
+      };
+      
+      await db.collection('chats').doc(chatId).collection('messages').add(messageData);
+      await db.collection('chats').doc(chatId).set({
+        lastMessage: newMessage.trim(),
+        lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+        lastMessageBy: authUser.uid,
+        updatedAt: Date.now()
+      }, { merge: true });
+      
+      // Update local state
+      setDmChats(prev => prev.map(c => 
+        c.id === chatId 
+          ? { ...c, messages: [...(c.messages || []), { ...messageData, id: Date.now() }] }
+          : c
+      ));
+      
+      setNewMessage('');
+    } catch (err) {
+      console.error('Send message error:', err);
+    }
+  };
 
   const PostCard = ({ post, showActions = true }) => {
     const isLiked = post.likes.includes(authUser?.uid);
@@ -10567,6 +10772,279 @@ const SocialFeed = ({ user, authUser, friends, posts, setPosts, setToast }) => {
                 </div>
               </div>
             </>
+          )}
+        </div>
+      )}
+
+      {/* FRIENDS TAB */}
+      {tab === 'friends' && (
+        <div className="flex-1 overflow-y-auto custom-scroll p-4 pb-24 space-y-4">
+          {/* Search Users */}
+          <div className="relative">
+            <Icon name="search" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.length >= 2) searchUsers(e.target.value);
+              }}
+              placeholder="Kullanıcı ara (@kullaniciadi)"
+              className="w-full pl-11 py-3 rounded-xl bg-slate-100 border-none text-sm"
+            />
+          </div>
+          
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="glass rounded-2xl p-3 space-y-2">
+              <p className="text-xs text-slate-500 font-semibold">ARAMA SONUÇLARI</p>
+              {searchResults.map(u => {
+                const isFollowing = friends.some(f => f.id === u.id);
+                const isPending = sentFollowRequests?.includes(u.id);
+                return (
+                  <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100">
+                    <img 
+                      src={u.profilePhoto || u.baseAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.id}`}
+                      className="w-12 h-12 rounded-xl object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{u.displayName || u.username}</p>
+                      <p className="text-xs text-slate-500">@{u.username}</p>
+                    </div>
+                    {isFollowing ? (
+                      <span className="text-xs text-green-600 font-medium">Takip Ediliyor</span>
+                    ) : isPending ? (
+                      <span className="text-xs text-amber-600 font-medium">İstek Gönderildi</span>
+                    ) : (
+                      <button 
+                        onClick={() => followUser(u)}
+                        className="btn-primary px-4 py-2 rounded-xl text-xs font-semibold"
+                      >
+                        Takip Et
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          {/* Follow Requests */}
+          {followRequests && followRequests.length > 0 && (
+            <div className="glass rounded-2xl p-3 space-y-2">
+              <p className="text-xs text-slate-500 font-semibold">TAKİP İSTEKLERİ</p>
+              {followRequests.map(req => (
+                <div key={req.id} className="flex items-center gap-3 p-2 rounded-xl bg-amber-50">
+                  <img 
+                    src={req.fromAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.fromUserId}`}
+                    className="w-12 h-12 rounded-xl object-cover"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">{req.fromUsername}</p>
+                    <p className="text-xs text-slate-500">Seni takip etmek istiyor</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => acceptRequest(req)}
+                      className="btn-primary px-3 py-1.5 rounded-lg text-xs font-semibold"
+                    >
+                      Kabul
+                    </button>
+                    <button 
+                      onClick={() => setFollowRequests(prev => prev.filter(r => r.id !== req.id))}
+                      className="btn-ghost px-3 py-1.5 rounded-lg text-xs"
+                    >
+                      Reddet
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Following List */}
+          <div className="space-y-2">
+            <p className="text-xs text-slate-500 font-semibold">TAKİP EDİLENLER ({friends.length})</p>
+            {friends.length === 0 ? (
+              <div className="text-center py-8 glass rounded-2xl">
+                <Icon name="users" size={32} className="mx-auto text-slate-300 mb-2" />
+                <p className="text-slate-500 text-sm">Henüz kimseyi takip etmiyorsun</p>
+                <p className="text-slate-400 text-xs">Yukarıdan kullanıcı ara</p>
+              </div>
+            ) : (
+              friends.map(friend => (
+                <div key={friend.id} className="flex items-center gap-3 p-3 glass rounded-xl">
+                  <img 
+                    src={friend.profilePhoto || friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.id}`}
+                    className="w-12 h-12 rounded-xl object-cover"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">{friend.displayName || friend.username}</p>
+                    {friend.username && <p className="text-xs text-slate-500">@{friend.username}</p>}
+                  </div>
+                  <button 
+                    onClick={() => {
+                      // Start chat with this friend
+                      const chatId = [authUser?.uid, friend.id].sort().join('_');
+                      const existingChat = dmChats?.find(c => c.id === chatId);
+                      if (existingChat) {
+                        setSelectedChat(existingChat);
+                      } else {
+                        setSelectedChat({ 
+                          id: chatId, 
+                          type: 'dm', 
+                          recipientId: friend.id, 
+                          name: friend.displayName || friend.username,
+                          avatar: friend.profilePhoto || friend.avatar,
+                          messages: [] 
+                        });
+                      }
+                      setTab('messages');
+                    }}
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200"
+                  >
+                    <Icon name="mail" size={18} className="text-slate-600" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MESSAGES TAB */}
+      {tab === 'messages' && (
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {!selectedChat ? (
+            // Chat List
+            <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-2">
+              <button 
+                onClick={() => setShowNewChat(true)}
+                className="w-full btn-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2 mb-4"
+              >
+                <Icon name="mail" size={18} />Yeni Mesaj
+              </button>
+              
+              {(!dmChats || dmChats.length === 0) ? (
+                <div className="text-center py-12">
+                  <Icon name="mail" size={32} className="mx-auto text-slate-300 mb-2" />
+                  <p className="text-slate-500 text-sm">Henüz mesajın yok</p>
+                  <p className="text-slate-400 text-xs">Arkadaşlarına mesaj gönder</p>
+                </div>
+              ) : (
+                dmChats.map(chat => (
+                  <button
+                    key={chat.id}
+                    onClick={() => setSelectedChat(chat)}
+                    className="w-full flex items-center gap-3 p-3 glass rounded-xl text-left hover:bg-slate-100"
+                  >
+                    <img 
+                      src={chat.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.recipientId}`}
+                      className="w-12 h-12 rounded-xl object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm">{chat.name}</p>
+                      <p className="text-xs text-slate-500 truncate">{chat.lastMessage || 'Mesaj yok'}</p>
+                    </div>
+                    <Icon name="chevronRight" size={18} className="text-slate-400" />
+                  </button>
+                ))
+              )}
+            </div>
+          ) : (
+            // Chat View
+            <div className="flex-1 flex flex-col">
+              {/* Chat Header */}
+              <div className="p-3 border-b border-slate-200 flex items-center gap-3">
+                <button onClick={() => setSelectedChat(null)} className="p-2 -ml-2 rounded-xl hover:bg-slate-100">
+                  <Icon name="chevronLeft" size={20} />
+                </button>
+                <img 
+                  src={selectedChat.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedChat.recipientId}`}
+                  className="w-10 h-10 rounded-xl object-cover"
+                />
+                <div className="flex-1">
+                  <p className="font-semibold">{selectedChat.name}</p>
+                </div>
+              </div>
+              
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-3">
+                {(selectedChat.messages || []).map(msg => {
+                  const isMine = msg.senderId === authUser?.uid;
+                  return (
+                    <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl ${
+                        isMine ? 'bg-brand text-white rounded-br-md' : 'glass rounded-bl-md'
+                      }`}>
+                        <p className="text-sm">{msg.text}</p>
+                        {msg.image && (
+                          <img src={msg.image} className="mt-2 rounded-lg max-w-full" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Message Input */}
+              <div className="p-3 border-t border-slate-200 flex gap-2 safe-bottom">
+                <input
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                  placeholder="Mesaj yaz..."
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 border-none text-sm"
+                />
+                <button onClick={sendMessage} className="btn-primary px-4 rounded-xl">
+                  <Icon name="send" size={18} />
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* New Chat Modal */}
+          {showNewChat && (
+            <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
+              <div className="w-full max-w-sm glass rounded-3xl p-5 max-h-[70vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold">Yeni Mesaj</h3>
+                  <button onClick={() => setShowNewChat(false)} className="p-2 rounded-xl hover:bg-slate-200/60">
+                    <Icon name="x" size={20} />
+                  </button>
+                </div>
+                
+                {friends.length === 0 ? (
+                  <p className="text-center text-slate-500 py-4">Önce arkadaş ekle</p>
+                ) : (
+                  <div className="space-y-2">
+                    {friends.map(friend => (
+                      <button
+                        key={friend.id}
+                        onClick={() => {
+                          const chatId = [authUser?.uid, friend.id].sort().join('_');
+                          setSelectedChat({ 
+                            id: chatId, 
+                            type: 'dm', 
+                            recipientId: friend.id, 
+                            name: friend.displayName || friend.username,
+                            avatar: friend.profilePhoto || friend.avatar,
+                            messages: [] 
+                          });
+                          setShowNewChat(false);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-100"
+                      >
+                        <img 
+                          src={friend.profilePhoto || friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.id}`}
+                          className="w-10 h-10 rounded-xl object-cover"
+                        />
+                        <span className="font-medium">{friend.displayName || friend.username}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -12432,9 +12910,16 @@ const App = () => {
               user={user}
               authUser={authUser}
               friends={friends}
+              setFriends={setFriends}
               posts={posts}
               setPosts={setPosts}
               setToast={setToast}
+              dmChats={dmChats}
+              setDmChats={setDmChats}
+              followRequests={followRequests}
+              setFollowRequests={setFollowRequests}
+              sentFollowRequests={sentFollowRequests}
+              setSentFollowRequests={setSentFollowRequests}
             />
           )}
         </div>
@@ -12573,9 +13058,16 @@ const App = () => {
               user={user}
               authUser={authUser}
               friends={friends}
+              setFriends={setFriends}
               posts={posts}
               setPosts={setPosts}
               setToast={setToast}
+              dmChats={dmChats}
+              setDmChats={setDmChats}
+              followRequests={followRequests}
+              setFollowRequests={setFollowRequests}
+              sentFollowRequests={sentFollowRequests}
+              setSentFollowRequests={setSentFollowRequests}
             />
           )}
         </div>
@@ -12589,7 +13081,12 @@ const App = () => {
         item={result.item}
         items={result.items}
         onClose={() => setResult({ open: false })} 
-        onShare={async () => { await shareImage(result.image); }}
+        onShare={async () => { 
+          const shareResult = await uploadAndShareImage(result.image, authUser, storage);
+          if (shareResult?.copied) {
+            setToast({ open: true, type: 'success', title: 'Link Kopyalandı!', message: 'Paylaşım linki panoya kopyalandı' });
+          }
+        }}
         onAddToCart={addToCart}
         onSaveCombo={async (combo) => {
           try {
@@ -12700,35 +13197,84 @@ const App = () => {
         currentUserId={authUser?.uid}
         onClose={() => setDmShareModal({ open: false, image: null, items: [] })}
         onSend={async (userIds, image, items) => {
-          // Her seçilen kullanıcıya mesaj gönder
-          for (const recipientId of userIds) {
-            const chatId = [authUser.uid, recipientId].sort().join('_');
-            const messageData = {
-              senderId: authUser.uid,
-              recipientId,
-              type: 'combo',
-              image,
-              items,
-              text: '📸 Bir kombin paylaştı',
-              createdAt: Date.now(),
-              read: false
-            };
-            
-            // Firebase'e kaydet
-            if (db) {
+          if (!authUser?.uid || !db) {
+            setToast({ open: true, type: 'error', title: 'Hata', message: 'Giriş yapılmamış' });
+            return;
+          }
+          
+          setToast({ open: true, type: 'info', title: '📤 Gönderiliyor...', message: 'Lütfen bekleyin' });
+          
+          try {
+            // Upload image to Firebase Storage first
+            let imageUrl = image;
+            if (image && image.startsWith('data:image') && storage) {
               try {
-                await db.collection('chats').doc(chatId).collection('messages').add(messageData);
-                await db.collection('chats').doc(chatId).set({
-                  participants: [authUser.uid, recipientId],
-                  lastMessage: messageData,
-                  updatedAt: Date.now()
-                }, { merge: true });
-              } catch (err) {
-                console.error('DM send error:', err);
+                const timestamp = Date.now();
+                const storageRef = storage.ref(`dm_images/${authUser.uid}/${timestamp}.jpg`);
+                const response = await fetch(image);
+                const blob = await response.blob();
+                await storageRef.put(blob);
+                imageUrl = await storageRef.getDownloadURL();
+                console.log('✅ DM image uploaded:', imageUrl);
+              } catch (uploadErr) {
+                console.warn('⚠️ Image upload failed:', uploadErr);
+                // Continue without image URL
+                imageUrl = null;
               }
             }
+            
+            // Send to each selected user
+            for (const recipientId of userIds) {
+              const chatId = [authUser.uid, recipientId].sort().join('_');
+              
+              // Get recipient info for participantNames
+              let recipientName = 'Kullanıcı';
+              const friend = friends.find(f => f.id === recipientId);
+              if (friend) {
+                recipientName = friend.displayName || friend.username || 'Kullanıcı';
+              }
+              
+              const messageData = {
+                senderId: authUser.uid,
+                senderName: user?.displayName || user?.username || 'Kullanıcı',
+                recipientId,
+                type: 'combo',
+                image: imageUrl, // Now it's a proper URL
+                items: (items || []).map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  brandName: item.brandName,
+                  price: item.price,
+                  image: item.image
+                })),
+                text: '📸 Bir kombin paylaştı',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: Date.now(),
+                read: false
+              };
+              
+              // Save message
+              await db.collection('chats').doc(chatId).collection('messages').add(messageData);
+              
+              // Update chat metadata
+              await db.collection('chats').doc(chatId).set({
+                participants: [authUser.uid, recipientId],
+                participantNames: {
+                  [authUser.uid]: user?.displayName || user?.username || 'Kullanıcı',
+                  [recipientId]: recipientName
+                },
+                lastMessage: '📸 Bir kombin paylaştı',
+                lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+                lastMessageBy: authUser.uid,
+                updatedAt: Date.now()
+              }, { merge: true });
+            }
+            
+            setToast({ open: true, type: 'success', title: 'Gönderildi! ✅', message: `${userIds.length} kişiye kombin gönderildi` });
+          } catch (err) {
+            console.error('DM send error:', err);
+            setToast({ open: true, type: 'error', title: 'Hata', message: 'Mesaj gönderilemedi' });
           }
-          setToast({ open: true, type: 'success', title: 'Gönderildi!', message: `${userIds.length} kişiye kombin gönderildi` });
         }}
       />
       
