@@ -856,7 +856,7 @@ const TRANSLATIONS = {
     affiliateNotice: "Bu link sizi satıcının sitesine yönlendirir",
     addedToCart: "Sepete Eklendi",
     user: "Kullanıcı",
-    add: "Ekle",
+    add: "Dolabıma Ekle",
     inCart: "Sepette",
     selectSize: "Beden Seçin",
     deliveryInfo: "Teslimat Bilgileri",
@@ -1846,7 +1846,7 @@ async function getProductImageDataUrl(imageUrl) {
   return null;
 }
 
-// Add watermark to image - Professional, uncropable logo watermark
+// Add watermark to image - Professional logo watermark (using actual TrAi logo)
 async function addWatermark(dataUrl, text = 'TrAi Style', options = {}) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -1860,103 +1860,59 @@ async function addWatermark(dataUrl, text = 'TrAi Style', options = {}) {
         // Draw original image
         ctx.drawImage(img, 0, 0);
         
-        const opacity = options.opacity || 0.85;
-        
-        // === WATERMARK 1: Sol alt köşe - Ana logo (kırpılamaz) ===
-        const logoSize = Math.max(50, Math.min(canvas.width * 0.12, 100));
-        const logoPadding = logoSize * 0.3;
-        const logoX = logoPadding;
-        const logoY = canvas.height - logoPadding - logoSize;
-        
-        // Logo background circle with gradient
-        const gradient = ctx.createLinearGradient(logoX, logoY, logoX + logoSize, logoY + logoSize);
-        gradient.addColorStop(0, 'rgba(244, 114, 182, 0.95)'); // Pink
-        gradient.addColorStop(1, 'rgba(168, 85, 247, 0.95)');  // Purple
-        
-        ctx.beginPath();
-        ctx.arc(logoX + logoSize/2, logoY + logoSize/2, logoSize/2, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.fill();
-        
-        // White border
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        
-        // Logo text "TrAi"
-        const logoFontSize = logoSize * 0.35;
-        ctx.font = `bold ${logoFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-        ctx.textBaseline = 'middle';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = 'white';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-        ctx.shadowBlur = 4;
-        ctx.fillText('TrAi', logoX + logoSize/2, logoY + logoSize/2);
-        ctx.shadowBlur = 0;
-        
-        // === WATERMARK 2: Sağ alt köşe - trai.style URL ===
-        const fontSize = Math.max(14, Math.min(canvas.width * 0.03, 24));
-        const urlPadding = fontSize * 0.8;
-        const urlText = 'trai.style';
-        
-        ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-        ctx.textBaseline = 'bottom';
-        ctx.textAlign = 'right';
-        
-        const urlWidth = ctx.measureText(urlText).width;
-        const urlX = canvas.width - urlPadding;
-        const urlY = canvas.height - urlPadding;
-        
-        // Background pill for URL
-        const bgPadding = fontSize * 0.4;
-        const bgHeight = fontSize * 1.4;
-        const bgWidth = urlWidth + bgPadding * 2;
-        const bgX = urlX - urlWidth - bgPadding;
-        const bgY = urlY - fontSize - bgPadding * 0.3;
-        
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.beginPath();
-        ctx.roundRect(bgX, bgY, bgWidth, bgHeight, fontSize * 0.3);
-        ctx.fill();
-        
-        // URL text
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 2;
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.fillText(urlText, urlX, urlY);
-        ctx.shadowBlur = 0;
-        
-        // === WATERMARK 3: Diagonal repeating pattern (görselin ortasında, subtle) ===
-        if (!options.noPattern) {
-          ctx.save();
-          ctx.globalAlpha = 0.06;
-          ctx.font = `bold ${Math.max(20, canvas.width * 0.04)}px -apple-system, sans-serif`;
-          ctx.fillStyle = 'white';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          
-          // Diagonal pattern across image
-          const patternSpacing = canvas.width * 0.25;
-          for (let y = -canvas.height; y < canvas.height * 2; y += patternSpacing) {
-            for (let x = -canvas.width; x < canvas.width * 2; x += patternSpacing) {
-              ctx.save();
-              ctx.translate(x, y);
-              ctx.rotate(-Math.PI / 6); // 30 degree angle
-              ctx.fillText('TrAi Style', 0, 0);
-              ctx.restore();
-            }
+        // === WATERMARK: Sol alt köşe - TrAi Logo ===
+        const logoImg = new Image();
+        logoImg.onload = () => {
+          try {
+            const logoSize = Math.max(45, Math.min(canvas.width * 0.1, 80));
+            const logoPadding = logoSize * 0.25;
+            const logoX = logoPadding;
+            const logoY = canvas.height - logoPadding - logoSize;
+            
+            // Draw logo with slight shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+            ctx.shadowBlur = 0;
+            
+            // Add trai.style text next to logo
+            const fontSize = Math.max(12, logoSize * 0.25);
+            ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'left';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 3;
+            ctx.fillText('trai.style', logoX + logoSize + 8, logoY + logoSize / 2);
+            ctx.shadowBlur = 0;
+            
+            const result = canvas.toDataURL('image/jpeg', 0.92);
+            resolve(result);
+          } catch (e) {
+            resolve(dataUrl);
           }
-          ctx.restore();
-        }
-        
-        const result = canvas.toDataURL('image/jpeg', 0.92);
-        resolve(result);
+        };
+        logoImg.onerror = () => {
+          // Fallback: just text watermark if logo fails
+          const fontSize = Math.max(14, canvas.width * 0.03);
+          ctx.font = `bold ${fontSize}px -apple-system, sans-serif`;
+          ctx.textBaseline = 'bottom';
+          ctx.textAlign = 'left';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+          ctx.shadowBlur = 3;
+          ctx.fillText('trai.style', fontSize, canvas.height - fontSize);
+          resolve(canvas.toDataURL('image/jpeg', 0.92));
+        };
+        logoImg.src = LOGO_BASE64;
       } catch (e) {
         console.error('Watermark error:', e);
-        resolve(dataUrl); // Return original on error
+        resolve(dataUrl);
       }
     };
-    img.onerror = () => resolve(dataUrl); // Return original on error
+    img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
   });
 }
@@ -4779,31 +4735,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
 // ============ PRODUCT CARD ============
 const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, onAddToCart, isInCart }) => {
   const [loaded, setLoaded] = useState(false);
-  const [showSizeModal, setShowSizeModal] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(null);
   const isFeatured = product.brandId === 'modo';
-  
-  const sizes = product.category === 'fullbody' 
-    ? ['XS', 'S', 'M', 'L', 'XL'] 
-    : product.category === 'bottom' 
-    ? ['28', '30', '32', '34', '36', '38', '40'] 
-    : ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      setShowSizeModal(true);
-      return;
-    }
-    onAddToCart({ ...product, selectedSize });
-    setShowSizeModal(false);
-    setSelectedSize(null);
-  };
-  
-  const confirmSizeAndAdd = (size) => {
-    setSelectedSize(size);
-    onAddToCart({ ...product, selectedSize: size });
-    setShowSizeModal(false);
-  };
   
   return (
     <div className={`product-card glass rounded-2xl overflow-hidden fade-in ${isFeatured ? 'ring-1 ring-brand2/50' : ''}`}>
@@ -4833,7 +4765,7 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
             </button>
             {onAddToCart && (
               <button 
-                onClick={() => setShowSizeModal(true)}
+                onClick={() => onAddToCart(product)}
                 className={`py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition ${isInCart ? 'bg-brand2/20 text-brand2' : 'bg-brand2/10 hover:bg-brand2/20 text-brand2'}`}
               >
                 <Icon name="shop" size={12} />{isInCart ? t('inCart') : t('addToCart')}
@@ -4842,42 +4774,6 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
           </div>
         </div>
       </div>
-      
-      {/* Size Selection Modal */}
-      {showSizeModal && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-end justify-center" onClick={() => setShowSizeModal(false)}>
-          <div className="w-full max-w-lg bg-surface rounded-t-3xl p-5 fade-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <img src={product.image} alt="" className="w-12 h-12 rounded-lg object-cover" />
-                <div>
-                  <p className="font-semibold text-sm">{product.name}</p>
-                  <p className="text-brand2 font-bold">{product.priceNum > 0 ? product.price : 'Fiyat Yok'}</p>
-                </div>
-              </div>
-              <button onClick={() => setShowSizeModal(false)} className="p-2 rounded-xl hover:bg-slate-100">
-                <Icon name="x" size={20} />
-              </button>
-            </div>
-            <p className="text-sm font-semibold mb-3">{t('selectSize')}</p>
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              {sizes.map(size => (
-                <button
-                  key={size}
-                  onClick={() => confirmSizeAndAdd(size)}
-                  className="py-3 rounded-xl border-2 border-slate-200 hover:border-brand2 hover:bg-brand2/5 font-bold text-sm transition"
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            <button onClick={() => onAdvice(product)} className="w-full btn-ghost py-3 rounded-xl text-sm flex items-center justify-center gap-2">
-              <Icon name="sparkle" size={16} />
-              {t('sizeAdvice')}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -10477,18 +10373,20 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
 
   const shareExternal = async (platform, post) => {
     const text = `${post.caption || 'TrAi ile denedim!'} #TrAi #VirtualTryOn #Fashion`;
-    let shareUrl = 'https://trai.app';
+    let shareUrl = 'https://trai.style';
+    let uploadedImageUrl = null;
     
     // Upload image to Firebase Storage for shareable link
     if (post.image && post.image.startsWith('data:image') && storage && authUser?.uid) {
       try {
+        setToast({ open: true, type: 'info', title: 'Hazırlanıyor...', message: 'Görsel yükleniyor' });
         const timestamp = Date.now();
         const storageRef = storage.ref(`shared/${authUser.uid}/${timestamp}.jpg`);
         const response = await fetch(post.image);
         const blob = await response.blob();
         await storageRef.put(blob);
-        const imageUrl = await storageRef.getDownloadURL();
-        shareUrl = imageUrl; // Use the actual image URL
+        uploadedImageUrl = await storageRef.getDownloadURL();
+        shareUrl = uploadedImageUrl;
       } catch (e) {
         console.warn('⚠️ Image upload for share failed:', e);
       }
@@ -10506,24 +10404,44 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         });
       } catch (e) {
         // Fallback to URL share
-        await navigator.share({ title: 'TrAi', text: text, url: shareUrl });
+        try {
+          await navigator.share({ title: 'TrAi', text: text, url: shareUrl });
+        } catch (e2) {
+          // Final fallback: download image
+          downloadImage(post.image, 'trai-outfit.png');
+          setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görseli paylaşabilirsin' });
+        }
       }
     } else if (platform === 'instagram') {
-      // Instagram'a yönlendir - görseli indirmesi gerekiyor
-      const link = document.createElement('a');
-      link.href = post.image;
-      link.download = 'trai-outfit.png';
-      link.click();
+      // Instagram için görseli indir
+      downloadImage(post.image, 'trai-outfit.png');
       setToast({ open: true, type: 'success', title: t('downloaded'), message: t('shareOnInstagram') });
     } else if (platform === 'twitter') {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+      window.location.href = twitterUrl; // window.open yerine location.href kullan
     } else if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`;
+      window.location.href = fbUrl;
     } else if (platform === 'whatsapp') {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank', 'noopener,noreferrer');
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`;
+      window.location.href = waUrl;
+    } else if (platform === 'download') {
+      // Doğrudan indirme
+      downloadImage(post.image, 'trai-outfit.png');
+      setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görsel kaydedildi' });
     }
     
     setShareModal({ open: false, post: null });
+  };
+  
+  // Helper function to download image
+  const downloadImage = (dataUrl, filename) => {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const tabs = [
