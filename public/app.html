@@ -270,8 +270,8 @@ const CONFIG = {
   imageModel: "gemini-3-pro-image-preview",
   videoModel: "veo-3.0-fast-generate-001",
   textModel: "gemini-2.0-flash",
-  timeoutMs: 90000,
-  videoTimeoutMs: 120000,
+  timeoutMs: 45000, // 90s → 45s (API genelde 15-25s'de yanıt veriyor)
+  videoTimeoutMs: 90000, // 120s → 90s
   firebase: {
     apiKey: "AIzaSyA00c8vwyaoHBybeaS7skxmQNtb9BGZOWo",
     authDomain: "trai-fashion-1e0e6.firebaseapp.com",
@@ -1735,21 +1735,17 @@ function resizeImage(img, maxSize = MAX_IMAGE_SIZE) {
 }
 
 // Load and cache image with CORS support
-async function loadImageWithCORS(imageUrl, timeout = 15000) {
+async function loadImageWithCORS(imageUrl, timeout = 8000) {
   // Cache check
   if (IMAGE_CACHE[imageUrl]) {
-    debugLog('Cache', 'Görsel cache\'den alındı', 'success');
-    return IMAGE_CACHE[imageUrl];
+    return IMAGE_CACHE[imageUrl]; // Silent cache hit
   }
-  
-  debugLog('Load', `Yükleniyor: ${imageUrl.substring(0, 50)}...`, 'info');
   
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
     const timer = setTimeout(() => {
-      debugLog('Load', 'Timeout - görsel yüklenemedi', 'error');
       resolve(null);
     }, timeout);
     
@@ -1757,19 +1753,15 @@ async function loadImageWithCORS(imageUrl, timeout = 15000) {
       clearTimeout(timer);
       try {
         const dataUrl = resizeImage(img, MAX_IMAGE_SIZE);
-        const sizeKB = Math.round(dataUrl.length / 1024);
-        debugLog('Load', `Başarılı: ${sizeKB}KB`, 'success');
         IMAGE_CACHE[imageUrl] = dataUrl;
         resolve(dataUrl);
       } catch (e) {
-        debugLog('Load', `Canvas hatası: ${e.message}`, 'error');
         resolve(null);
       }
     };
     
     img.onerror = () => {
       clearTimeout(timer);
-      debugLog('Load', 'CORS veya network hatası', 'error');
       resolve(null);
     };
     
@@ -1805,25 +1797,21 @@ if (typeof window !== 'undefined') {
 
 // Main function to get product image
 async function getProductImageDataUrl(imageUrl) {
-  debugLog('GetImage', 'Ürün görseli istendi', 'info');
-  
-  // 1. Cache
+  // 1. Cache - instant return
   if (IMAGE_CACHE[imageUrl]) {
-    debugLog('GetImage', 'Cache\'den alındı', 'success');
     return IMAGE_CACHE[imageUrl];
   }
   
-  // 2. Load with CORS
+  // 2. Load with CORS (fast path)
   const result = await loadImageWithCORS(imageUrl);
   if (result) {
     return result;
   }
   
-  // 3. Fallback: fetch as blob
-  debugLog('GetImage', 'Fetch ile deneniyor...', 'warn');
+  // 3. Fallback: fetch as blob (shorter timeout)
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 6000); // 10s → 6s
     
     const res = await fetch(imageUrl, { 
       mode: 'cors',
@@ -1833,7 +1821,6 @@ async function getProductImageDataUrl(imageUrl) {
     
     if (res.ok) {
       const blob = await res.blob();
-      debugLog('GetImage', `Blob alındı: ${Math.round(blob.size/1024)}KB`, 'info');
       
       // Blob'u image'a çevir ve resize et
       const img = await new Promise((resolve, reject) => {
@@ -1846,14 +1833,12 @@ async function getProductImageDataUrl(imageUrl) {
       const dataUrl = resizeImage(img, MAX_IMAGE_SIZE);
       URL.revokeObjectURL(img.src);
       IMAGE_CACHE[imageUrl] = dataUrl;
-      debugLog('GetImage', 'Fetch başarılı', 'success');
       return dataUrl;
     }
   } catch (e) {
-    debugLog('GetImage', `Fetch hatası: ${e.message}`, 'error');
+    // Silent fail
   }
   
-  debugLog('GetImage', 'Tüm yöntemler başarısız', 'error');
   return null;
 }
 
@@ -2107,8 +2092,6 @@ function safeJsonParse(x, fallback) {
 // ============ ULTRA-POWERFUL AI SERVICE ============
 const AI = {
   async callGenerateContent({ model, parts, imageConfig, timeoutMs = CONFIG.timeoutMs }) {
-    debugLog('API', `Model: ${model}, Parts: ${parts.length}, Timeout: ${timeoutMs/1000}s`, 'info');
-    
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
 
@@ -2134,8 +2117,6 @@ const AI = {
     const startTime = Date.now();
     
     try {
-      debugLog('API', 'İstek gönderiliyor...', 'info');
-      
       // Use API route if configured (hides API key server-side)
       const apiUrl = CONFIG.useApiRoute 
         ? '/api/gemini'
@@ -2159,16 +2140,11 @@ const AI = {
       });
 
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      debugLog('API', `Yanıt alındı: ${elapsed}s, Status: ${res.status}`, res.ok ? 'success' : 'error');
       
-      const data = await res.json().catch(() => {
-        debugLog('API', 'JSON parse hatası', 'error');
-        return {};
-      });
+      const data = await res.json().catch(() => ({}));
       
       if (!res.ok || data?.error) {
         const errMsg = data?.error?.message || `HTTP ${res.status}`;
-        debugLog('API', `Hata: ${errMsg}`, 'error');
         // Model bulunamadı hatası
         if (errMsg.includes('not found') || errMsg.includes('404')) {
           throw new Error("Model bulunamadı. API yapılandırmasını kontrol edin.");
@@ -2190,17 +2166,14 @@ const AI = {
 
       // Check for blocked content or empty response
       if (data?.candidates?.[0]?.finishReason === 'SAFETY') {
-        debugLog('API', 'Güvenlik filtresi', 'error');
         throw new Error("İçerik güvenlik filtresine takıldı");
       }
       
       if (data?.candidates?.[0]?.finishReason === 'RECITATION') {
-        debugLog('API', 'İçerik kısıtlaması', 'error');
         throw new Error("İçerik kısıtlaması. Farklı bir fotoğraf deneyin.");
       }
       
       if (!data?.candidates?.length) {
-        debugLog('API', 'Boş yanıt', 'error');
         throw new Error("API yanıt vermedi - model meşgul olabilir");
       }
 
@@ -2214,25 +2187,20 @@ const AI = {
               mimeType = "image/png";
             }
             const rawSize = Math.round(p.inlineData.data.length / 1024);
-            debugLog('API', `Ham görsel: ${rawSize}KB`, 'info');
             
             // Görseli küçült (büyükse)
             const rawDataUrl = `data:${mimeType};base64,${p.inlineData.data}`;
             
-            if (rawSize > 300) {
-              debugLog('API', 'Görsel sıkıştırılıyor...', 'info');
+            if (rawSize > 400) { // 300KB → 400KB (daha az sıkıştırma)
               try {
                 const compressed = await compressResultImage(rawDataUrl);
-                const compressedSize = Math.round(compressed.length / 1024);
-                debugLog('API', `Sıkıştırıldı: ${rawSize}KB → ${compressedSize}KB`, 'success');
                 return compressed;
               } catch (compErr) {
-                debugLog('API', `Sıkıştırma hatası: ${compErr.message}`, 'warn');
-                return rawDataUrl; // Fallback to original
+                return rawDataUrl;
               }
             }
             
-            debugLog('API', `Görsel alındı: ${rawSize}KB`, 'success');
+            console.log(`✅ Görsel: ${elapsed}s, ${rawSize}KB`);
             return rawDataUrl;
           }
         }
@@ -2241,15 +2209,12 @@ const AI = {
       // If we got here, there's text but no image
       const textResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (textResponse) {
-        debugLog('API', `Görsel yok, metin döndü: ${textResponse.substring(0, 100)}...`, 'warn');
         throw new Error("Model görsel üretemedi. Farklı fotoğraflar deneyin.");
       }
 
-      debugLog('API', 'Görsel alınamadı', 'error');
       throw new Error("Görsel alınamadı");
     } catch (e) {
       if (e.name === "AbortError") {
-        debugLog('API', 'Zaman aşımı', 'error');
         throw new Error("İstek zaman aşımına uğradı (" + (timeoutMs/1000) + "s)");
       }
       throw e;
@@ -2260,7 +2225,7 @@ const AI = {
 
   async generateWithFallback(parts, imageConfig) {
     let lastError;
-    const maxAttempts = 2; // 3'ten 2'ye düşürdük - daha hızlı sonuç
+    const maxAttempts = 2;
     
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -2284,11 +2249,11 @@ const AI = {
           const isRetryable = !e.message.includes('zaman aşımı') && 
                              !e.message.includes('güvenlik filtresine');
           if (isRetryable) {
-            await sleep(1500); // Sabit 1.5 saniye bekle
+            await sleep(800); // 1.5s → 0.8s
             continue;
           }
         }
-        break; // Retry yapılmayacak hatalar için döngüden çık
+        break;
       }
     }
     
@@ -2466,29 +2431,16 @@ Output: High-quality full-body fashion photograph, 8K resolution, photorealistic
     const avatarInline = dataUrlToInlinePart(baseAvatarDataUrl, "image/png");
     if (!avatarInline) throw new Error("Avatar görseli okunamadı");
 
-    // Ürün görsellerini al
-    let topInline = null, bottomInline = null, outerwearInline = null;
+    // PARALEL görsel yükleme - çok daha hızlı!
+    const [topDataUrl, bottomDataUrl, outerwearDataUrl] = await Promise.all([
+      top ? getProductImageDataUrl(top.image) : Promise.resolve(null),
+      bottom ? getProductImageDataUrl(bottom.image) : Promise.resolve(null),
+      outerwear ? getProductImageDataUrl(outerwear.image) : Promise.resolve(null)
+    ]);
     
-    if (top) {
-      const topDataUrl = await getProductImageDataUrl(top.image);
-      if (topDataUrl) {
-        topInline = dataUrlToInlinePart(topDataUrl, "image/jpeg");
-      }
-    }
-    
-    if (bottom) {
-      const bottomDataUrl = await getProductImageDataUrl(bottom.image);
-      if (bottomDataUrl) {
-        bottomInline = dataUrlToInlinePart(bottomDataUrl, "image/jpeg");
-      }
-    }
-    
-    if (outerwear) {
-      const outerwearDataUrl = await getProductImageDataUrl(outerwear.image);
-      if (outerwearDataUrl) {
-        outerwearInline = dataUrlToInlinePart(outerwearDataUrl, "image/jpeg");
-      }
-    }
+    const topInline = topDataUrl ? dataUrlToInlinePart(topDataUrl, "image/jpeg") : null;
+    const bottomInline = bottomDataUrl ? dataUrlToInlinePart(bottomDataUrl, "image/jpeg") : null;
+    const outerwearInline = outerwearDataUrl ? dataUrlToInlinePart(outerwearDataUrl, "image/jpeg") : null;
 
     // En az bir görsel gerekli
     if (!topInline && !bottomInline && !outerwearInline) {
