@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>TrAi • Sanal Stil Asistanın</title>
   
+  <!-- Favicon - TrAi Logo -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23f472b6'/%3E%3Cstop offset='100%25' style='stop-color:%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='62' font-family='system-ui,sans-serif' font-size='32' font-weight='bold' fill='white' text-anchor='middle'%3ETrAi%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23f472b6'/%3E%3Cstop offset='100%25' style='stop-color:%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='62' font-family='system-ui,sans-serif' font-size='32' font-weight='bold' fill='white' text-anchor='middle'%3ETrAi%3C/text%3E%3C/svg%3E">
+  
   <!-- Security: Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;
@@ -1842,7 +1846,7 @@ async function getProductImageDataUrl(imageUrl) {
   return null;
 }
 
-// Add watermark to image
+// Add watermark to image - Professional, uncropable logo watermark
 async function addWatermark(dataUrl, text = 'TrAi Style', options = {}) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -1856,42 +1860,94 @@ async function addWatermark(dataUrl, text = 'TrAi Style', options = {}) {
         // Draw original image
         ctx.drawImage(img, 0, 0);
         
-        // Watermark settings
-        const fontSize = Math.max(14, Math.min(canvas.width * 0.035, 28));
-        const padding = fontSize * 0.8;
-        const opacity = options.opacity || 0.6;
+        const opacity = options.opacity || 0.85;
+        
+        // === WATERMARK 1: Sol alt köşe - Ana logo (kırpılamaz) ===
+        const logoSize = Math.max(50, Math.min(canvas.width * 0.12, 100));
+        const logoPadding = logoSize * 0.3;
+        const logoX = logoPadding;
+        const logoY = canvas.height - logoPadding - logoSize;
+        
+        // Logo background circle with gradient
+        const gradient = ctx.createLinearGradient(logoX, logoY, logoX + logoSize, logoY + logoSize);
+        gradient.addColorStop(0, 'rgba(244, 114, 182, 0.95)'); // Pink
+        gradient.addColorStop(1, 'rgba(168, 85, 247, 0.95)');  // Purple
+        
+        ctx.beginPath();
+        ctx.arc(logoX + logoSize/2, logoY + logoSize/2, logoSize/2, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // White border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Logo text "TrAi"
+        const logoFontSize = logoSize * 0.35;
+        ctx.font = `bold ${logoFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'white';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 4;
+        ctx.fillText('TrAi', logoX + logoSize/2, logoY + logoSize/2);
+        ctx.shadowBlur = 0;
+        
+        // === WATERMARK 2: Sağ alt köşe - trai.style URL ===
+        const fontSize = Math.max(14, Math.min(canvas.width * 0.03, 24));
+        const urlPadding = fontSize * 0.8;
+        const urlText = 'trai.style';
         
         ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
         ctx.textBaseline = 'bottom';
         ctx.textAlign = 'right';
         
-        const textWidth = ctx.measureText(text).width;
-        const x = canvas.width - padding;
-        const y = canvas.height - padding;
+        const urlWidth = ctx.measureText(urlText).width;
+        const urlX = canvas.width - urlPadding;
+        const urlY = canvas.height - urlPadding;
         
-        // Semi-transparent background pill
-        const bgPadding = fontSize * 0.3;
-        const bgHeight = fontSize * 1.2;
-        const bgWidth = textWidth + bgPadding * 2;
-        const bgX = x - textWidth - bgPadding;
-        const bgY = y - fontSize - bgPadding * 0.5;
+        // Background pill for URL
+        const bgPadding = fontSize * 0.4;
+        const bgHeight = fontSize * 1.4;
+        const bgWidth = urlWidth + bgPadding * 2;
+        const bgX = urlX - urlWidth - bgPadding;
+        const bgY = urlY - fontSize - bgPadding * 0.3;
         
-        ctx.fillStyle = `rgba(0, 0, 0, ${opacity * 0.5})`;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         ctx.beginPath();
         ctx.roundRect(bgX, bgY, bgWidth, bgHeight, fontSize * 0.3);
         ctx.fill();
         
-        // Text with slight shadow
+        // URL text
         ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 3;
-        ctx.shadowOffsetX = 1;
-        ctx.shadowOffsetY = 1;
+        ctx.shadowBlur = 2;
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.fillText(text, x, y);
-        
-        // Reset shadow
-        ctx.shadowColor = 'transparent';
+        ctx.fillText(urlText, urlX, urlY);
         ctx.shadowBlur = 0;
+        
+        // === WATERMARK 3: Diagonal repeating pattern (görselin ortasında, subtle) ===
+        if (!options.noPattern) {
+          ctx.save();
+          ctx.globalAlpha = 0.06;
+          ctx.font = `bold ${Math.max(20, canvas.width * 0.04)}px -apple-system, sans-serif`;
+          ctx.fillStyle = 'white';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          // Diagonal pattern across image
+          const patternSpacing = canvas.width * 0.25;
+          for (let y = -canvas.height; y < canvas.height * 2; y += patternSpacing) {
+            for (let x = -canvas.width; x < canvas.width * 2; x += patternSpacing) {
+              ctx.save();
+              ctx.translate(x, y);
+              ctx.rotate(-Math.PI / 6); // 30 degree angle
+              ctx.fillText('TrAi Style', 0, 0);
+              ctx.restore();
+            }
+          }
+          ctx.restore();
+        }
         
         const result = canvas.toDataURL('image/jpeg', 0.92);
         resolve(result);
@@ -4827,7 +4883,7 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
 };
 
 // ============ SHOP ============
-const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, cart, onShowCart, onShowSubscription }) => {
+const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, cart, onShowCart, onShowSubscription, setTab }) => {
   const [search, setSearch] = useState('');
   const [brand, setBrand] = useState('all');
   
@@ -4976,10 +5032,16 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
     <div className="h-full flex flex-col overflow-hidden">
       {/* Logo & Slogan Header with Cart/Premium */}
       <div className="flex-shrink-0 px-4 pt-2 pb-1 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <button 
+          onClick={() => {
+            // Ana sayfaya (keşfet) git
+            if (typeof setTab === 'function') setTab('shop');
+          }}
+          className="flex items-center gap-2 hover:opacity-80 transition"
+        >
           <img src={LOGO_BASE64} alt="TrAi" className="w-8 h-8 rounded-lg shadow-sm" />
           <p className="text-xs font-bold bg-brand bg-clip-text text-transparent">{t('slogan')}</p>
-        </div>
+        </button>
         <div className="flex items-center gap-2">
           {/* Universal Credits Display - Gold Coin */}
           <button 
@@ -8710,39 +8772,103 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
 // Size Selection Modal - Ask size before adding to cart
 const SizeSelectionModal = ({ open, product, currentIndex, totalItems, onSelect, onClose, userMeasurements }) => {
   const [selectedSize, setSelectedSize] = useState(null);
-  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState(null);
+  const [loadingAI, setLoadingAI] = useState(false);
   
   const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   
-  // Simple size recommendation based on user measurements
-  const getRecommendedSize = () => {
-    if (!userMeasurements) return null;
-    
-    const { height, weight, bodyType } = userMeasurements;
-    if (!height || !weight) return null;
-    
-    // Simple BMI-based recommendation
-    const heightM = height / 100;
-    const bmi = weight / (heightM * heightM);
-    
-    // Gender-aware sizing
-    const isMale = product?.gender === 'male';
-    
-    if (bmi < 18.5) return isMale ? 'S' : 'XS';
-    if (bmi < 22) return isMale ? 'M' : 'S';
-    if (bmi < 25) return isMale ? 'L' : 'M';
-    if (bmi < 28) return isMale ? 'XL' : 'L';
-    if (bmi < 32) return isMale ? 'XXL' : 'XL';
-    return 'XXL';
-  };
+  // Fetch AI recommendation on open
+  React.useEffect(() => {
+    if (open && product && userMeasurements) {
+      fetchAIRecommendation();
+    }
+    return () => {
+      setAiRecommendation(null);
+      setSelectedSize(null);
+    };
+  }, [open, product?.id]);
   
-  const recommendedSize = getRecommendedSize();
+  const fetchAIRecommendation = async () => {
+    if (!userMeasurements?.height || !userMeasurements?.weight) return;
+    
+    setLoadingAI(true);
+    try {
+      const prompt = `Sen bir moda ve beden danışmanısın. Kullanıcıya online alışveriş için beden önerisi yapacaksın.
+
+ÜRÜN BİLGİSİ:
+- Marka: ${product.brandName || 'Bilinmiyor'}
+- Ürün: ${product.name}
+- Kategori: ${product.type || product.category}
+- Renk: ${product.color || 'Belirtilmemiş'}
+
+KULLANICI ÖLÇÜLER:
+- Boy: ${userMeasurements.height} cm
+- Kilo: ${userMeasurements.weight} kg
+- Vücut Tipi: ${userMeasurements.bodyType || 'normal'}
+- Cinsiyet: ${product.gender === 'male' ? 'Erkek' : 'Kadın'}
+
+GÖREV:
+1. Bu marka ve ürün tipi için internet yorumlarını ve beden tablolarını düşünerek analiz yap
+2. Türk markalarının genelde dar kesim olduğunu, uluslararası markaların farklı kalıplara sahip olduğunu dikkate al
+3. Kullanıcının vücut tipine göre rahat mı yoksa slim fit mi tercih edeceğini değerlendir
+
+CEVAP FORMATI (sadece JSON, başka bir şey yazma):
+{
+  "size": "M",
+  "confidence": "yüksek",
+  "reason": "Kısa ve öz açıklama (max 50 kelime)",
+  "tip": "Kullanıcıya özel ipucu (max 20 kelime)"
+}`;
+
+      const apiUrl = CONFIG.useApiRoute ? '/api/gemini' : `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.textModel}:generateContent`;
+      const headers = { "Content-Type": "application/json" };
+      
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model: CONFIG.textModel,
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 300 }
+        })
+      });
+      
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (text) {
+        // Extract JSON from response
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          setAiRecommendation(parsed);
+          setSelectedSize(parsed.size);
+        }
+      }
+    } catch (e) {
+      console.error('AI recommendation error:', e);
+      // Fallback to simple BMI-based recommendation
+      const heightM = userMeasurements.height / 100;
+      const bmi = userMeasurements.weight / (heightM * heightM);
+      const isMale = product?.gender === 'male';
+      let fallbackSize = 'M';
+      if (bmi < 18.5) fallbackSize = isMale ? 'S' : 'XS';
+      else if (bmi < 22) fallbackSize = isMale ? 'M' : 'S';
+      else if (bmi < 25) fallbackSize = isMale ? 'L' : 'M';
+      else if (bmi < 28) fallbackSize = isMale ? 'XL' : 'L';
+      else fallbackSize = 'XL';
+      setAiRecommendation({ size: fallbackSize, reason: 'Vücut ölçülerinize göre hesaplandı', confidence: 'orta' });
+      setSelectedSize(fallbackSize);
+    } finally {
+      setLoadingAI(false);
+    }
+  };
   
   if (!open || !product) return null;
   
   return (
     <div className="fixed inset-0 z-[110] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-surface rounded-3xl overflow-hidden slide-up">
+      <div className="w-full max-w-sm bg-surface rounded-3xl overflow-hidden slide-up max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-4 border-b border-slate-200">
           <div className="flex items-center justify-between">
@@ -8770,25 +8896,46 @@ const SizeSelectionModal = ({ open, product, currentIndex, totalItems, onSelect,
           </div>
         </div>
         
-        {/* AI Recommendation */}
-        {recommendedSize && (
-          <div className="px-4 pt-3">
-            <button
-              onClick={() => {
-                setSelectedSize(recommendedSize);
-                setShowRecommendation(true);
-              }}
-              className="w-full bg-gradient-to-r from-brand/10 to-purple-500/10 border border-brand/30 rounded-xl p-3 flex items-center gap-3"
-            >
-              <div className="w-10 h-10 rounded-full bg-brand flex items-center justify-center">
-                <span className="text-lg">✨</span>
+        {/* AI Recommendation Loading */}
+        {loadingAI && (
+          <div className="px-4 pt-4">
+            <div className="bg-gradient-to-r from-brand/5 to-purple-500/5 border border-brand/20 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center animate-pulse">
+                  <span className="text-lg">✨</span>
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-brand">AI Beden Analizi</p>
+                  <p className="text-xs text-slate-500">Vücut ölçülerinize göre öneri alınıyor...</p>
+                </div>
+                <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
               </div>
-              <div className="flex-1 text-left">
-                <p className="font-semibold text-sm">AI Beden Önerisi</p>
-                <p className="text-xs text-slate-500">Ölçülerine göre: <span className="font-bold text-brand">{recommendedSize}</span></p>
+            </div>
+          </div>
+        )}
+        
+        {/* AI Recommendation Result */}
+        {aiRecommendation && !loadingAI && (
+          <div className="px-4 pt-4">
+            <div className="bg-gradient-to-r from-brand/10 to-purple-500/10 border border-brand/30 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl font-bold text-white">{aiRecommendation.size}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-bold text-sm">AI Önerisi: {aiRecommendation.size}</p>
+                    {aiRecommendation.confidence === 'yüksek' && (
+                      <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Güvenilir</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">{aiRecommendation.reason}</p>
+                  {aiRecommendation.tip && (
+                    <p className="text-xs text-brand mt-2 font-medium">💡 {aiRecommendation.tip}</p>
+                  )}
+                </div>
               </div>
-              <Icon name="sparkles" size={18} className="text-brand" />
-            </button>
+            </div>
           </div>
         )}
         
@@ -8803,14 +8950,14 @@ const SizeSelectionModal = ({ open, product, currentIndex, totalItems, onSelect,
                 className={`py-3 rounded-xl font-bold text-sm transition-all ${
                   selectedSize === size
                     ? 'bg-brand text-white shadow-lg scale-105'
-                    : size === recommendedSize
+                    : size === aiRecommendation?.size
                       ? 'bg-brand/10 text-brand border-2 border-brand/30'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {size}
-                {size === recommendedSize && selectedSize !== size && (
-                  <span className="block text-[9px] font-normal">Önerilen</span>
+                {size === aiRecommendation?.size && selectedSize !== size && (
+                  <span className="block text-[9px] font-normal">AI Önerisi</span>
                 )}
               </button>
             ))}
@@ -8824,17 +8971,18 @@ const SizeSelectionModal = ({ open, product, currentIndex, totalItems, onSelect,
               if (selectedSize) {
                 onSelect(selectedSize);
                 setSelectedSize(null);
+                setAiRecommendation(null);
               }
             }}
-            disabled={!selectedSize}
+            disabled={!selectedSize || loadingAI}
             className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
-              selectedSize
+              selectedSize && !loadingAI
                 ? 'bg-brand text-white'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
           >
             <Icon name="shop" size={18} />
-            {selectedSize ? `${selectedSize} Beden Ekle` : 'Beden Seç'}
+            {loadingAI ? 'Öneri Alınıyor...' : selectedSize ? `${selectedSize} Beden Ekle` : 'Beden Seç'}
           </button>
         </div>
       </div>
@@ -9028,8 +9176,9 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
   const handleProductClick = (item) => {
     const url = buildTrendyolUrl(item);
     if (url) {
-      const width = 600;
-      const height = 900;
+      // Daha geniş popup - sepete ekle butonu görünsün
+      const width = 900;
+      const height = 950;
       const left = (window.screen.width - width) / 2;
       const top = (window.screen.height - height) / 2;
       
@@ -9068,17 +9217,17 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
     setClickedItems(prev => [...prev, ...newClickedIds]);
     setCurrentStep(2);
     
-    // Open each item with staggered timing
+    // Open each item with staggered timing - daha geniş pencereler
     itemsToOpen.forEach((item, index) => {
       setTimeout(() => {
         const url = buildTrendyolUrl(item);
         if (url) {
-          const left = 100 + (index % 3) * 600;
-          const top = 50 + Math.floor(index / 3) * 50;
+          const left = 50 + (index % 2) * 450;
+          const top = 30 + Math.floor(index / 2) * 40;
           const popup = window.open(
             url, 
             `trendyol_${item.id}_${Date.now()}`, 
-            `width=600,height=900,left=${left},top=${top},scrollbars=yes,resizable=yes`
+            `width=900,height=950,left=${left},top=${top},scrollbars=yes,resizable=yes`
           );
           if (popup) {
             setOpenPopups(prev => [...prev, popup]);
@@ -9295,7 +9444,7 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
                             className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
                               isClicked 
                                 ? 'bg-green-100 text-green-700' 
-                                : 'bg-slate-900 text-white hover:bg-slate-700'
+                                : 'bg-orange-500 text-white hover:bg-orange-600'
                             }`}
                           >
                             {isClicked ? (
@@ -9305,8 +9454,8 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
                               </>
                             ) : (
                               <>
-                                Sepete Ekle
                                 <Icon name="externalLink" size={12} />
+                                Trendyol'da Beden Seç
                               </>
                             )}
                           </button>
@@ -13049,13 +13198,16 @@ const App = () => {
       <div className="hidden lg:grid app-shell">
         {/* Left Sidebar - Navigation */}
         <div className="desktop-sidebar-left">
-          <div className="flex items-center gap-3 mb-8">
+          <button 
+            onClick={() => setTab('shop')}
+            className="flex items-center gap-3 mb-8 hover:opacity-80 transition text-left"
+          >
             <img src={LOGO_BASE64} alt="TrAi" className="w-10 h-10 rounded-xl" />
             <div>
               <h1 className="font-bold text-lg">{CONFIG.name}</h1>
               <p className="text-xs text-slate-500">{t('slogan')}</p>
             </div>
-          </div>
+          </button>
           
           <nav className="space-y-2">
             {navItems.map(item => (
@@ -13096,7 +13248,7 @@ const App = () => {
         
         {/* Main Content */}
         <div className="desktop-main flex flex-col overflow-hidden">
-          {tab === 'shop' && <Shop user={user} closet={closet} onTryOn={tryOnSingle} onAddToCloset={addToCloset} onAdvice={getAdvice} onAddToCart={addToCart} cart={cart} onShowCart={() => setShowCart(true)} onShowSubscription={() => setShowSubscription(true)} />}
+          {tab === 'shop' && <Shop user={user} closet={closet} onTryOn={tryOnSingle} onAddToCloset={addToCloset} onAdvice={getAdvice} onAddToCart={addToCart} cart={cart} onShowCart={() => setShowCart(true)} onShowSubscription={() => setShowSubscription(true)} setTab={setTab} />}
           {tab === 'closet' && (
             <SmartCloset 
               user={user}
@@ -13246,7 +13398,7 @@ const App = () => {
       {/* Mobile Layout */}
       <div className="lg:hidden fixed inset-0 w-full max-w-lg mx-auto bg-dark flex flex-col">
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
-          {tab === 'shop' && <Shop user={user} closet={closet} onTryOn={tryOnSingle} onAddToCloset={addToCloset} onAdvice={getAdvice} onAddToCart={addToCart} cart={cart} onShowCart={() => setShowCart(true)} onShowSubscription={() => setShowSubscription(true)} />}
+          {tab === 'shop' && <Shop user={user} closet={closet} onTryOn={tryOnSingle} onAddToCloset={addToCloset} onAdvice={getAdvice} onAddToCart={addToCart} cart={cart} onShowCart={() => setShowCart(true)} onShowSubscription={() => setShowSubscription(true)} setTab={setTab} />}
           {tab === 'closet' && (
             <SmartCloset 
               user={user}
