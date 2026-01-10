@@ -7622,12 +7622,15 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               senderId: data.senderId,
               senderName: data.senderName,
               text: data.text,
-              timestamp: data.timestamp?.toMillis?.() || Date.now(),
+              type: data.type || 'text',
+              image: data.image || null,
+              items: data.items || [],
+              timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
               read: data.read
             });
           });
           
-          console.log('📨 Messages updated:', messagesList.length);
+          console.log('📨 Messages updated:', messagesList.length, messagesList.map(m => ({ type: m.type, hasImage: !!m.image })));
           
           // Update dmChats with loaded messages
           setDmChats(prev => prev.map(c => 
@@ -8324,9 +8327,9 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               </div>
             ) : (
               // Chat View (DM or Group)
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full overflow-hidden">
                 {/* Chat Header */}
-                <div className="p-4 border-b border-slate-200 flex items-center gap-3">
+                <div className="flex-shrink-0 p-4 border-b border-slate-200 flex items-center gap-3">
                   <button onClick={() => setSelectedChat(null)} className="p-2 -ml-2 rounded-xl hover:bg-slate-200/60">
                     <Icon name="chevronLeft" size={20} />
                   </button>
@@ -8369,7 +8372,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                 )}
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-3">
+                <div className="flex-1 min-h-0 overflow-y-auto custom-scroll p-4 space-y-3">
                   {getChatMessages(selectedChat.id, selectedChat.type).length === 0 ? (
                     <div className="text-center py-8 text-slate-400 text-sm">
                       {t('beFirstToMessage')}
@@ -8385,9 +8388,21 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                             {selectedChat.type === 'group' && !isMine && (
                               <p className="text-xs font-semibold text-brand2 mb-1">{msg.senderName}</p>
                             )}
+                            {/* Combo/Image Message */}
+                            {msg.type === 'combo' && msg.image && (
+                              <div className="mb-2">
+                                <img src={msg.image} className="rounded-xl max-w-full max-h-64 object-contain" />
+                                {msg.items && msg.items.length > 0 && (
+                                  <p className={`text-xs mt-1 ${isMine ? 'text-white/70' : 'text-slate-500'}`}>
+                                    📸 {msg.items.length} ürünlü kombin
+                                  </p>
+                                )}
+                              </div>
+                            )}
                             <p className="text-sm">{msg.text}</p>
-                            {msg.image && (
-                              <img src={msg.image} className="mt-2 rounded-lg max-w-full" />
+                            {/* Regular image (not combo) */}
+                            {msg.type !== 'combo' && msg.image && (
+                              <img src={msg.image} className="mt-2 rounded-lg max-w-full max-h-48 object-contain" />
                             )}
                             <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-slate-400'}`}>
                               {new Date(msg.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
@@ -10443,42 +10458,140 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   
   // Follow a user
   const followUser = async (targetUser) => {
-    if (!db || !authUser?.uid) return;
+    if (!db || !authUser?.uid || !user) return;
+    
+    const myUid = authUser.uid;
+    const targetUid = targetUser.id;
+    
+    // Check if already sent request
+    if (sentFollowRequests.some(r => r.uid === targetUid || r === targetUid)) {
+      setToast({ open: true, type: 'warning', title: 'Zaten gönderildi', message: 'Bu kullanıcıya zaten istek gönderdin' });
+      return;
+    }
+    
+    // Check if already following
+    if (friends.some(f => f.uid === targetUid || f.id === targetUid)) {
+      setToast({ open: true, type: 'info', title: 'Zaten takip ediyorsun', message: 'Bu kullanıcıyı zaten takip ediyorsun' });
+      return;
+    }
+    
     try {
-      // Add to sent requests
-      await db.collection('users').doc(targetUser.id).collection('followRequests').add({
-        fromUserId: authUser.uid,
-        fromUsername: user?.username || user?.displayName,
-        fromAvatar: user?.profilePhoto || user?.baseAvatar,
+      const requestData = {
+        fromUid: myUid,
+        fromUsername: user.username,
+        fromDisplayName: user.displayName,
+        fromPhoto: user.profilePhoto || null,
+        toUid: targetUid,
+        toUsername: targetUser.username,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Add to target's incoming requests (use doc ID as myUid to prevent duplicates)
+      await db.collection('users').doc(targetUid).collection('followRequests').doc(myUid).set(requestData);
+      
+      // Add to my sent requests
+      await db.collection('users').doc(myUid).collection('sentFollowRequests').doc(targetUid).set({
+        ...requestData,
+        toPhoto: targetUser.profilePhoto || targetUser.avatar || null
+      });
+      
+      // Create notification
+      await db.collection('users').doc(targetUid).collection('notifications').add({
+        type: 'follow_request',
+        fromUid: myUid,
+        fromUsername: user.username,
+        fromDisplayName: user.displayName,
+        fromPhoto: user.profilePhoto || null,
+        message: `${user.username || user.displayName} seni takip etmek istiyor`,
+        read: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-      setSentFollowRequests(prev => [...prev, targetUser.id]);
+      
+      // Local state will be updated by real-time listener
       setToast({ open: true, type: 'success', title: 'İstek Gönderildi', message: `@${targetUser.username}'e takip isteği gönderildi` });
     } catch (err) {
       console.error('Follow error:', err);
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'İstek gönderilemedi' });
     }
   };
   
-  // Accept follow request
+  // Accept follow request - Creates MUTUAL follow
   const acceptRequest = async (request) => {
-    if (!db || !authUser?.uid) return;
+    if (!db || !authUser?.uid || !user) return;
+    
+    const myUid = authUser.uid;
+    const fromUid = request.fromUid || request.fromUserId;
+    
+    if (!fromUid) {
+      console.error('No fromUid in request:', request);
+      return;
+    }
+    
     try {
-      // Add to friends
-      const newFriend = {
-        id: request.fromUserId,
+      // They follow me - add to their following
+      await db.collection('users').doc(fromUid).collection('following').doc(myUid).set({
+        uid: myUid,
+        username: user.username,
+        displayName: user.displayName,
+        profilePhoto: user.profilePhoto || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // I'm in their following - add them to my followers
+      await db.collection('users').doc(myUid).collection('followers').doc(fromUid).set({
+        uid: fromUid,
         username: request.fromUsername,
-        displayName: request.fromUsername,
-        avatar: request.fromAvatar
-      };
-      setFriends(prev => [...prev, newFriend]);
+        displayName: request.fromDisplayName || request.fromUsername,
+        profilePhoto: request.fromPhoto || request.fromAvatar || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
       
-      // Remove request
-      await db.collection('users').doc(authUser.uid).collection('followRequests').doc(request.id).delete();
-      setFollowRequests(prev => prev.filter(r => r.id !== request.id));
+      // MUTUAL: I also follow them back
+      await db.collection('users').doc(myUid).collection('following').doc(fromUid).set({
+        uid: fromUid,
+        username: request.fromUsername,
+        displayName: request.fromDisplayName || request.fromUsername,
+        profilePhoto: request.fromPhoto || request.fromAvatar || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
       
-      setToast({ open: true, type: 'success', title: 'Kabul Edildi', message: `${request.fromUsername} artık seni takip ediyor` });
+      // They're in my following - add me to their followers
+      await db.collection('users').doc(fromUid).collection('followers').doc(myUid).set({
+        uid: myUid,
+        username: user.username,
+        displayName: user.displayName,
+        profilePhoto: user.profilePhoto || null,
+        followedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // Delete the request (use fromUid as doc ID)
+      await db.collection('users').doc(myUid).collection('followRequests').doc(fromUid).delete().catch(() => {});
+      // Also try to delete by request.id if it's different
+      if (request.id && request.id !== fromUid) {
+        await db.collection('users').doc(myUid).collection('followRequests').doc(request.id).delete().catch(() => {});
+      }
+      await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(myUid).delete().catch(() => {});
+      
+      // Send notification
+      await db.collection('users').doc(fromUid).collection('notifications').add({
+        type: 'follow_accepted',
+        fromUid: myUid,
+        fromUsername: user.username,
+        fromDisplayName: user.displayName,
+        fromPhoto: user.profilePhoto || null,
+        message: `${user.username || user.displayName} takip isteğini kabul etti`,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      console.log('✅ Follow request accepted - mutual follow created');
+      
+      // Local state will be updated by real-time listeners
+      setToast({ open: true, type: 'success', title: 'Kabul Edildi', message: `${request.fromUsername} artık arkadaşın` });
     } catch (err) {
       console.error('Accept error:', err);
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'İşlem başarısız' });
     }
   };
   
@@ -10901,8 +11014,8 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             <div className="glass rounded-2xl p-3 space-y-2">
               <p className="text-xs text-slate-500 font-semibold">ARAMA SONUÇLARI</p>
               {searchResults.map(u => {
-                const isFollowing = friends.some(f => f.id === u.id);
-                const isPending = sentFollowRequests?.includes(u.id);
+                const isFollowing = friends.some(f => f.id === u.id || f.uid === u.id);
+                const isPending = sentFollowRequests?.some(r => r.uid === u.id || r === u.id);
                 return (
                   <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100">
                     <img 
@@ -10936,13 +11049,13 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             <div className="glass rounded-2xl p-3 space-y-2">
               <p className="text-xs text-slate-500 font-semibold">TAKİP İSTEKLERİ</p>
               {followRequests.map(req => (
-                <div key={req.id} className="flex items-center gap-3 p-2 rounded-xl bg-amber-50">
+                <div key={req.id || req.fromUid} className="flex items-center gap-3 p-2 rounded-xl bg-amber-50">
                   <img 
-                    src={req.fromAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.fromUserId}`}
+                    src={req.fromPhoto || req.fromAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.fromUid || req.fromUserId}`}
                     className="w-12 h-12 rounded-xl object-cover"
                   />
                   <div className="flex-1">
-                    <p className="font-semibold text-sm">{req.fromUsername}</p>
+                    <p className="font-semibold text-sm">{req.fromDisplayName || req.fromUsername}</p>
                     <p className="text-xs text-slate-500">Seni takip etmek istiyor</p>
                   </div>
                   <div className="flex gap-2">
@@ -10953,7 +11066,18 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                       Kabul
                     </button>
                     <button 
-                      onClick={() => setFollowRequests(prev => prev.filter(r => r.id !== req.id))}
+                      onClick={async () => {
+                        // Reject and delete request
+                        if (db && authUser?.uid) {
+                          const fromUid = req.fromUid || req.fromUserId;
+                          await db.collection('users').doc(authUser.uid).collection('followRequests').doc(fromUid).delete().catch(() => {});
+                          if (req.id && req.id !== fromUid) {
+                            await db.collection('users').doc(authUser.uid).collection('followRequests').doc(req.id).delete().catch(() => {});
+                          }
+                          await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(authUser.uid).delete().catch(() => {});
+                        }
+                        setFollowRequests(prev => prev.filter(r => r.id !== req.id && r.fromUid !== req.fromUid));
+                      }}
                       className="btn-ghost px-3 py-1.5 rounded-lg text-xs"
                     >
                       Reddet
@@ -11044,13 +11168,24 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                         try {
                           const messagesSnap = await db.collection('chats').doc(chat.id)
                             .collection('messages')
-                            .orderBy('createdAt', 'asc')
+                            .orderBy('timestamp', 'asc')
                             .limit(100)
                             .get();
-                          const messages = messagesSnap.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                          }));
+                          const messages = messagesSnap.docs.map(doc => {
+                            const data = doc.data();
+                            return {
+                              id: doc.id,
+                              senderId: data.senderId,
+                              senderName: data.senderName,
+                              text: data.text,
+                              type: data.type || 'text',
+                              image: data.image || null,
+                              items: data.items || [],
+                              timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
+                              read: data.read
+                            };
+                          });
+                          console.log('📨 SocialFeed messages loaded:', messages.length, messages.map(m => ({ type: m.type, hasImage: !!m.image })));
                           setSelectedChat(prev => prev?.id === chat.id ? { ...prev, messages, loading: false } : prev);
                         } catch(err) {
                           console.error('Messages load error:', err);
@@ -11075,9 +11210,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             </div>
           ) : (
             // Chat View
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col overflow-hidden">
               {/* Chat Header */}
-              <div className="p-3 border-b border-slate-200 flex items-center gap-3">
+              <div className="flex-shrink-0 p-3 border-b border-slate-200 flex items-center gap-3">
                 <button onClick={() => setSelectedChat(null)} className="p-2 -ml-2 rounded-xl hover:bg-slate-100">
                   <Icon name="chevronLeft" size={20} />
                 </button>
@@ -11091,7 +11226,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               </div>
               
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-3">
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scroll p-4 space-y-3">
                 {selectedChat.loading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="w-6 h-6 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
@@ -12413,12 +12548,15 @@ const App = () => {
           senderId: data.senderId,
           senderName: data.senderName,
           text: data.text,
-          timestamp: data.timestamp?.toMillis?.() || Date.now(),
+          type: data.type || 'text',
+          image: data.image || null,
+          items: data.items || [],
+          timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
           read: data.read
         });
       });
       
-      console.log('✅ Messages loaded:', messagesList.length);
+      console.log('✅ Messages loaded:', messagesList.length, messagesList.map(m => ({ type: m.type, hasImage: !!m.image })));
       
       // Update dmChats with loaded messages
       setDmChats(prev => prev.map(c => 
