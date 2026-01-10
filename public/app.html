@@ -1570,7 +1570,8 @@ const Icons = {
   grid:<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>,
   list:<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>,
   pants:<path d="M4 2h16v6l-3 14H7L4 8V2z M4 8h16"/>,
-  globe:<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>,
+  globe:<><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>,
+  world:<><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M12 2v20"/><path d="M4.93 4.93l14.14 14.14"/><path d="M19.07 4.93L4.93 19.07"/></>,
   image:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>,
   plusCircle:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></>,
   moreHorizontal:<><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>,
@@ -1968,23 +1969,19 @@ function openImageInNewTabSafe(dataUrl) {
     return false;
   }
 
-  const w = window.open("about:blank", "_blank", "noopener,noreferrer");
-  if (!w) return false;
-
-  const doc = w.document;
-  doc.open();
-  doc.write("<!doctype html><html><head><meta charset='utf-8'><title>TrAi</title></head><body></body></html>");
-  doc.close();
-
-  // Safe: DOM API + attribute set (no HTML injection)
-  doc.body.style.cssText = "margin:0;background:#0b0b14;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px";
-
-  const img = doc.createElement("img");
-  img.src = dataUrl;  // Safe: dataUrl is validated above
-  img.style.cssText = "max-width:100%;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.6)";
-  doc.body.appendChild(img);
-
-  return true;
+  // Download the image instead of opening popup (popup blockers cause about:blank)
+  try {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `trai-style-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return true;
+  } catch (e) {
+    console.error('Download failed:', e);
+    return false;
+  }
 }
 
 async function shareImage(dataUrl, options = {}) {
@@ -10445,7 +10442,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   };
 
   const tabs = [
-    { id: 'feed', icon: 'globe', label: t('social') },
+    { id: 'feed', icon: 'world', label: t('social') },
     { id: 'friends', icon: 'users', label: t('following') },
     { id: 'messages', icon: 'mail', label: 'DM' },
     { id: 'create', icon: 'plusCircle', label: t('share') }
@@ -10655,7 +10652,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     const timeAgo = getTimeAgo(post.createdAt);
 
     return (
-      <div className="glass rounded-2xl overflow-hidden fade-in">
+      <div className="glass rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="p-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand">
@@ -11527,7 +11524,7 @@ const BottomNav = ({ tab, setTab, hasNotifications }) => (
       {[
         { id: 'shop', icon: 'shop', labelKey: 'explore' }, 
         { id: 'closet', icon: 'hanger', labelKey: 'closet' }, 
-        { id: 'social', icon: 'globe', labelKey: 'social' },
+        { id: 'social', icon: 'world', labelKey: 'social' },
         { id: 'profile', icon: 'user', labelKey: 'profile' }
       ].map(item => (
         <button key={item.id} onClick={() => setTab(item.id)} className={`relative flex flex-col items-center gap-1 py-2 px-4 rounded-2xl transition ${tab === item.id ? 'text-brand bg-brand/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
@@ -12976,12 +12973,15 @@ const App = () => {
   // Delete account and all user data
   const deleteAccount = async () => {
     if (!confirm('Hesabını ve tüm verilerini kalıcı olarak silmek istiyor musun? Bu işlem geri alınamaz!')) return;
-    if (!confirm('Emin misin? Avatar, dolap, geçmiş ve tüm veriler silinecek.')) return;
+    if (!confirm('Emin misin? Avatar, dolap, paylaşımlar, geçmiş ve tüm veriler silinecek.')) return;
     
     try {
       if (authUser) {
         const userId = authUser.uid;
         const userEmail = authUser.email;
+        
+        // Delete user's posts from local state immediately
+        setPosts(prev => prev.filter(p => p.authorId !== userId));
         
         // Delete from Firestore
         if (db) {
@@ -12995,15 +12995,70 @@ const App = () => {
               uid: userId
             }).catch(e => console.warn('⚠️ Deleted email track error:', e));
           }
+          
+          // Delete user's posts from Firestore (if stored there)
+          try {
+            const postsSnapshot = await db.collection('posts').where('authorId', '==', userId).get();
+            const batch = db.batch();
+            postsSnapshot.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            console.log('✅ User posts deleted from Firestore');
+          } catch (e) {
+            console.warn('⚠️ Posts delete error:', e);
+          }
+          
+          // Delete user's comments from posts
+          try {
+            const allPostsSnapshot = await db.collection('posts').get();
+            const batch = db.batch();
+            allPostsSnapshot.forEach(doc => {
+              const data = doc.data();
+              if (data.comments && data.comments.some(c => c.authorId === userId)) {
+                const filteredComments = data.comments.filter(c => c.authorId !== userId);
+                batch.update(doc.ref, { comments: filteredComments });
+              }
+            });
+            await batch.commit();
+          } catch (e) {
+            console.warn('⚠️ Comments cleanup error:', e);
+          }
+          
+          // Delete follows where user is involved
+          try {
+            const followsFromSnapshot = await db.collection('follows').where('fromUid', '==', userId).get();
+            const followsToSnapshot = await db.collection('follows').where('toUid', '==', userId).get();
+            const batch = db.batch();
+            followsFromSnapshot.forEach(doc => batch.delete(doc.ref));
+            followsToSnapshot.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            console.log('✅ User follows deleted');
+          } catch (e) {
+            console.warn('⚠️ Follows delete error:', e);
+          }
         }
+        
         // Delete from Storage
         if (storage) {
           try {
-            await storage.ref(`avatars/${userId}/base-avatar.png`).delete();
+            // Delete avatar
+            await storage.ref(`avatars/${userId}/base-avatar.png`).delete().catch(() => {});
+            
+            // Delete shared images
+            const sharedRef = storage.ref(`shared/${userId}`);
+            const sharedList = await sharedRef.listAll().catch(() => ({ items: [] }));
+            await Promise.all(sharedList.items.map(item => item.delete().catch(() => {})));
+            
+            // Delete combo images
+            const combosRef = storage.ref(`combos/${userId}`);
+            const combosList = await combosRef.listAll().catch(() => ({ items: [] }));
+            await Promise.all(combosList.items.map(item => item.delete().catch(() => {})));
+            
+            console.log('✅ User storage files deleted');
           } catch (e) {
-            console.warn('⚠️ Avatar delete error (may not exist):', e.code);
+            console.warn('⚠️ Storage delete error:', e);
           }
         }
+        
         // Clear all localStorage
         localStorage.removeItem(`trai_user_${userId}`);
         localStorage.removeItem(`trai_closet_${userId}`);
@@ -13014,6 +13069,7 @@ const App = () => {
         localStorage.removeItem(`trai_favorites_${userId}`);
         localStorage.removeItem(`trai_history_${userId}`);
         localStorage.removeItem(`trai_tryoncache_${userId}`);
+        
         // Delete Firebase auth account
         if (auth?.currentUser) {
           await auth.currentUser.delete();
