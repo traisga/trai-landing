@@ -5029,18 +5029,13 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
           <p className="text-xs font-bold bg-brand bg-clip-text text-transparent">{t('slogan')}</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Weekly Tries Display */}
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 border border-green-200">
-            <span className="text-green-500 text-xs">🎨</span>
-            <span className="text-[10px] font-bold text-green-700">{user?.freeShopTries || 0}</span>
-          </div>
-          {/* Credits Display */}
+          {/* Universal Credits Display - Gold Coin */}
           <button 
             onClick={onShowSubscription}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-200 hover:from-amber-200 hover:to-amber-100 transition"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-300 hover:from-amber-200 hover:to-yellow-100 transition shadow-sm"
           >
-            <span className="text-amber-500">🪙</span>
-            <span className="text-xs font-bold text-amber-700">{user?.credits || 0}</span>
+            <span className="text-lg">🪙</span>
+            <span className="text-sm font-bold text-amber-700">{(user?.freeShopTries || 0) + (user?.credits || 0)}</span>
           </button>
           {/* Cart Button */}
           <button 
@@ -5263,7 +5258,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
 };
 
 // ============ CLOSET ============
-const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed, onFirstTryOn, onAddCustomClothing, settings, onShowSubscription, useCredit, onAddToCart }) => {
+const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed, onFirstTryOn, onAddCustomClothing, settings, onShowSubscription, useCredit, onAddToCart, showAvatarPrompt, setShowAvatarPrompt }) => {
   const [tab, setTab] = useState('studio'); // studio, items, upload, combos, favorites, history, weather
   const [selected, setSelected] = useState({ top: null, bottom: null, outerwear: null, fullbody: null });
   const [bg, setBg] = useState(BACKGROUNDS[0]);
@@ -5594,7 +5589,12 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
     
     const avatarData = user?.baseAvatar || user?.avatar;
     if (!avatarData) {
-      setToast({ open: true, type: 'error', title: 'Avatar yok', message: 'Önce avatar oluşturmalısın' });
+      // Avatar yoksa, prompt modal göster
+      if (showAvatarPrompt !== undefined && setShowAvatarPrompt) {
+        setShowAvatarPrompt(true);
+      } else {
+        setToast({ open: true, type: 'error', title: 'Avatar yok', message: 'Önce avatar oluşturmalısın' });
+      }
       return;
     }
     
@@ -7802,21 +7802,16 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-slate-500 text-sm">Kalan Haklar</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-green-50 rounded-lg p-2 text-center">
-                      <span className="text-lg">🎨</span>
-                      <p className="text-xs font-bold text-green-700">{user?.freeShopTries || 0}</p>
-                      <p className="text-[9px] text-green-600">Haftalık</p>
+                  <div className="flex items-center justify-center gap-4">
+                    <div className="bg-gradient-to-r from-amber-100 to-yellow-50 rounded-xl p-3 text-center border border-amber-300 shadow-sm">
+                      <span className="text-2xl">🪙</span>
+                      <p className="text-lg font-bold text-amber-700">{(user?.freeShopTries || 0) + (user?.credits || 0)}</p>
+                      <p className="text-[10px] text-amber-600 font-medium">Toplam Kredi</p>
                     </div>
-                    <div className="bg-purple-50 rounded-lg p-2 text-center">
-                      <span className="text-lg">✨</span>
-                      <p className="text-xs font-bold text-purple-700">{user?.freeComboTries || 0}</p>
-                      <p className="text-[9px] text-purple-600">Kombin</p>
-                    </div>
-                    <div className="bg-amber-50 rounded-lg p-2 text-center">
-                      <span className="text-lg">🪙</span>
-                      <p className="text-xs font-bold text-amber-700">{user?.credits || 0}</p>
-                      <p className="text-[9px] text-amber-600">Kredi</p>
+                    <div className="bg-slate-50 rounded-xl p-3 text-center">
+                      <span className="text-2xl">🎬</span>
+                      <p className="text-lg font-bold text-slate-700">{user?.videoTokens || 0}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">Video</p>
                     </div>
                   </div>
                 </div>
@@ -9066,8 +9061,8 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
   const handleProductClick = (item) => {
     const url = buildTrendyolUrl(item);
     if (url) {
-      const width = 520;
-      const height = 750;
+      const width = 600;
+      const height = 900;
       const left = (window.screen.width - width) / 2;
       const top = (window.screen.height - height) / 2;
       
@@ -9111,12 +9106,12 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
       setTimeout(() => {
         const url = buildTrendyolUrl(item);
         if (url) {
-          const left = 100 + (index % 3) * 520;
+          const left = 100 + (index % 3) * 600;
           const top = 50 + Math.floor(index / 3) * 50;
           const popup = window.open(
             url, 
             `trendyol_${item.id}_${Date.now()}`, 
-            `width=500,height=700,left=${left},top=${top},scrollbars=yes,resizable=yes`
+            `width=600,height=900,left=${left},top=${top},scrollbars=yes,resizable=yes`
           );
           if (popup) {
             setOpenPopups(prev => [...prev, popup]);
@@ -9591,13 +9586,15 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
       type: 'credits',
       amount: 10,
       clothingLimit: 10,
+      avatarRefresh: 3,
       desc: 'Tek seferlik',
-      icon: '⚡',
       features: [
-        '10 Deneme Hakkı',
-        '10 Kıyafet Yükleme',
-        'HD Çıktı',
-        'Watermark'
+        '10 Deneme Hakkı (Keşfet + Kombin)',
+        '10 Kıyafet Yükleme Hakkı',
+        '3 Avatar Yenileme Hakkı',
+        'HD Kalitede Çıktı',
+        'Görsellerde TrAi Watermark',
+        'Temel Destek'
       ],
       color: 'slate'
     },
@@ -9608,13 +9605,15 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
       type: 'subscription',
       amount: 30,
       clothingLimit: 30,
+      avatarRefresh: 3,
       desc: 'Aylık',
-      icon: '🥉',
       features: [
-        '30 Deneme Hakkı',
-        '30 Kıyafet Yükleme',
-        'HD Çıktı',
-        'Watermark'
+        '30 Deneme Hakkı (Keşfet + Kombin)',
+        '30 Kıyafet Yükleme Hakkı',
+        '3 Avatar Yenileme Hakkı',
+        'HD Kalitede Çıktı',
+        'Görsellerde TrAi Watermark',
+        'E-posta Destek'
       ],
       color: 'amber'
     },
@@ -9625,14 +9624,16 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
       type: 'subscription',
       amount: 70,
       clothingLimit: 70,
+      avatarRefresh: 3,
       desc: 'Aylık',
-      icon: '🥈',
       badge: 'EN POPÜLER',
       features: [
-        '70 Deneme Hakkı',
-        '70 Kıyafet Yükleme',
-        'Full HD Çıktı',
-        'Watermark'
+        '70 Deneme Hakkı (Keşfet + Kombin)',
+        '70 Kıyafet Yükleme Hakkı',
+        '3 Avatar Yenileme Hakkı',
+        'Full HD Kalitede Çıktı',
+        'Görsellerde TrAi Watermark',
+        'Öncelikli E-posta Destek'
       ],
       color: 'slate',
       popular: true
@@ -9644,14 +9645,16 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
       type: 'subscription',
       amount: 150,
       clothingLimit: 150,
+      avatarRefresh: 10,
       desc: 'Aylık',
-      icon: '🥇',
       badge: 'WATERMARK YOK',
       features: [
-        '150 Deneme Hakkı',
-        '150 Kıyafet Yükleme',
-        '4K Çıktı',
-        '✓ Watermark YOK'
+        '150 Deneme Hakkı (Keşfet + Kombin)',
+        '150 Kıyafet Yükleme Hakkı',
+        '10 Avatar Yenileme Hakkı',
+        '4K Ultra HD Kalitede Çıktı',
+        'Watermark YOK - Temiz Görseller',
+        'VIP Öncelikli Destek'
       ],
       color: 'amber',
       premium: true
@@ -9777,7 +9780,6 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
               }`}
             >
               <div className="flex items-start gap-3">
-                <div className={`text-3xl ${plan.premium ? 'animate-pulse' : ''}`}>{plan.icon}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold">{plan.name}</span>
@@ -9789,7 +9791,7 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                  <div className="flex flex-col gap-0.5 mt-1">
                     {plan.features.map((f, i) => (
                       <span key={i} className="text-[11px] text-slate-500">✓ {f}</span>
                     ))}
@@ -10359,7 +10361,22 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
 
   const shareExternal = async (platform, post) => {
     const text = `${post.caption || 'TrAi ile denedim!'} #TrAi #VirtualTryOn #Fashion`;
-    const url = 'https://trai.app';
+    let shareUrl = 'https://trai.app';
+    
+    // Upload image to Firebase Storage for shareable link
+    if (post.image && post.image.startsWith('data:image') && storage && authUser?.uid) {
+      try {
+        const timestamp = Date.now();
+        const storageRef = storage.ref(`shared/${authUser.uid}/${timestamp}.jpg`);
+        const response = await fetch(post.image);
+        const blob = await response.blob();
+        await storageRef.put(blob);
+        const imageUrl = await storageRef.getDownloadURL();
+        shareUrl = imageUrl; // Use the actual image URL
+      } catch (e) {
+        console.warn('⚠️ Image upload for share failed:', e);
+      }
+    }
     
     if (platform === 'native' && navigator.share) {
       try {
@@ -10373,7 +10390,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         });
       } catch (e) {
         // Fallback to URL share
-        await navigator.share({ title: 'TrAi', text: text, url: url });
+        await navigator.share({ title: 'TrAi', text: text, url: shareUrl });
       }
     } else if (platform === 'instagram') {
       // Instagram'a yönlendir - görseli indirmesi gerekiyor
@@ -10383,11 +10400,11 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       link.click();
       setToast({ open: true, type: 'success', title: t('downloaded'), message: t('shareOnInstagram') });
     } else if (platform === 'twitter') {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
     } else if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
     } else if (platform === 'whatsapp') {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank', 'noopener,noreferrer');
     }
     
     setShareModal({ open: false, post: null });
@@ -11091,8 +11108,18 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                         <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl ${
                           isMine ? 'bg-brand text-white rounded-br-md' : 'glass rounded-bl-md'
                         }`}>
+                          {msg.type === 'combo' && msg.image && (
+                            <div className="mb-2">
+                              <img src={msg.image} className="rounded-lg max-w-full max-h-64 object-contain" />
+                              {msg.items && msg.items.length > 0 && (
+                                <p className={`text-xs mt-1 ${isMine ? 'text-white/70' : 'text-slate-500'}`}>
+                                  {msg.items.length} ürünlü kombin
+                                </p>
+                              )}
+                            </div>
+                          )}
                           <p className="text-sm">{msg.text}</p>
-                          {msg.image && (
+                          {msg.type !== 'combo' && msg.image && (
                             <img src={msg.image} className="mt-2 rounded-lg max-w-full max-h-48 object-contain" />
                           )}
                         </div>
@@ -11442,6 +11469,10 @@ const App = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallType, setPaywallType] = useState(null); // 'weeklyTries', 'comboTries', 'videoAccess', 'clothingUpload'
   
+  // Avatar prompt state - ilk deneme için avatar oluşturma ekranı
+  const [showAvatarPrompt, setShowAvatarPrompt] = useState(false);
+  const [showAvatarWizard, setShowAvatarWizard] = useState(false);
+  
   // Size selection modal state
   const [sizeModal, setSizeModal] = useState({ open: false, product: null, callback: null });
   
@@ -11557,22 +11588,23 @@ const App = () => {
   const cartTotal = cart.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
   
   // Kredi sistemi fonksiyonları
-  // Artık kombin ve keşfet aynı havuzdan (freeShopTries)
+  // Universal kredi sistemi - hem keşfet hem kombin için
   const useCredit = (source = 'shop') => {
     if (!user) return false;
     
     // Önce ücretsiz haftalık hakları kontrol et
     if ((user.freeShopTries || 0) > 0) {
       const newFreeShop = user.freeShopTries - 1;
+      const totalRemaining = newFreeShop + (user.credits || 0);
       setUser(prev => ({ ...prev, freeShopTries: newFreeShop }));
       if (db && authUser?.uid) {
         db.collection('users').doc(authUser.uid).update({ freeShopTries: newFreeShop })
           .catch(e => console.error('❌ freeShopTries save error:', e.code, e.message));
       }
-      setToast({ open: true, type: 'success', title: '🎁 Ücretsiz hak kullanıldı', message: `Kalan: ${newFreeShop}` });
+      setToast({ open: true, type: 'success', title: '🪙 Kredi kullanıldı', message: `Kalan: ${totalRemaining}` });
       
       // Paywall: Son 1 hak kaldığında göster
-      if (newFreeShop === 1) {
+      if (totalRemaining === 1) {
         setTimeout(() => {
           setPaywallType('weeklyTries');
           setShowPaywall(true);
@@ -12672,7 +12704,8 @@ const App = () => {
   const tryOnSingle = async item => {
     const avatarData = user?.baseAvatar || user?.avatar;
     if (!avatarData) {
-      setToast({ open: true, type: 'error', title: 'Avatar yok', message: 'Önce avatar oluştur' });
+      // Avatar yoksa, prompt modal göster
+      setShowAvatarPrompt(true);
       return;
     }
     
@@ -12854,28 +12887,38 @@ const App = () => {
     );
   }
 
-  // Avatar wizard - show loading while fetching from Firebase
-  if (!user || !user.baseAvatar) {
-    // Eğer avatar yükleniyorsa loading göster
-    if (loadingAvatar) {
-      return (
-        <>
-          <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-brand flex items-center justify-center mx-auto mb-4 animate-pulse">
-                <span className="text-3xl">✨</span>
-              </div>
-              <p className="text-slate-500 font-medium">Avatarın yükleniyor...</p>
-            </div>
-          </div>
-          <Toast toast={toast} onClose={() => setToast({ open: false })} />
-        </>
-      );
-    }
-    
+  // Avatar wizard - artık kayıt sonrası zorunlu değil, sadece showAvatarWizard true ise göster
+  if (showAvatarWizard) {
     return (
       <>
-        <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark"><AvatarWizard onComplete={(avatarData) => setUser(prev => ({ ...prev, ...avatarData }))} setToast={setToast} initialParams={user} /></div>
+        <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark">
+          <AvatarWizard 
+            onComplete={(avatarData) => {
+              setUser(prev => ({ ...prev, ...avatarData }));
+              setShowAvatarWizard(false);
+              setShowAvatarPrompt(false);
+            }} 
+            setToast={setToast} 
+            initialParams={user} 
+          />
+        </div>
+        <Toast toast={toast} onClose={() => setToast({ open: false })} />
+      </>
+    );
+  }
+  
+  // Avatar yükleniyorsa loading göster
+  if (loadingAvatar) {
+    return (
+      <>
+        <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-brand flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <span className="text-3xl">✨</span>
+            </div>
+            <p className="text-slate-500 font-medium">Avatarın yükleniyor...</p>
+          </div>
+        </div>
         <Toast toast={toast} onClose={() => setToast({ open: false })} />
       </>
     );
@@ -12938,7 +12981,7 @@ const App = () => {
               </div>
             </div>
             <div className="flex items-center gap-4 mt-4 text-sm">
-              <span className="text-amber-500">🪙 {user.tokens || 0}</span>
+              <span className="text-amber-500">🪙 {(user.freeShopTries || 0) + (user.credits || 0)}</span>
               {user.videoTokens > 0 && <span className="text-brand">🎬 {user.videoTokens}</span>}
             </div>
           </div>
@@ -12971,6 +13014,8 @@ const App = () => {
               onAddCustomClothing={addCustomClothing}
               useCredit={useCredit}
               onAddToCart={addToCart}
+              showAvatarPrompt={showAvatarPrompt}
+              setShowAvatarPrompt={setShowAvatarPrompt}
               onFirstTryOn={() => {
                 if (settings.analyticsConsent === null && !settings.analyticsConsentDismissed) {
                   setTimeout(() => setConsentPopup({ open: true, type: 'analytics' }), 1500);
@@ -13119,6 +13164,8 @@ const App = () => {
               onAddCustomClothing={addCustomClothing}
               useCredit={useCredit}
               onAddToCart={addToCart}
+              showAvatarPrompt={showAvatarPrompt}
+              setShowAvatarPrompt={setShowAvatarPrompt}
               onFirstTryOn={() => {
                 if (settings.analyticsConsent === null && !settings.analyticsConsentDismissed) {
                   setTimeout(() => setConsentPopup({ open: true, type: 'analytics' }), 1500);
@@ -13614,6 +13661,71 @@ const App = () => {
             setConsentPopup({ open: false, type: null });
           }}
         />
+      )}
+      
+      {/* Dijital İkizini Oluştur Modal */}
+      {showAvatarPrompt && (
+        <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-surface rounded-3xl overflow-hidden fade-in">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-brand to-purple-600 p-6 text-white text-center">
+              <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-4xl">✨</span>
+              </div>
+              <h2 className="text-xl font-bold mb-2">Dijital İkizini Oluştur</h2>
+              <p className="text-white/80 text-sm">
+                Kıyafetleri sanal olarak denemek için önce dijital avatarını oluşturman gerekiyor
+              </p>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-green-600 text-xl">🔒</span>
+                  <div>
+                    <p className="font-semibold text-green-800 text-sm">Gizlilik Garantisi</p>
+                    <p className="text-green-700 text-xs mt-1">
+                      Oluşturduğun avatar ve kombinler <strong>paylaşmadığın sürece sadece sen görebilirsin</strong>. 
+                      Fotoğrafların güvende!
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-600 text-xl">💾</span>
+                  <div>
+                    <p className="font-semibold text-blue-800 text-sm">Tek Seferlik İşlem</p>
+                    <p className="text-blue-700 text-xs mt-1">
+                      Avatarın kaydedilir, her seferinde yeniden oluşturman gerekmez. 
+                      İstersen daha sonra Profil bölümünden değiştirebilirsin.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => {
+                  setShowAvatarPrompt(false);
+                  setShowAvatarWizard(true);
+                }}
+                className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-brand to-purple-600 text-white shadow-lg flex items-center justify-center gap-2"
+              >
+                <span>✨</span>
+                Avatarımı Oluştur
+              </button>
+              
+              <button
+                onClick={() => setShowAvatarPrompt(false)}
+                className="w-full py-3 rounded-xl font-semibold text-slate-500 hover:bg-slate-100 transition"
+              >
+                Daha Sonra
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       
       <Toast toast={toast} onClose={() => setToast({ open: false })} />
