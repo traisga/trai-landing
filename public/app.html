@@ -312,6 +312,7 @@ const TRANSLATIONS = {
     username: "Kullanıcı Adı",
     usernamePlaceholder: "kullanici_adi",
     usernameAvailable: "kullanılabilir!",
+    usernameTaken: "Bu kullanıcı adı alınmış",
     usernameMinChars: "En az 3 karakter gerekli",
     usernameRules: "Harf ile başlamalı, sadece harf, rakam ve _ içerebilir",
     displayName: "Görünen Ad",
@@ -319,6 +320,9 @@ const TRANSLATIONS = {
     displayNamePlaceholder: "Adınız Soyadınız",
     displayNameHelp: "Profilinizde görünecek isim (boş bırakırsanız kullanıcı adı gösterilir)",
     email: "E-posta",
+    emailAvailable: "E-posta kullanılabilir",
+    emailTaken: "Bu e-posta adresi zaten kullanılıyor",
+    emailInvalid: "Geçerli bir e-posta adresi girin",
     password: "Şifre",
     passwordRequirements: "Şifre gereksinimleri:",
     minChars: "karakter",
@@ -560,6 +564,19 @@ const TRANSLATIONS = {
     languagePreference: "Dil Tercihi",
     selectLanguage: "Dil Seçin",
     notifications: "Bildirimler",
+    notificationsTab: "Bildirimler",
+    allNotifications: "Tüm Bildirimler",
+    noNotifications: "Bildirim yok",
+    noNotificationsDesc: "Yeni bildirimler burada görünecek",
+    markAllRead: "Tümünü Okundu İşaretle",
+    notificationFollowRequest: "seni takip etmek istiyor",
+    notificationFollowAccept: "takip isteğini kabul etti",
+    notificationNewMessage: "sana mesaj gönderdi",
+    notificationGroupInvite: "seni bir gruba davet etti",
+    notificationWeather: "Bugün hava",
+    notificationDailyOutfit: "Günün kombini hazır!",
+    notificationLike: "gönderini beğendi",
+    notificationComment: "gönderine yorum yaptı",
     darkMode: "Karanlık Mod",
     debugMode: "Geliştirici Modu",
     about: "Hakkında",
@@ -586,6 +603,21 @@ const TRANSLATIONS = {
     clearCacheConfirm: "Yerel önbellek ve geçmiş silinsin mi? (Hesabın silinmez)",
     deleteAccountDesc: "Hesabını sildiğinde tüm veriler (avatar, dolap, geçmiş) kalıcı olarak silinir. Bu işlem geri alınamaz.",
     deleteAccount: "Hesabı Sil",
+    // Group Chat
+    createGroup: "Grup Oluştur",
+    groupName: "Grup Adı",
+    groupTopic: "Konu (Opsiyonel)",
+    groupMembers: "Grup Üyeleri",
+    selectMembers: "Üye Seç",
+    minGroupMembers: "En az 3 kişi seçmelisin",
+    groupCreated: "Grup oluşturuldu!",
+    editGroup: "Grubu Düzenle",
+    leaveGroup: "Gruptan Ayrıl",
+    deleteGroup: "Grubu Sil",
+    groupSettings: "Grup Ayarları",
+    addMembers: "Üye Ekle",
+    removeFromGroup: "Gruptan Çıkar",
+    onlyFollowersCanJoin: "Sadece takip ettiklerin eklenebilir",
     
     // Try-On Results
     tryOnResult: "Deneme Sonucu",
@@ -699,7 +731,8 @@ const TRANSLATIONS = {
     privacyAcceptText: "Gizlilik Politikası",
     readAccepted: "'nı okudum, kabul ediyorum.",
     occasionSuggestion: "için öneri",
-    groupMaxMembers: "Grup en fazla 6 kişi olabilir (siz dahil)",
+    groupMaxMembers: "Grup en fazla 10 kişi olabilir",
+    groupMinMembers: "Grup en az 3 kişi olmalı",
     
     // Misc
     back: "Geri",
@@ -736,6 +769,9 @@ const TRANSLATIONS = {
     gallery: "Galeri",
     notVerifiedYet: "Henüz doğrulanmadı",
     clickLinkAndRetry: "E-postanızdaki linke tıklayın ve tekrar deneyin.",
+    emailVerificationRequired: "E-posta Doğrulaması Gerekli",
+    emailVerificationForCombo: "Kombinleri denemek için e-posta adresinizi doğrulamanız gerekiyor.",
+    resendVerificationEmail: "Doğrulama e-postasını tekrar gönder",
     notFollowingAnyone: "Henüz kimseyi takip etmiyorsun",
     noPostsYetProfile: "Henüz Paylaşımın Yok",
     noTriesYet: "Henüz deneme yok",
@@ -798,6 +834,24 @@ const TRANSLATIONS = {
     creditsRemaining: "Kalan kredi",
     freeTrieUsed: "Ücretsiz hak kullanıldı",
     noFreeTries: "Ücretsiz hakkınız kalmadı",
+    
+    // Referral System
+    referralTitle: "Arkadaşını Davet Et",
+    referralSubtitle: "Arkadaşın avatar oluşturunca +1 kredi kazan",
+    referralCode: "Davet Kodun",
+    referralLink: "Davet Linkin",
+    referralCopied: "Link kopyalandı!",
+    referralShare: "Paylaş",
+    referralEarned: "Kazanılan Kredi",
+    referralThisMonth: "Bu Ay",
+    referralMonthlyLimit: "Aylık Limit",
+    referralLimitReached: "Bu ay referans limitine ulaştın",
+    referralHowItWorks: "Nasıl Çalışır?",
+    referralStep1: "Davet linkini arkadaşınla paylaş",
+    referralStep2: "Arkadaşın kayıt olup avatar oluştursun",
+    referralStep3: "Sen +1 kredi kazan!",
+    referralBonusOnPurchase: "Arkadaşın her paket aldığında sen de +1 kredi kazanırsın",
+    referralSecurityNote: "Güvenlik: Aynı cihazdan açılan hesaplar sayılmaz",
     
     // Video Tab
     videoTab: "Video",
@@ -1560,6 +1614,7 @@ const Icons = {
   send:<><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
   settings:<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
   bell:<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0"/>,
+  gift:<><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></>,
   info:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>,
   layers:<><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
   heart:<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>,
@@ -1627,14 +1682,25 @@ const Icon = ({name, size=24, className=""}) => (
 // ============ HELPERS ============
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// Hafta numarası hesapla (haftalık reset için)
-function getWeekNumber() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const diff = now - start;
-  const oneWeek = 604800000; // 7 gün milisaniye
-  const weekNum = Math.floor(diff / oneWeek);
-  return `${now.getFullYear()}-W${weekNum}`;
+// Generate unique referral code from user ID
+function generateReferralCode(uid) {
+  if (!uid) return null;
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid confusing chars
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.abs(uid.charCodeAt(i % uid.length) * (i + 1)) % chars.length];
+  }
+  return code;
+}
+
+// Get or create device ID for abuse prevention
+function getDeviceId() {
+  let deviceId = localStorage.getItem('trai_device_id');
+  if (!deviceId) {
+    deviceId = 'DEV_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('trai_device_id', deviceId);
+  }
+  return deviceId;
 }
 
 function dataUrlToInlinePart(dataUrl, fallbackMime = "image/png") {
@@ -1659,22 +1725,6 @@ const ALLOWED_IMAGE_HOSTS = new Set([
   "picsum.photos",
   "firebasestorage.googleapis.com"
 ]);
-
-function isAllowedImageUrl(urlStr) {
-  try {
-    const url = new URL(urlStr);
-    // Allow https only, check hostname against allowlist or known CDN patterns
-    if (url.protocol !== "https:") return false;
-    return ALLOWED_IMAGE_HOSTS.has(url.hostname) || 
-           url.hostname.endsWith('.cloudinary.com') ||
-           url.hostname.endsWith('.imgix.net') ||
-           url.hostname.endsWith('.zara.net') ||
-           url.hostname.endsWith('.dsmcdn.com') ||
-           url.hostname.endsWith('.firebasestorage.app');
-  } catch { 
-    return false; 
-  }
-}
 
 // ============ DEBUG LOG SYSTEM ============
 let DEBUG_MODE = false; // Default kapalı, Settings'ten açılabilir
@@ -3067,6 +3117,72 @@ const ALL_PRODUCTS = TRENDYOL_DATA.map((p, i) => {
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '') || 'other';
   
+  // --- CATEGORY & SUBTYPE FIX ---
+  // Ürün adından kategori ve subType belirle
+  const productName = (p.name || p.title || '').toLowerCase();
+  const productType = (p.type || '').toLowerCase();
+  
+  // Kategori belirleme kuralları
+  let category = p.category || 'top';
+  let subType = p.subType || p.type || null;
+  
+  // ÜST GİYİM kelimeleri (top)
+  const topKeywords = ['t-shirt', 'tişört', 'gömlek', 'bluz', 'kazak', 'sweatshirt', 'süveter', 'triko', 'polo', 'crop', 'atlet', 'body', 'tunik'];
+  // ALT GİYİM kelimeleri (bottom)
+  const bottomKeywords = ['pantolon', 'jean', 'kot', 'şort', 'etek', 'eşofman', 'tayt', 'jogger', 'bermuda', 'capri'];
+  // DIŞ GİYİM kelimeleri (outerwear) - SADECE bunlar dış giyim
+  const outerwearKeywords = ['mont', 'kaban', 'parka', 'palto', 'trençkot', 'yağmurluk', 'ceket', 'blazer', 'yelek'];
+  // ELBİSE kelimeleri (fullbody)
+  const fullbodyKeywords = ['elbise', 'tulum', 'salopet', 'overall'];
+  
+  // Öncelik: fullbody > outerwear > bottom > top
+  if (fullbodyKeywords.some(k => productName.includes(k) || productType.includes(k))) {
+    category = 'fullbody';
+    if (productName.includes('tulum') || productName.includes('salopet')) subType = 'Tulum';
+    else subType = 'Elbise';
+  } else if (outerwearKeywords.some(k => productName.includes(k) || productType.includes(k))) {
+    category = 'outerwear';
+    // SubType belirleme
+    if (productName.includes('mont')) subType = 'Mont';
+    else if (productName.includes('kaban')) subType = 'Kaban';
+    else if (productName.includes('parka')) subType = 'Parka';
+    else if (productName.includes('palto')) subType = 'Palto';
+    else if (productName.includes('trençkot')) subType = 'Trençkot';
+    else if (productName.includes('yağmurluk')) subType = 'Yağmurluk';
+    else if (productName.includes('blazer')) subType = 'Blazer';
+    else if (productName.includes('yelek')) subType = 'Yelek';
+    else if (productName.includes('ceket')) subType = 'Ceket';
+  } else if (bottomKeywords.some(k => productName.includes(k) || productType.includes(k))) {
+    category = 'bottom';
+    if (productName.includes('jean') || productName.includes('kot') || productName.includes('denim')) subType = 'Kot';
+    else if (productName.includes('şort')) subType = 'Şort';
+    else if (productName.includes('etek')) subType = 'Etek';
+    else if (productName.includes('eşofman') || productName.includes('jogger')) subType = 'Eşofman';
+    else if (productName.includes('tayt')) subType = 'Tayt';
+    else subType = 'Pantolon';
+  } else if (topKeywords.some(k => productName.includes(k) || productType.includes(k))) {
+    category = 'top';
+    // SubType belirleme - ÜST GİYİM için
+    if (productName.includes('t-shirt') || productName.includes('tişört')) subType = 'T-Shirt';
+    else if (productName.includes('gömlek')) subType = 'Gömlek';
+    else if (productName.includes('bluz')) subType = 'Bluz';
+    else if (productName.includes('kazak') || productName.includes('süveter') || productName.includes('triko')) subType = 'Kazak';
+    else if (productName.includes('sweatshirt')) subType = 'Sweatshirt';
+    else if (productName.includes('hırka')) subType = 'Hırka';
+    else if (productName.includes('polo')) subType = 'Polo';
+    else if (productName.includes('crop')) subType = 'Crop Top';
+    else if (productName.includes('atlet')) subType = 'Atlet';
+    else subType = 'T-Shirt'; // Varsayılan
+  }
+  
+  // HATA DÜZELTMESİ: Kazak/Hırka yanlışlıkla outerwear olarak işaretlenmişse top'a çevir
+  if (category === 'outerwear' && (productName.includes('kazak') || productName.includes('hırka') || productName.includes('süveter') || productName.includes('triko') || productName.includes('sweatshirt'))) {
+    category = 'top';
+    if (productName.includes('hırka')) subType = 'Hırka';
+    else if (productName.includes('sweatshirt')) subType = 'Sweatshirt';
+    else subType = 'Kazak';
+  }
+  
   return {
     ...p,
     id: i + 1,
@@ -3077,7 +3193,8 @@ const ALL_PRODUCTS = TRENDYOL_DATA.map((p, i) => {
     price: p.price || '0 TL',
     priceNum: p.priceNum || 0,
     image: p.image || '',
-    category: p.category || 'top',
+    category: category,
+    subType: subType,
     gender: p.gender || 'unisex',
     type: p.type || 'Giyim',
     color: p.color || 'Çok Renkli'
@@ -3097,10 +3214,18 @@ if (ALL_PRODUCTS.length > 0) {
 const BRANDS = (() => {
   const brandMap = new Map();
   
+  // Jenerik/atlanacak marka isimleri
+  const genericBrands = ['trendyol collection', 'diğer', 'other', 'genel', 'general', 'bilinmeyen', 'unknown'];
+  
   // Extract unique brands from products
   ALL_PRODUCTS.forEach(p => {
     const brandId = p.brandId || 'other';
     const brandName = p.brandName || 'Diğer';
+    
+    // Jenerik markaları atla
+    if (genericBrands.includes(brandName.toLowerCase())) {
+      return;
+    }
     
     if (!brandMap.has(brandId)) {
       brandMap.set(brandId, { 
@@ -3122,12 +3247,15 @@ const BRANDS = (() => {
     return a.name.localeCompare(b.name, 'tr');
   });
   
-  console.log(`🏷️ ${brands.length} farklı marka bulundu`);
-  if (brands.length > 0) {
-    console.log(`🔝 En çok ürünlü markalar:`, brands.slice(0, 5).map(b => `${b.name}(${b.count})`));
+  // Sadece en az 2 ürünü olan markaları göster
+  const filteredBrands = brands.filter(b => b.count >= 2);
+  
+  console.log(`🏷️ ${filteredBrands.length} farklı marka bulundu (${brands.length - filteredBrands.length} tekil marka filtrelendi)`);
+  if (filteredBrands.length > 0) {
+    console.log(`🔝 En çok ürünlü markalar:`, filteredBrands.slice(0, 5).map(b => `${b.name}(${b.count})`));
   }
   
-  return brands;
+  return filteredBrands;
 })();
 
 const BACKGROUNDS = [
@@ -3437,55 +3565,6 @@ const TermsModal = ({ isOpen, onClose, onAccept, docType = 'terms' }) => {
   );
 };
 
-// Footer Legal Links Component
-const LegalFooter = ({ onOpenDoc }) => {
-  const [expanded, setExpanded] = useState(null);
-  
-  const notices = [
-    { id: 'kvkk', icon: '📄', title: LEGAL_DOCS.footerNotices.kvkk.title, text: LEGAL_DOCS.footerNotices.kvkk.short, link: true },
-    { id: 'ai', icon: '🤖', title: LEGAL_DOCS.footerNotices.ai.title, text: LEGAL_DOCS.footerNotices.ai.short },
-    { id: 'affiliate', icon: '🛒', title: LEGAL_DOCS.footerNotices.affiliate.title, text: LEGAL_DOCS.footerNotices.affiliate.short },
-    { id: 'age', icon: '🔞', title: LEGAL_DOCS.footerNotices.age.title, text: LEGAL_DOCS.footerNotices.age.short }
-  ];
-  
-  return (
-    <div className="bg-slate-50/80 border-t border-slate-200 px-4 py-3">
-      {/* Expandable Notices */}
-      <div className="space-y-2 mb-3">
-        {notices.map(n => (
-          <div key={n.id} className="text-xs">
-            <button 
-              onClick={() => setExpanded(expanded === n.id ? null : n.id)}
-              className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 transition"
-            >
-              <span>{n.icon}</span>
-              <span className="font-medium">{n.title}</span>
-              <Icon name={expanded === n.id ? 'chevronUp' : 'chevronDown'} size={12} />
-            </button>
-            {expanded === n.id && (
-              <p className="mt-1 ml-5 text-slate-400 leading-relaxed">
-                {n.text}
-                {n.link && <button onClick={() => onOpenDoc('kvkk')} className="ml-1 text-brand2 underline">Detay</button>}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-      
-      {/* Legal Document Links */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-400 border-t border-slate-200 pt-2">
-        <button onClick={() => onOpenDoc('terms')} className="hover:text-brand2 underline-offset-2 hover:underline">Kullanım Koşulları</button>
-        <span>|</span>
-        <button onClick={() => onOpenDoc('kvkk')} className="hover:text-brand2 underline-offset-2 hover:underline">KVKK Aydınlatma</button>
-        <span>|</span>
-        <button onClick={() => onOpenDoc('onbilgilendirme')} className="hover:text-brand2 underline-offset-2 hover:underline">Ön Bilgilendirme</button>
-      </div>
-      
-      <p className="text-[10px] text-slate-300 text-center mt-2">© 2025 TrAi Technologies</p>
-    </div>
-  );
-};
-
 // ============ AUTH SCREEN ============
 const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
   const [mode, setMode] = useState('welcome');
@@ -3501,6 +3580,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
   const [busy, setBusy] = useState(false);
   const [passErrors, setPassErrors] = useState([]);
   const [usernameStatus, setUsernameStatus] = useState({ checking: false, available: null, error: null });
+  const [emailStatus, setEmailStatus] = useState({ checking: false, available: null, error: null });
   
   // Consent checkboxes (KVKK compliant)
   const [consents, setConsents] = useState({
@@ -3617,6 +3697,61 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     return () => clearTimeout(timer);
   }, [username, mode]);
 
+  // Email validation
+  const validateEmail = (emailInput) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailInput) return null;
+    if (!emailRegex.test(emailInput)) return 'Geçerli bir e-posta adresi girin';
+    return null;
+  };
+
+  // Check email availability
+  const checkEmailAvailability = async (emailInput) => {
+    if (!emailInput || emailInput.length < 5) {
+      setEmailStatus({ checking: false, available: null, error: null });
+      return;
+    }
+    
+    const validationError = validateEmail(emailInput);
+    if (validationError) {
+      setEmailStatus({ checking: false, available: false, error: validationError });
+      return;
+    }
+    
+    setEmailStatus({ checking: true, available: null, error: null });
+    
+    // Check with Firebase Auth - try to fetch sign-in methods
+    if (auth) {
+      try {
+        const methods = await auth.fetchSignInMethodsForEmail(emailInput);
+        if (methods && methods.length > 0) {
+          setEmailStatus({ checking: false, available: false, error: 'Bu e-posta adresi zaten kullanılıyor' });
+        } else {
+          setEmailStatus({ checking: false, available: true, error: null });
+        }
+      } catch (e) {
+        // Invalid email format or other error
+        if (e.code === 'auth/invalid-email') {
+          setEmailStatus({ checking: false, available: false, error: 'Geçersiz e-posta adresi' });
+        } else {
+          // Assume available if can't check
+          setEmailStatus({ checking: false, available: true, error: null });
+        }
+      }
+    } else {
+      setEmailStatus({ checking: false, available: true, error: null });
+    }
+  };
+
+  // Debounced email check
+  useEffect(() => {
+    if (mode !== 'register') return;
+    const timer = setTimeout(() => {
+      checkEmailAvailability(email);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [email, mode]);
+
   // Password validation
   const validatePassword = (password) => {
     const errors = [];
@@ -3707,6 +3842,11 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           alert("Kullanıcı Adı: " + (usernameStatus.error || 'Bu kullanıcı adı kullanılamaz'));
           return;
         }
+        // Email availability check
+        if (emailStatus.available === false) {
+          alert("E-posta: " + (emailStatus.error || 'Bu e-posta adresi zaten kullanılıyor'));
+          return;
+        }
         const errors = validatePassword(pass);
         if (errors.length > 0) {
           alert("Zayıf Şifre: " + errors.join(', '));
@@ -3761,11 +3901,12 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             usernameLower: username.toLowerCase(),
             displayName: displayName.trim() || null,
             email: c.user.email,
-            tokens: 3,
+            credits: 0, // Satın alınmış krediler
+            // Yeni ücretsiz hak sistemi - tek seferlik, yenilenmez
+            freeAvatarTry: isReturningUser ? 0 : 1,  // 1 avatar oluşturma hakkı
+            freeShopTry: isReturningUser ? 0 : 1,    // 1 shop deneme hakkı
+            freeComboTry: isReturningUser ? 0 : 1,   // 1 kombin deneme hakkı
             subscription: null,
-            // Disable free trials for returning users (abuse prevention)
-            freeShopTries: isReturningUser ? 0 : 4,
-            freeComboTries: isReturningUser ? 0 : 0,
             returningUser: isReturningUser,
             createdAt: Date.now()
           }, { merge: true });
@@ -4024,7 +4165,36 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             </div>
           )}
           
-          <div><label className="text-xs text-slate-500 mb-1.5 block">E-posta</label><div className="relative"><Icon name="mail" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="ornek@mail.com" className="pl-11" /></div></div>
+          <div><label className="text-xs text-slate-500 mb-1.5 block">E-posta</label>
+            <div className="relative">
+              <Icon name="mail" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="ornek@mail.com" className="pl-11 pr-10" />
+              {/* Status indicator - only show on register */}
+              {mode === 'register' && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  {emailStatus.checking && (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white/60 rounded-full animate-spin" />
+                  )}
+                  {!emailStatus.checking && emailStatus.available === true && (
+                    <Icon name="check" size={18} className="text-green-400" />
+                  )}
+                  {!emailStatus.checking && emailStatus.available === false && (
+                    <Icon name="x" size={18} className="text-red-400" />
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Email feedback - only show on register */}
+            {mode === 'register' && email.length > 0 && (
+              <div className="mt-1.5">
+                {emailStatus.error ? (
+                  <p className="text-xs text-red-400">{emailStatus.error}</p>
+                ) : emailStatus.available ? (
+                  <p className="text-xs text-green-400">E-posta kullanılabilir ✓</p>
+                ) : null}
+              </div>
+            )}
+          </div>
           <div>
             <label className="text-xs text-slate-500 mb-1.5 block">Şifre</label>
             <div className="relative">
@@ -4142,7 +4312,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         )}
         
-        <button onClick={(e) => submit(e)} disabled={busy || (mode === 'register' && (!requiredConsentsOk || passErrors.length > 0 || !usernameStatus.available))} className="w-full btn-primary py-4 rounded-2xl font-bold disabled:opacity-50 mb-4">
+        <button onClick={(e) => submit(e)} disabled={busy || (mode === 'register' && (!requiredConsentsOk || passErrors.length > 0 || !usernameStatus.available || emailStatus.available === false))} className="w-full btn-primary py-4 rounded-2xl font-bold disabled:opacity-50 mb-4">
           {busy ? <span className="flex items-center justify-center gap-2"><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t('processing')}</span> : (mode === 'login' ? t('login') : t('register'))}
         </button>
         
@@ -4168,7 +4338,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
 };
 
 // ============ AVATAR WIZARD ============
-const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
+const AvatarWizard = ({ onComplete, setToast, initialParams = null, useCredit, refundCredit }) => {
   const [step, setStep] = useState(1);
   const [params, setParams] = useState(initialParams || {
     gender: '', age: '', height: '', weight: '',
@@ -4181,6 +4351,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
   const [busy, setBusy] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [useNativeCamera, setUseNativeCamera] = useState(false);
+  const [creditUsed, setCreditUsed] = useState(false); // Kredi kullanıldı mı takip et
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -4296,6 +4467,16 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
   const openNativeCamera = () => fileInputRef.current?.click();
 
   const generate = async (photoArray) => {
+    // Kredi kontrolü - avatar için 'avatar' source
+    let usedCredit = false;
+    if (useCredit) {
+      if (!useCredit('avatar')) {
+        return; // Kredi yoksa çık
+      }
+      usedCredit = true;
+      setCreditUsed(true);
+    }
+    
     setBusy(true);
     setStep(3);
     setStatus(t('analyzingPhotos'));
@@ -4314,11 +4495,19 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null }) => {
       
       setStatus('Hazır! ✨');
       await sleep(400);
+      setCreditUsed(false); // Başarılı - kredi harcandı, iade gerekmiyor
       onComplete({ ...params, baseAvatar, createdAt: Date.now() });
       setToast({ open: true, type: 'success', title: t('success'), message: 'Dijital ikizin oluşturuldu!' });
     } catch (e) {
-      // Error handled via toast, no console logging in production
-      setToast({ open: true, type: 'error', title: 'Avatar hatası', message: e.message || 'Bir hata oluştu' });
+      // Hata durumunda krediyi iade et - sadece kredi kullanıldıysa
+      if (usedCredit && refundCredit) {
+        refundCredit('avatar');
+      }
+      setCreditUsed(false);
+      // refundCredit zaten toast gösteriyor, sadece hata mesajı göster (iade mesajı yok)
+      if (!usedCredit) {
+        setToast({ open: true, type: 'error', title: 'Avatar hatası', message: e.message || 'Bir hata oluştu' });
+      }
       setStep(1);
       setPhotos([]);
     }
@@ -4902,8 +5091,6 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
     return base;
   }, [genderFilter]);
 
-  const featuredBrand = BRANDS.find(b => b.featured);
-
   // Aktif filtre sayısı
   const activeFilterCount = [
     genderFilter !== 'all',
@@ -4942,7 +5129,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-300 hover:from-amber-200 hover:to-yellow-100 transition shadow-sm"
           >
             <span className="text-lg">🪙</span>
-            <span className="text-sm font-bold text-amber-700">{(user?.freeShopTries || 0) + (user?.credits || 0)}</span>
+            <span className="text-sm font-bold text-amber-700">{(user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0)}</span>
           </button>
           {/* Cart Button */}
           <button 
@@ -5165,7 +5352,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
 };
 
 // ============ CLOSET ============
-const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed, onFirstTryOn, onAddCustomClothing, settings, onShowSubscription, useCredit, onAddToCart, showAvatarPrompt, setShowAvatarPrompt }) => {
+const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast, savedCombos, setSavedCombos, favorites, setFavorites, tryHistory, setTryHistory, getBaseAvatar, tryOnCache, setTryOnCache, checkCooldown, setLastTryTime, onShareToFeed, onFirstTryOn, onAddCustomClothing, settings, onShowSubscription, useCredit, refundCredit, onAddToCart, showAvatarPrompt, setShowAvatarPrompt }) => {
   const [tab, setTab] = useState('studio'); // studio, items, upload, combos, favorites, history, weather
   const [selected, setSelected] = useState({ top: null, bottom: null, outerwear: null, fullbody: null });
   const [bg, setBg] = useState(BACKGROUNDS[0]);
@@ -5260,7 +5447,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
     const name = (item.name || '').toLowerCase();
     
     // Bu türler dış giyim değil, üst giyim
-    const topTypes = ['kazak', 'sweatshirt', 'süveter', 'triko', 'örme'];
+    const topTypes = ['kazak', 'sweatshirt', 'süveter', 'triko', 'örme', 'hırka', 'kardiğan'];
     return topTypes.some(t => type.includes(t) || subType.includes(t) || name.includes(t));
   };
   
@@ -5269,8 +5456,15 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
     const subType = (item.subType || '').toLowerCase();
     const name = (item.name || '').toLowerCase();
     
-    // Gerçek dış giyim türleri
+    // Gerçek dış giyim türleri - kazak/hırka/sweatshirt HARİÇ
     const outerwearTypes = ['mont', 'ceket', 'kaban', 'parka', 'trençkot', 'yağmurluk', 'palto', 'blazer', 'yelek'];
+    const notOuterwear = ['kazak', 'sweatshirt', 'süveter', 'triko', 'hırka', 'kardiğan'];
+    
+    // Önce dış giyim OLMAYAN türleri kontrol et
+    if (notOuterwear.some(t => type.includes(t) || subType.includes(t) || name.includes(t))) {
+      return false;
+    }
+    
     return outerwearTypes.some(t => type.includes(t) || subType.includes(t) || name.includes(t));
   };
   
@@ -5419,8 +5613,8 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
       return;
     }
     
-    // Kredi kontrolü - stüdyo için 'studio' source
-    if (useCredit && !useCredit('studio')) {
+    // Kredi kontrolü - kombin için 'combo' source
+    if (useCredit && !useCredit('combo')) {
       return;
     }
     
@@ -5475,7 +5669,11 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
       setToast({ open: true, type: 'success', title: t('success'), message: t('tryonSuccess') });
     } catch (err) {
       setLoading(false);
-      setToast({ open: true, type: 'error', title: t('error'), message: err.message || t('tryonError') });
+      // Hata durumunda krediyi iade et
+      if (refundCredit) {
+        refundCredit('combo');
+      }
+      // refundCredit zaten toast gösteriyor, ek hata mesajı göstermeye gerek yok
     }
   };
   
@@ -5691,9 +5889,9 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 
             {/* Center - Avatar Drop Zone */}
             <div className="flex-1 flex flex-col items-center justify-center p-2 relative">
-              {/* Avatar Area - object-contain for fullbody visibility */}
+              {/* Avatar Area - Full height avatar display */}
               <div 
-                className={`relative w-36 h-52 lg:w-44 lg:h-60 rounded-2xl overflow-hidden drop-zone ${
+                className={`relative w-40 h-64 lg:w-48 lg:h-72 rounded-2xl overflow-hidden drop-zone ${
                   loading ? 'opacity-50' : ''
                 }`}
                 style={{ background: 'linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%)' }}
@@ -5710,13 +5908,12 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                   try {
                     const item = JSON.parse(e.dataTransfer.getData('item'));
                     toggle(item);
-                    setToast({ open: true, type: 'success', title: '✓ ' + (item.category === 'top' ? 'Üst' : item.category === 'bottom' ? 'Alt' : item.category === 'outerwear' ? 'Dış' : 'Parça') + ' eklendi', message: item.name });
                   } catch (err) {}
                 }}
               >
-                {/* Base Avatar - object-contain to show full body */}
+                {/* Base Avatar - object-cover with top alignment for better fit */}
                 {(user?.baseAvatar || user?.avatar) ? (
-                  <img src={user?.baseAvatar || user?.avatar} className="w-full h-full object-contain" />
+                  <img src={user?.baseAvatar || user?.avatar} className="w-full h-full object-cover object-top" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-slate-100">
                     <Icon name="user" size={48} className="text-slate-300" />
@@ -5802,6 +5999,67 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                     </>
                   )}
                 </button>
+              )}
+              
+              {/* Email Doğrulama Uyarısı - Sadece doğrulanmamış kullanıcılara */}
+              {!isEmailVerified && (
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Icon name="mail" size={16} className="text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-amber-800">
+                        {t('emailVerificationRequired') || 'E-posta Doğrulaması Gerekli'}
+                      </p>
+                      <p className="text-[11px] text-amber-700 mt-0.5">
+                        {t('emailVerificationForCombo') || 'Kombinleri denemek için e-posta adresinizi doğrulamanız gerekiyor.'}
+                      </p>
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        <button
+                          onClick={async () => {
+                            try {
+                              if (firebase?.auth?.().currentUser) {
+                                await firebase.auth().currentUser.sendEmailVerification();
+                                setToast({ open: true, type: 'success', title: '📧 Gönderildi', message: 'E-posta kutunuzu kontrol edin' });
+                              }
+                            } catch (e) {
+                              if (e.code === 'auth/too-many-requests') {
+                                setToast({ open: true, type: 'warning', title: 'Çok Fazla Deneme', message: 'Lütfen biraz bekleyin' });
+                              } else {
+                                setToast({ open: true, type: 'error', title: 'Hata', message: e.message });
+                              }
+                            }
+                          }}
+                          className="text-[10px] font-bold text-amber-700 hover:text-amber-900 underline"
+                        >
+                          E-posta Gönder
+                        </button>
+                        <span className="text-amber-400">|</span>
+                        <button
+                          onClick={async () => {
+                            if (auth?.currentUser) {
+                              try {
+                                await auth.currentUser.reload();
+                                if (auth.currentUser.emailVerified) {
+                                  setAuthUser(prev => ({ ...prev, emailVerified: true }));
+                                  setToast({ open: true, type: 'success', title: '✅ Doğrulandı!', message: 'Artık kombinleri deneyebilirsiniz' });
+                                } else {
+                                  setToast({ open: true, type: 'info', title: 'Henüz Doğrulanmadı', message: 'E-postadaki linke tıklayın' });
+                                }
+                              } catch (e) {
+                                console.error('Email check error:', e);
+                              }
+                            }
+                          }}
+                          className="text-[10px] font-bold text-amber-700 hover:text-amber-900 underline"
+                        >
+                          Doğruladım ✓
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 
@@ -6216,25 +6474,63 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                       <Icon name="trash" size={16} className="text-red-400" />
                     </button>
                   </div>
-                  <div className="flex gap-2 mb-3">
-                    {(combo.items || []).map((item, i) => (
-                      <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200">
-                        <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                  
+                  {/* Kombin görseli varsa göster */}
+                  {combo.image && (
+                    <div 
+                      className="relative w-full aspect-[3/4] rounded-xl overflow-hidden mb-3 cursor-pointer group"
+                      onClick={() => onTryOnResult(combo.image, combo.items || [])}
+                    >
+                      <img src={combo.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 bg-white/90 rounded-full p-3 transition">
+                          <Icon name="eye" size={24} className="text-slate-700" />
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
+                  
+                  {/* Kombin görseli yoksa sadece ürün görselleri */}
+                  {!combo.image && (
+                    <div className="flex gap-2 mb-3">
+                      {(combo.items || []).map((item, i) => (
+                        <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200">
+                          <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
                   <div className="flex gap-2">
                     <button 
                       onClick={() => {
-                        const top = (combo.items || []).find(i => i.category === 'top');
-                        const bottom = (combo.items || []).find(i => i.category === 'bottom');
-                        setSelected({ top: top || null, bottom: bottom || null });
-                        if (combo.background) setBg(combo.background);
-                        setTab('items');
+                        // Eğer kombin görseli varsa, direkt result modal'ında göster
+                        if (combo.image) {
+                          onTryOnResult(combo.image, combo.items || []);
+                        } else {
+                          // Görsel yoksa, ürünleri seçili yap ve items sekmesine git
+                          const top = (combo.items || []).find(i => i.category === 'top');
+                          const bottom = (combo.items || []).find(i => i.category === 'bottom');
+                          const outerwear = (combo.items || []).find(i => i.category === 'outerwear');
+                          const fullbody = (combo.items || []).find(i => i.category === 'fullbody');
+                          setSelected({ 
+                            top: top || null, 
+                            bottom: bottom || null,
+                            outerwear: outerwear || null,
+                            fullbody: fullbody || null
+                          });
+                          if (combo.background) setBg(combo.background);
+                          setTab('studio');
+                        }
                       }}
-                      className="flex-1 btn-secondary py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${
+                        combo.image 
+                          ? 'btn-primary' 
+                          : 'btn-secondary'
+                      }`}
                     >
-                      <Icon name="sparkles" size={14} />Dene
+                      <Icon name={combo.image ? 'eye' : 'sparkles'} size={14} />
+                      {combo.image ? 'Göster' : 'Dene'}
                     </button>
                     {onAddToCart && (combo.items || []).length > 0 && (
                       <button 
@@ -6360,8 +6656,17 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
             <div className="space-y-3">
               {tryHistory.map(item => (
                 <div key={item.id} className="glass rounded-2xl overflow-hidden">
-                  <div className="aspect-[3/4] relative">
+                  <div 
+                    className="aspect-[3/4] relative cursor-pointer"
+                    onClick={() => {
+                      // Görseli tam ekran modal'da göster
+                      onTryOnResult(item.image, item.items || []);
+                    }}
+                  >
                     <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                    <div className="absolute top-2 right-2 bg-black/50 rounded-lg px-2 py-1">
+                      <Icon name="eye" size={14} className="text-white" />
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-slate-900/50 to-transparent">
                       <p className="text-xs text-slate-600">
                         {new Date(item.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -6829,16 +7134,22 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                   {t('sendVerificationEmail')}
                 </button>
                 <button 
-                  onClick={() => { 
-                    // Sayfayı yenile ve emailVerified durumunu kontrol et
+                  onClick={async () => { 
+                    // Email doğrulama durumunu sayfa yenilemeden kontrol et
                     if (auth?.currentUser) {
-                      auth.currentUser.reload().then(() => {
+                      try {
+                        await auth.currentUser.reload();
                         if (auth.currentUser.emailVerified) {
-                          window.location.reload();
+                          // State'i güncelle - sayfa yenilemesine gerek yok
+                          setAuthUser(prev => ({ ...prev, emailVerified: true }));
+                          setShowVerifyModal(false);
+                          setToast({ open: true, type: 'success', title: '✅ E-posta Doğrulandı!', message: 'Artık tüm özellikleri kullanabilirsiniz' });
                         } else {
                           setToast({ open: true, type: 'info', title: t('notVerifiedYet'), message: t('clickLinkAndRetry') });
                         }
-                      });
+                      } catch (e) {
+                        console.error('Email verification check error:', e);
+                      }
                     }
                   }}
                   className="w-full btn-secondary py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
@@ -6907,10 +7218,78 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 };
 
 // ============ PROFILE (EXPANDED) ============
-const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat }) => {
-  const [tab, setTab] = useState('profile'); // profile, avatar, friends, settings, messages
+const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab }) => {
+  const [tab, setTab] = useState('profile'); // profile, avatar, friends, notifications, settings, messages
   const [showAddFriend, setShowAddFriend] = useState(false);
   const profilePhotoRef = useRef(null);
+  
+  // Okunmamış bildirim sayısı
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+  
+  // Bildirimi okundu olarak işaretle
+  const markNotificationAsRead = (notificationId) => {
+    setNotifications(prev => prev.map(n => 
+      n.id === notificationId ? { ...n, read: true } : n
+    ));
+    // Firebase'e kaydet
+    if (db && authUser?.uid) {
+      db.collection('users').doc(authUser.uid).collection('notifications').doc(String(notificationId)).update({ read: true }).catch(() => {});
+    }
+  };
+  
+  // Tüm bildirimleri okundu işaretle
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    // Firebase'e kaydet
+    if (db && authUser?.uid) {
+      notifications.forEach(n => {
+        if (!n.read) {
+          db.collection('users').doc(authUser.uid).collection('notifications').doc(String(n.id)).update({ read: true }).catch(() => {});
+        }
+      });
+    }
+  };
+  
+  // Bildirime tıklandığında yönlendirme
+  const handleNotificationClick = (notification) => {
+    markNotificationAsRead(notification.id);
+    
+    switch (notification.type) {
+      case 'follow_request':
+        setTab('friends');
+        break;
+      case 'follow_accept':
+        setTab('friends');
+        break;
+      case 'new_message':
+        setTab('messages');
+        // İlgili chat'i aç
+        if (notification.chatId) {
+          const chat = dmChats.find(c => c.id === notification.chatId);
+          if (chat) setSelectedChat({ type: 'dm', ...chat });
+        }
+        break;
+      case 'group_invite':
+        setTab('messages');
+        if (notification.groupId && groups) {
+          const group = groups.find(g => g.id === notification.groupId);
+          if (group) setSelectedChat({ type: 'group', ...group });
+        }
+        break;
+      case 'like':
+      case 'comment':
+        // Sosyal sekmesine yönlendir
+        if (setMainTab) setMainTab('social');
+        break;
+      case 'weather':
+      case 'daily_outfit':
+        // Ana sayfaya yönlendir
+        if (setMainTab) setMainTab('shop');
+        break;
+      default:
+        break;
+    }
+  };
   
   // Profil fotoğrafı seç
   const handleProfilePhotoSelect = (e) => {
@@ -6975,7 +7354,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [selectedGroupMembers, setSelectedGroupMembers] = useState([]);
-  const [groups, setGroups] = useState([]); // { id, name, members: [], messages: [], createdAt }
 
   // Search friend by username
   const searchFriendByUsername = async (username) => {
@@ -7078,13 +7456,13 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     
     // Check if already sent request
     if (sentFollowRequests.some(r => r.uid === targetUid)) {
-      alert('Zaten takip isteği gönderdin!');
+      setToast({ open: true, type: 'warning', title: 'Zaten Gönderildi', message: 'Bu kullanıcıya takip isteği gönderdin' });
       return;
     }
     
     // Check if already following
     if (friends.some(f => f.uid === targetUid)) {
-      alert('Bu kullanıcıyı zaten takip ediyorsun!');
+      setToast({ open: true, type: 'info', title: 'Zaten Takip Ediyorsun', message: 'Bu kullanıcı arkadaş listende' });
       return;
     }
     
@@ -7125,15 +7503,23 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       
       console.log('✅ Follow request sent');
       
-      // Don't update local state - let the listener handle it
+      // INSTANT UPDATE: Local state'i hemen güncelle
+      setSentFollowRequests(prev => [...prev, {
+        uid: targetUid,
+        username: foundUser.username,
+        displayName: foundUser.displayName,
+        profilePhoto: foundUser.profilePhoto || null,
+        createdAt: Date.now()
+      }]);
+      
       setFriendUsername('');
       setFriendSearchResult({ searching: false, found: null, error: null });
       setShowAddFriend(false);
-      alert('Takip isteği gönderildi!');
+      setToast({ open: true, type: 'success', title: '✅ İstek Gönderildi', message: `${foundUser.username}'e takip isteği gönderildi` });
       
     } catch (e) {
       console.error('❌ Follow request error:', e);
-      alert('Takip isteği gönderilemedi: ' + e.message);
+      setToast({ open: true, type: 'error', title: 'Hata', message: e.message });
     } finally {
       setSendingFollowRequest(false);
     }
@@ -7201,12 +7587,29 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       
       console.log('✅ Follow request accepted - mutual follow created');
       
-      // Don't update local state - let the real-time listeners handle it
-      // This prevents duplicate entries
+      // INSTANT UPDATE: Local state'i hemen güncelle
+      // İsteği listeden kaldır
+      setFollowRequests(prev => prev.filter(r => r.fromUid !== fromUid));
+      
+      // Yeni arkadaşı friends listesine ekle
+      const newFriend = {
+        uid: fromUid,
+        username: request.fromUsername,
+        displayName: request.fromDisplayName,
+        profilePhoto: request.fromPhoto || null,
+        followedAt: Date.now()
+      };
+      setFriends(prev => {
+        // Duplicate kontrolü
+        if (prev.some(f => f.uid === fromUid)) return prev;
+        return [...prev, newFriend];
+      });
+      
+      setToast({ open: true, type: 'success', title: '✅ Kabul Edildi', message: `${request.fromUsername} artık arkadaşın` });
       
     } catch (e) {
       console.error('❌ Accept request error:', e);
-      alert('İşlem başarısız: ' + e.message);
+      setToast({ open: true, type: 'error', title: 'Hata', message: e.message });
     }
   };
   
@@ -7269,10 +7672,11 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       
       // Update local state
       setFriends(prev => prev.filter(f => f.uid !== targetUid && f.id !== targetUid));
+      setToast({ open: true, type: 'info', title: 'Takip Bırakıldı', message: 'Arkadaş listesinden çıkarıldı' });
       
     } catch (e) {
       console.error('❌ Unfollow error:', e);
-      alert('İşlem başarısız: ' + e.message);
+      setToast({ open: true, type: 'error', title: 'Hata', message: e.message });
     }
   };
 
@@ -7558,6 +7962,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const tabs = [
     { id: 'profile', icon: 'user', label: t('profile') },
     { id: 'avatar', icon: 'sparkles', label: t('myTwin') },
+    { id: 'notifications', icon: 'bell', label: t('notifications'), badge: unreadNotificationsCount },
     { id: 'settings', icon: 'settings', label: t('settings') }
   ];
 
@@ -7618,12 +8023,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
           {user.username && (
             <p className="text-slate-500 text-sm">@{user.username}</p>
           )}
-          {user.tokens !== undefined && (
-            <p className="text-brand2 text-xs mt-1 flex items-center justify-center gap-1">
-              <span className="text-amber-500">🪙</span> {user.tokens || 0} {t('tokens')} 
-              {user.subscription?.active && <span className="ml-1">• Premium ✨</span>}
-            </p>
-          )}
         </div>
       </div>
 
@@ -7640,12 +8039,17 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                   setSelectedChat(null);
                 }
               }}
-              className={`flex-1 py-2 px-1 rounded-xl text-[10px] font-semibold flex flex-col items-center justify-center gap-0.5 transition ${
+              className={`flex-1 py-2 px-1 rounded-xl text-[10px] font-semibold flex flex-col items-center justify-center gap-0.5 transition relative ${
                 tab === t.id ? 'bg-brand text-white' : 'text-slate-500 hover:text-slate-600'
               }`}
             >
               <Icon name={t.icon} size={16} />
               <span className="truncate max-w-full">{t.label}</span>
+              {t.badge > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {t.badge > 9 ? '9+' : t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -7712,16 +8116,11 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-slate-500 text-sm">Kalan Haklar</span>
                   </div>
-                  <div className="flex items-center justify-center gap-4">
+                  <div className="flex items-center justify-center">
                     <div className="bg-gradient-to-r from-amber-100 to-yellow-50 rounded-xl p-3 text-center border border-amber-300 shadow-sm">
                       <span className="text-2xl">🪙</span>
-                      <p className="text-lg font-bold text-amber-700">{(user?.freeShopTries || 0) + (user?.credits || 0)}</p>
+                      <p className="text-lg font-bold text-amber-700">{(user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0)}</p>
                       <p className="text-[10px] text-amber-600 font-medium">Toplam Kredi</p>
-                    </div>
-                    <div className="bg-slate-50 rounded-xl p-3 text-center">
-                      <span className="text-2xl">🎬</span>
-                      <p className="text-lg font-bold text-slate-700">{user?.videoTokens || 0}</p>
-                      <p className="text-[10px] text-slate-500 font-medium">Video</p>
                     </div>
                   </div>
                 </div>
@@ -8470,6 +8869,148 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
           </div>
         )}
 
+        {/* NOTIFICATIONS TAB */}
+        {tab === 'notifications' && (
+          <div className="p-4 space-y-4 fade-in">
+            {/* Header with mark all read */}
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg">{t('allNotifications')}</h3>
+              {unreadNotificationsCount > 0 && (
+                <button
+                  onClick={markAllNotificationsAsRead}
+                  className="text-sm text-brand font-medium hover:underline"
+                >
+                  {t('markAllRead')}
+                </button>
+              )}
+            </div>
+            
+            {/* Notifications List */}
+            {notifications.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto mb-4">
+                  <Icon name="bell" size={28} className="text-slate-400" />
+                </div>
+                <p className="font-semibold text-slate-500">{t('noNotifications')}</p>
+                <p className="text-sm text-slate-400 mt-1">{t('noNotificationsDesc')}</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {notifications.sort((a, b) => b.createdAt - a.createdAt).map(notification => {
+                  // İkon ve renk belirleme
+                  let icon = 'bell';
+                  let iconBg = 'bg-slate-500';
+                  let actionText = '';
+                  
+                  switch (notification.type) {
+                    case 'follow_request':
+                      icon = 'userPlus';
+                      iconBg = 'bg-blue-500';
+                      actionText = t('notificationFollowRequest');
+                      break;
+                    case 'follow_accept':
+                      icon = 'check';
+                      iconBg = 'bg-green-500';
+                      actionText = t('notificationFollowAccept');
+                      break;
+                    case 'new_message':
+                      icon = 'mail';
+                      iconBg = 'bg-purple-500';
+                      actionText = t('notificationNewMessage');
+                      break;
+                    case 'group_invite':
+                      icon = 'users';
+                      iconBg = 'bg-indigo-500';
+                      actionText = t('notificationGroupInvite');
+                      break;
+                    case 'like':
+                      icon = 'heart';
+                      iconBg = 'bg-red-500';
+                      actionText = t('notificationLike');
+                      break;
+                    case 'comment':
+                      icon = 'message';
+                      iconBg = 'bg-amber-500';
+                      actionText = t('notificationComment');
+                      break;
+                    case 'weather':
+                      icon = 'sun';
+                      iconBg = 'bg-yellow-500';
+                      actionText = `${t('notificationWeather')} ${notification.weather || ''}`;
+                      break;
+                    case 'daily_outfit':
+                      icon = 'sparkles';
+                      iconBg = 'bg-brand';
+                      actionText = t('notificationDailyOutfit');
+                      break;
+                    case 'referral_reward':
+                      icon = 'gift';
+                      iconBg = 'bg-gradient-to-r from-brand to-purple-500';
+                      actionText = notification.message || '+1 kredi kazandın!';
+                      break;
+                    default:
+                      icon = 'bell';
+                      iconBg = 'bg-slate-500';
+                      actionText = notification.message || '';
+                  }
+                  
+                  const timeAgo = ((now) => {
+                    const diff = now - notification.createdAt;
+                    const minutes = Math.floor(diff / 60000);
+                    const hours = Math.floor(diff / 3600000);
+                    const days = Math.floor(diff / 86400000);
+                    if (minutes < 1) return 'Az önce';
+                    if (minutes < 60) return `${minutes}dk`;
+                    if (hours < 24) return `${hours}sa`;
+                    return `${days}g`;
+                  })(Date.now());
+                  
+                  return (
+                    <button
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification)}
+                      className={`w-full glass rounded-2xl p-3 flex items-start gap-3 text-left transition hover:bg-slate-100 ${!notification.read ? 'ring-2 ring-brand/30 bg-brand/5' : ''}`}
+                    >
+                      {/* Avatar or Icon */}
+                      {notification.senderAvatar ? (
+                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                          <img src={notification.senderAvatar} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center flex-shrink-0`}>
+                          <Icon name={icon} size={18} className="text-white" />
+                        </div>
+                      )}
+                      
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">
+                          {notification.senderName && (
+                            <span className="font-semibold">{notification.senderName} </span>
+                          )}
+                          <span className="text-slate-600">{actionText}</span>
+                        </p>
+                        {notification.preview && (
+                          <p className="text-xs text-slate-500 truncate mt-0.5">{notification.preview}</p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-1">{timeAgo}</p>
+                      </div>
+                      
+                      {/* Unread indicator */}
+                      {!notification.read && (
+                        <div className="w-2 h-2 rounded-full bg-brand flex-shrink-0 mt-2" />
+                      )}
+                      
+                      {/* Arrow */}
+                      <Icon name="chevronRight" size={16} className="text-slate-400 flex-shrink-0 mt-2" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* SETTINGS TAB */}
         {tab === 'settings' && (
           <div className="p-4 space-y-4 fade-in">
@@ -9099,37 +9640,6 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
     }
   };
   
-  // Open all products at once
-  const handleOpenAllProducts = () => {
-    const itemsToOpen = cart.filter(item => item.link && !clickedItems.includes(item.id));
-    
-    if (itemsToOpen.length === 0) return;
-    
-    // Mark all as clicked immediately
-    const newClickedIds = itemsToOpen.map(item => item.id);
-    setClickedItems(prev => [...prev, ...newClickedIds]);
-    setCurrentStep(2);
-    
-    // Open each item with staggered timing - daha geniş pencereler
-    itemsToOpen.forEach((item, index) => {
-      setTimeout(() => {
-        const url = buildTrendyolUrl(item);
-        if (url) {
-          const left = 50 + (index % 2) * 450;
-          const top = 30 + Math.floor(index / 2) * 40;
-          const popup = window.open(
-            url, 
-            `trendyol_${item.id}_${Date.now()}`, 
-            `width=900,height=950,left=${left},top=${top},scrollbars=yes,resizable=yes`
-          );
-          if (popup) {
-            setOpenPopups(prev => [...prev, popup]);
-          }
-        }
-      }, index * 800); // 800ms delay between each
-    });
-  };
-  
   // Close all opened popups
   const handleCloseAllPopups = () => {
     let closedCount = 0;
@@ -9260,17 +9770,6 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
                     </div>
                   </div>
                 </div>
-              )}
-              
-              {/* Quick Action: Open All */}
-              {cart.length > 1 && clickedItems.length < cart.length && (
-                <button
-                  onClick={handleOpenAllProducts}
-                  className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold flex items-center justify-center gap-2 transition"
-                >
-                  <Icon name="externalLink" size={16} />
-                  Tüm Ürünleri Aç ({cart.length - clickedItems.length} kaldı)
-                </button>
               )}
               
               {/* Product Cards */}
@@ -9419,8 +9918,8 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
 const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
   if (!open) return null;
   
-  // Check remaining tries
-  const remainingTries = (user?.freeShopTries || 0) + (user?.credits || 0);
+  // Check remaining tries - evrensel kredi sistemi
+  const remainingTries = (user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0);
   
   const paywallContent = {
     weeklyTries: {
@@ -9581,88 +10080,69 @@ const PaywallModal = ({ open, onClose, type, user, onPurchase }) => {
 
 // Subscription Modal - New Package Structure
 const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loading }) => {
-  const [selectedPlan, setSelectedPlan] = useState('silver');
-  const [activeTab, setActiveTab] = useState('subscription'); // 'subscription' or 'video'
+  const [selectedPlan, setSelectedPlan] = useState('popular');
+  const [activeTab, setActiveTab] = useState('credits'); // 'credits' only now
+  const [showReferral, setShowReferral] = useState(false);
   
   if (!open) return null;
   
-  // Main subscription plans
+  // Kredi paketleri - Yeni fiyatlandırma
   const subscriptionPlans = [
     {
       id: 'starter',
       name: 'Başlangıç',
-      price: 29,
+      price: 59,
       type: 'credits',
       amount: 10,
-      clothingLimit: 10,
-      avatarRefresh: 3,
+      clothingLimit: 15,
+      avatarRefresh: 1,
       desc: 'Tek seferlik',
       features: [
-        '10 Deneme Hakkı (Keşfet + Kombin)',
-        '10 Kıyafet Yükleme Hakkı',
-        '3 Avatar Yenileme Hakkı',
+        '10 Kredi (Deneme Hakkı)',
+        '+15 Kıyafet Yükleme Hakkı',
+        '+1 Avatar Yenileme Hakkı',
         'HD Kalitede Çıktı',
-        'Görsellerde TrAi Watermark',
-        'Temel Destek'
+        'Görsellerde TrAi Watermark'
       ],
       color: 'slate'
     },
     {
-      id: 'bronze',
-      name: 'Bronze',
-      price: 69,
-      type: 'subscription',
+      id: 'popular',
+      name: 'Popüler',
+      price: 109,
+      type: 'credits',
       amount: 30,
-      clothingLimit: 30,
-      avatarRefresh: 3,
-      desc: 'Aylık',
-      features: [
-        '30 Deneme Hakkı (Keşfet + Kombin)',
-        '30 Kıyafet Yükleme Hakkı',
-        '3 Avatar Yenileme Hakkı',
-        'HD Kalitede Çıktı',
-        'Görsellerde TrAi Watermark',
-        'E-posta Destek'
-      ],
-      color: 'amber'
-    },
-    {
-      id: 'silver',
-      name: 'Silver',
-      price: 119,
-      type: 'subscription',
-      amount: 70,
-      clothingLimit: 70,
-      avatarRefresh: 3,
-      desc: 'Aylık',
+      clothingLimit: 50,
+      avatarRefresh: 2,
+      desc: 'Tek seferlik',
       badge: 'EN POPÜLER',
       features: [
-        '70 Deneme Hakkı (Keşfet + Kombin)',
-        '70 Kıyafet Yükleme Hakkı',
-        '3 Avatar Yenileme Hakkı',
+        '30 Kredi (Deneme Hakkı)',
+        '+50 Kıyafet Yükleme Hakkı',
+        '+2 Avatar Yenileme Hakkı',
         'Full HD Kalitede Çıktı',
-        'Görsellerde TrAi Watermark',
-        'Öncelikli E-posta Destek'
+        'Reklamsız Deneyim',
+        'Öncelikli Destek'
       ],
-      color: 'slate',
+      color: 'brand',
       popular: true
     },
     {
-      id: 'gold',
-      name: 'Gold',
-      price: 169,
-      type: 'subscription',
-      amount: 150,
-      clothingLimit: 150,
-      avatarRefresh: 10,
-      desc: 'Aylık',
-      badge: 'WATERMARK YOK',
+      id: 'pro',
+      name: 'Pro',
+      price: 179,
+      type: 'credits',
+      amount: 50,
+      clothingLimit: 120,
+      avatarRefresh: 3,
+      desc: 'Tek seferlik',
+      badge: 'EN İYİ DEĞER',
       features: [
-        '150 Deneme Hakkı (Keşfet + Kombin)',
-        '150 Kıyafet Yükleme Hakkı',
-        '10 Avatar Yenileme Hakkı',
+        '50 Kredi (Deneme Hakkı)',
+        '+120 Kıyafet Yükleme Hakkı',
+        '+3 Avatar Yenileme Hakkı',
         '4K Ultra HD Kalitede Çıktı',
-        'Watermark YOK - Temiz Görseller',
+        'Reklamsız Deneyim',
         'VIP Öncelikli Destek'
       ],
       color: 'amber',
@@ -9670,54 +10150,20 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
     }
   ];
   
-  // Video plans
-  const videoPlans = [
-    {
-      id: 'video5',
-      name: '5 Video',
-      price: 149,
-      type: 'videoTokens',
-      amount: 5,
-      desc: 'Video paketi',
-      icon: '🎬',
-      features: [
-        '5 Video Oluşturma',
-        '6 Saniyelik Videolar',
-        'HD Kalite'
-      ]
-    },
-    {
-      id: 'video10',
-      name: '10 Video',
-      price: 249,
-      type: 'videoTokens',
-      amount: 10,
-      desc: 'Video paketi',
-      icon: '🎬',
-      badge: '%17 TASARRUF',
-      features: [
-        '10 Video Oluşturma',
-        '6 Saniyelik Videolar',
-        'HD Kalite'
-      ]
-    }
-  ];
-  
-  const currentPlans = activeTab === 'subscription' ? subscriptionPlans : videoPlans;
-  
   const handlePurchase = () => {
-    const allPlans = [...subscriptionPlans, ...videoPlans];
-    const plan = allPlans.find(p => p.id === selectedPlan);
+    const plan = subscriptionPlans.find(p => p.id === selectedPlan);
     if (!plan) return;
-    
-    if (plan.type === 'subscription') {
-      onSubscribe(plan.id, plan.amount, plan.clothingLimit);
-    } else {
-      onBuyCredits(plan.amount, plan.type, plan.price);
-    }
+    onBuyCredits(plan.amount, plan.type, plan.price, plan.clothingLimit, plan.avatarRefresh);
   };
   
-  const selectedPlanData = [...subscriptionPlans, ...videoPlans].find(p => p.id === selectedPlan);
+  const selectedPlanData = subscriptionPlans.find(p => p.id === selectedPlan);
+  
+  // Copy referral code
+  const copyReferralCode = () => {
+    if (user?.referralCode) {
+      navigator.clipboard.writeText(`https://trai.style?ref=${user.referralCode}`);
+    }
+  };
   
   return (
     <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
@@ -9730,8 +10176,8 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
                 TrAi
               </div>
               <div>
-                <h2 className="font-bold text-lg">Paket Satın Al</h2>
-                <p className="text-xs text-slate-500">Sanal deneme ve kıyafet yükleme hakları</p>
+                <h2 className="font-bold text-lg">{showReferral ? 'Arkadaşını Davet Et' : 'Kredi Satın Al'}</h2>
+                <p className="text-xs text-slate-500">{showReferral ? 'Arkadaşın üye olunca +1 kredi kazan' : 'Sanal deneme kredileri'}</p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-200/60">
@@ -9742,16 +10188,16 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
           {/* Current Status */}
           <div className="flex gap-3 mt-3 text-xs">
             <div className="flex items-center gap-1 bg-white/60 px-2 py-1 rounded-lg">
-              <span className="font-bold">{(user?.freeShopTries || 0) + (user?.credits || 0)}</span>
-              <span className="text-slate-500">deneme</span>
+              <span className="font-bold">{(user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0)}</span>
+              <span className="text-slate-500">kredi</span>
             </div>
             <div className="flex items-center gap-1 bg-white/60 px-2 py-1 rounded-lg">
               <span className="font-bold">{user?.clothingUploadCount || 0}/{user?.clothingUploadLimit || 5}</span>
               <span className="text-slate-500">kıyafet</span>
             </div>
             <div className="flex items-center gap-1 bg-white/60 px-2 py-1 rounded-lg">
-              <span className="font-bold">{user?.videoTokens || 0}</span>
-              <span className="text-slate-500">video</span>
+              <span className="font-bold">{user?.referralCreditsEarned || 0}</span>
+              <span className="text-slate-500">ref. kazanç</span>
             </div>
           </div>
         </div>
@@ -9759,26 +10205,127 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
         {/* Tab Switcher */}
         <div className="flex p-2 gap-1 border-b border-slate-100">
           <button
-            onClick={() => { setActiveTab('subscription'); setSelectedPlan('silver'); }}
+            onClick={() => setShowReferral(false)}
             className={`flex-1 py-2 rounded-xl text-sm font-semibold transition ${
-              activeTab === 'subscription' ? 'bg-brand text-white' : 'text-slate-500 hover:bg-slate-100'
+              !showReferral ? 'bg-brand text-white' : 'text-slate-500 hover:bg-slate-100'
             }`}
           >
-            Deneme Paketleri
+            💳 Kredi Paketleri
           </button>
           <button
-            onClick={() => { setActiveTab('video'); setSelectedPlan('video5'); }}
+            onClick={() => setShowReferral(true)}
             className={`flex-1 py-2 rounded-xl text-sm font-semibold transition ${
-              activeTab === 'video' ? 'bg-brand text-white' : 'text-slate-500 hover:bg-slate-100'
+              showReferral ? 'bg-brand text-white' : 'text-slate-500 hover:bg-slate-100'
             }`}
           >
-            Video Paketleri
+            🎁 Ücretsiz Kazan
           </button>
         </div>
         
-        {/* Plans */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-2">
-          {currentPlans.map(plan => (
+        {/* Content */}
+        {showReferral ? (
+          // Referral Tab Content
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Referral Stats */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="glass rounded-xl p-3 text-center">
+                <div className="text-xl font-bold text-brand">{user?.referralCreditsEarned || 0}</div>
+                <div className="text-[10px] text-slate-500">{t('referralEarned')}</div>
+              </div>
+              <div className="glass rounded-xl p-3 text-center">
+                <div className="text-xl font-bold text-green-500">{user?.referralCreditsThisMonth || 0}/10</div>
+                <div className="text-[10px] text-slate-500">{t('referralThisMonth')}</div>
+              </div>
+              <div className="glass rounded-xl p-3 text-center">
+                <div className="text-xl font-bold text-slate-600">10</div>
+                <div className="text-[10px] text-slate-500">{t('referralMonthlyLimit')}</div>
+              </div>
+            </div>
+            
+            {/* Referral Code */}
+            <div className="glass rounded-xl p-4">
+              <label className="text-xs font-semibold text-slate-500 mb-2 block">{t('referralLink')}</label>
+              <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={user?.referralCode ? `https://trai.style?ref=${user.referralCode}` : ''}
+                  className="flex-1 text-sm font-mono bg-slate-100 rounded-xl px-3 py-2 border-none"
+                />
+                <button
+                  onClick={() => {
+                    if (user?.referralCode) {
+                      navigator.clipboard.writeText(`https://trai.style?ref=${user.referralCode}`);
+                      // Show toast would require passing setToast prop
+                    }
+                  }}
+                  className="btn-primary px-4 rounded-xl font-semibold text-sm"
+                >
+                  📋 Kopyala
+                </button>
+              </div>
+              
+              {/* Share Buttons */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => {
+                    const text = `TrAi ile kıyafetleri sanal olarak deneyebilirsin! Ücretsiz kaydol: https://trai.style?ref=${user?.referralCode}`;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                  className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold text-sm flex items-center justify-center gap-1"
+                >
+                  <span>💬</span> WhatsApp
+                </button>
+                <button
+                  onClick={() => {
+                    const text = `TrAi ile kıyafetleri sanal olarak deneyebilirsin! Ücretsiz kaydol: https://trai.style?ref=${user?.referralCode}`;
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                  className="flex-1 bg-slate-800 text-white py-2 rounded-xl font-semibold text-sm flex items-center justify-center gap-1"
+                >
+                  <span>𝕏</span> Twitter
+                </button>
+              </div>
+            </div>
+            
+            {/* How It Works */}
+            <div className="glass rounded-xl p-4">
+              <h4 className="font-bold text-sm mb-3">{t('referralHowItWorks')}</h4>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</div>
+                  <p className="text-sm text-slate-600">{t('referralStep1')}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
+                  <p className="text-sm text-slate-600">{t('referralStep2')}</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</div>
+                  <p className="text-sm text-slate-600">{t('referralStep3')}</p>
+                </div>
+              </div>
+              
+              {/* Bonus Info */}
+              <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                <p className="text-xs text-amber-800">
+                  <span className="font-bold">🎁 Bonus:</span> {t('referralBonusOnPurchase')}
+                </p>
+              </div>
+              
+              {/* Security Note */}
+              <div className="mt-3 p-2 bg-slate-100 rounded-lg">
+                <p className="text-[10px] text-slate-500">
+                  🔒 {t('referralSecurityNote')}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Credit Packages Tab Content
+          <>
+            {/* Plans */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {subscriptionPlans.map(plan => (
             <button
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
@@ -9813,15 +10360,6 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
               </div>
             </button>
           ))}
-          
-          {/* Free tier info */}
-          {activeTab === 'subscription' && (
-            <div className="bg-slate-50 rounded-xl p-3 text-center">
-              <p className="text-xs text-slate-500">
-                <span className="font-semibold">Ücretsiz:</span> Haftalık 4 deneme • 5 kıyafet • Watermark
-              </p>
-            </div>
-          )}
         </div>
         
         {/* Purchase Button */}
@@ -9844,6 +10382,8 @@ const SubscriptionModal = ({ open, user, onClose, onSubscribe, onBuyCredits, loa
             Güvenli ödeme • İstediğin zaman iptal
           </p>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -10270,7 +10810,7 @@ const AdviceModal = ({ open, item, advice, loading, onClose }) => {
 };
 
 // ============ SOCIAL FEED ============
-const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests }) => {
+const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, groups, setGroups, notifications, setNotifications }) => {
   const [tab, setTab] = useState('feed'); // feed, myPosts, create, friends, messages
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState('');
@@ -10286,6 +10826,195 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   const [selectedChat, setSelectedChat] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [showNewChat, setShowNewChat] = useState(false);
+  
+  // Grup mesajlaşma state'leri
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [groupTopic, setGroupTopic] = useState('');
+  const [selectedGroupMembers, setSelectedGroupMembers] = useState([]);
+  const [showEditGroup, setShowEditGroup] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
+  
+  // Grup oluşturma fonksiyonu
+  const createGroup = async () => {
+    // Validasyon: En az 3 kişi (oluşturan + 2 üye)
+    if (selectedGroupMembers.length < 2) {
+      setToast({ open: true, type: 'error', title: 'Yetersiz Üye', message: t('minGroupMembers') });
+      return;
+    }
+    
+    if (!groupName.trim()) {
+      setToast({ open: true, type: 'error', title: 'Grup Adı Gerekli', message: 'Grup için bir ad girin' });
+      return;
+    }
+    
+    // Grup limiti: max 10 kişi
+    if (selectedGroupMembers.length > 9) {
+      setToast({ open: true, type: 'error', title: 'Limit Aşıldı', message: t('groupMaxMembers') });
+      return;
+    }
+    
+    const newGroup = {
+      id: Date.now(),
+      name: groupName.trim(),
+      topic: groupTopic.trim() || null,
+      creatorId: authUser?.uid,
+      creatorName: user.username || user.displayName,
+      members: [
+        { id: authUser?.uid, name: user.username || user.displayName, avatar: user.profilePhoto || user.baseAvatar, role: 'admin' },
+        ...selectedGroupMembers.map(m => ({ ...m, role: 'member' }))
+      ],
+      messages: [],
+      createdAt: Date.now()
+    };
+    
+    // Grupları güncelle
+    setGroups(prev => [...prev, newGroup]);
+    
+    // Firebase'e kaydet
+    if (db && authUser?.uid) {
+      try {
+        await db.collection('groups').doc(String(newGroup.id)).set({
+          ...newGroup,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Üyelere bildirim gönder
+        for (const member of selectedGroupMembers) {
+          await db.collection('users').doc(member.id).collection('notifications').add({
+            type: 'group_invite',
+            groupId: newGroup.id,
+            groupName: newGroup.name,
+            senderId: authUser.uid,
+            senderName: user.username || user.displayName,
+            senderAvatar: user.profilePhoto || user.baseAvatar,
+            read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      } catch (e) {
+        console.error('Grup oluşturma hatası:', e);
+      }
+    }
+    
+    // State'leri sıfırla
+    setShowCreateGroup(false);
+    setGroupName('');
+    setGroupTopic('');
+    setSelectedGroupMembers([]);
+    setToast({ open: true, type: 'success', title: t('groupCreated'), message: `${newGroup.name} grubu oluşturuldu` });
+    
+    // Gruba gir
+    setSelectedChat({ type: 'group', ...newGroup });
+  };
+  
+  // Grup mesajı gönderme
+  const sendGroupMessage = async () => {
+    if (!newMessage.trim() || !selectedChat || selectedChat.type !== 'group') return;
+    
+    const msg = {
+      id: Date.now(),
+      senderId: authUser?.uid,
+      senderName: user.username || user.displayName,
+      senderAvatar: user.profilePhoto || user.baseAvatar,
+      text: newMessage.trim(),
+      type: 'text',
+      timestamp: Date.now()
+    };
+    
+    // Lokal state güncelle
+    setGroups(prev => prev.map(g => 
+      g.id === selectedChat.id 
+        ? { ...g, messages: [...(g.messages || []), msg] }
+        : g
+    ));
+    
+    // selectedChat'i de güncelle
+    setSelectedChat(prev => ({
+      ...prev,
+      messages: [...(prev.messages || []), msg]
+    }));
+    
+    // Firebase'e kaydet
+    if (db) {
+      try {
+        await db.collection('groups').doc(String(selectedChat.id)).collection('messages').add({
+          ...msg,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Son mesajı grup dokümanına kaydet
+        await db.collection('groups').doc(String(selectedChat.id)).update({
+          lastMessage: msg.text,
+          lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (e) {
+        console.error('Mesaj gönderme hatası:', e);
+      }
+    }
+    
+    setNewMessage('');
+  };
+  
+  // Gruptan ayrılma
+  const leaveGroup = async (groupId) => {
+    if (!confirm('Bu gruptan ayrılmak istediğine emin misin?')) return;
+    
+    setGroups(prev => prev.map(g => {
+      if (g.id === groupId) {
+        return {
+          ...g,
+          members: g.members.filter(m => m.id !== authUser?.uid)
+        };
+      }
+      return g;
+    }).filter(g => g.members.some(m => m.id === authUser?.uid)));
+    
+    if (selectedChat?.id === groupId) {
+      setSelectedChat(null);
+    }
+    
+    // Firebase'den güncelle
+    if (db) {
+      const groupRef = db.collection('groups').doc(String(groupId));
+      const groupDoc = await groupRef.get();
+      if (groupDoc.exists) {
+        const data = groupDoc.data();
+        const updatedMembers = data.members.filter(m => m.id !== authUser?.uid);
+        if (updatedMembers.length > 0) {
+          await groupRef.update({ members: updatedMembers });
+        } else {
+          await groupRef.delete(); // Son üye ayrılınca grubu sil
+        }
+      }
+    }
+    
+    setToast({ open: true, type: 'info', title: 'Gruptan Ayrıldın', message: '' });
+  };
+  
+  // Grup düzenleme (sadece admin)
+  const updateGroupSettings = async () => {
+    if (!editingGroup) return;
+    
+    setGroups(prev => prev.map(g => 
+      g.id === editingGroup.id 
+        ? { ...g, name: groupName.trim() || g.name, topic: groupTopic.trim() || g.topic }
+        : g
+    ));
+    
+    if (db) {
+      await db.collection('groups').doc(String(editingGroup.id)).update({
+        name: groupName.trim() || editingGroup.name,
+        topic: groupTopic.trim() || editingGroup.topic
+      }).catch(() => {});
+    }
+    
+    setShowEditGroup(false);
+    setEditingGroup(null);
+    setGroupName('');
+    setGroupTopic('');
+    setToast({ open: true, type: 'success', title: 'Grup Güncellendi', message: '' });
+  };
 
   const myPosts = posts.filter(p => p.authorId === authUser?.uid);
   const feedPosts = posts.filter(p => 
@@ -11160,18 +11889,63 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
           {!selectedChat ? (
             // Chat List
             <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-2">
-              <button 
-                onClick={() => setShowNewChat(true)}
-                className="w-full btn-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2 mb-4"
-              >
-                <Icon name="mail" size={18} />Yeni Mesaj
-              </button>
+              {/* Action Buttons */}
+              <div className="flex gap-2 mb-4">
+                <button 
+                  onClick={() => setShowNewChat(true)}
+                  className="flex-1 btn-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
+                >
+                  <Icon name="mail" size={18} />Yeni Mesaj
+                </button>
+                <button 
+                  onClick={() => setShowCreateGroup(true)}
+                  className="flex-1 btn-ghost py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
+                >
+                  <Icon name="users" size={18} />{t('createGroup')}
+                </button>
+              </div>
               
-              {(!dmChats || dmChats.length === 0) ? (
+              {/* Gruplar */}
+              {groups && groups.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-slate-500 mb-2 uppercase">Gruplar</p>
+                  <div className="space-y-2">
+                    {groups.filter(g => g.members?.some(m => m.id === authUser?.uid)).map(group => {
+                      const lastMsg = (group.messages || []).slice(-1)[0];
+                      return (
+                        <button
+                          key={group.id}
+                          onClick={() => setSelectedChat({ type: 'group', ...group })}
+                          className="w-full flex items-center gap-3 p-3 glass rounded-xl text-left hover:bg-slate-100"
+                        >
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-purple-500 flex items-center justify-center">
+                            <Icon name="users" size={20} className="text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-sm">{group.name}</p>
+                              <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{group.members?.length || 0} üye</span>
+                            </div>
+                            <p className="text-xs text-slate-500 truncate">
+                              {lastMsg ? `${lastMsg.senderName}: ${lastMsg.text}` : (group.topic || 'Henüz mesaj yok')}
+                            </p>
+                          </div>
+                          <Icon name="chevronRight" size={18} className="text-slate-400" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* DM'ler */}
+              {(groups && groups.length > 0) && <p className="text-xs font-semibold text-slate-500 mb-2 uppercase">Direkt Mesajlar</p>}
+              
+              {(!dmChats || dmChats.length === 0) && (!groups || groups.length === 0) ? (
                 <div className="text-center py-12">
                   <Icon name="mail" size={32} className="mx-auto text-slate-300 mb-2" />
                   <p className="text-slate-500 text-sm">Henüz mesajın yok</p>
-                  <p className="text-slate-400 text-xs">Arkadaşlarına mesaj gönder</p>
+                  <p className="text-slate-400 text-xs">Arkadaşlarına mesaj gönder veya grup oluştur</p>
                 </div>
               ) : (
                 dmChats.map(chat => (
@@ -11179,7 +11953,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                     key={chat.id}
                     onClick={async () => {
                       // Load messages from Firebase when selecting chat
-                      setSelectedChat({ ...chat, messages: [], loading: true });
+                      setSelectedChat({ ...chat, type: 'dm', messages: [], loading: true });
                       if (db && chat.id) {
                         try {
                           const messagesSnap = await db.collection('chats').doc(chat.id)
@@ -11223,6 +11997,120 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   </button>
                 ))
               )}
+            </div>
+          ) : selectedChat.type === 'group' ? (
+            // Group Chat View
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Group Header */}
+              <div className="flex-shrink-0 p-3 border-b border-slate-200 flex items-center gap-3">
+                <button onClick={() => setSelectedChat(null)} className="p-2 -ml-2 rounded-xl hover:bg-slate-100">
+                  <Icon name="chevronLeft" size={20} />
+                </button>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-purple-500 flex items-center justify-center">
+                  <Icon name="users" size={18} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">{selectedChat.name}</p>
+                  <p className="text-xs text-slate-500">{selectedChat.members?.length || 0} üye {selectedChat.topic && `• ${selectedChat.topic}`}</p>
+                </div>
+                {/* Grup ayarları (sadece admin için) */}
+                {selectedChat.creatorId === authUser?.uid && (
+                  <button 
+                    onClick={() => {
+                      setEditingGroup(selectedChat);
+                      setGroupName(selectedChat.name);
+                      setGroupTopic(selectedChat.topic || '');
+                      setShowEditGroup(true);
+                    }}
+                    className="p-2 rounded-xl hover:bg-slate-100"
+                  >
+                    <Icon name="settings" size={18} />
+                  </button>
+                )}
+                <button 
+                  onClick={() => leaveGroup(selectedChat.id)}
+                  className="p-2 rounded-xl hover:bg-red-100 text-red-500"
+                >
+                  <Icon name="logout" size={18} />
+                </button>
+              </div>
+              
+              {/* Group Members Preview */}
+              <div className="flex-shrink-0 px-3 py-2 border-b border-slate-100 flex gap-1 overflow-x-auto no-scrollbar">
+                {selectedChat.members?.slice(0, 6).map(member => (
+                  <div key={member.id} className="flex-shrink-0 flex flex-col items-center">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200">
+                      {member.avatar ? (
+                        <img src={member.avatar} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs">👤</div>
+                      )}
+                    </div>
+                    <span className="text-[9px] text-slate-500 truncate max-w-[40px]">{member.name?.split(' ')[0]}</span>
+                  </div>
+                ))}
+                {selectedChat.members?.length > 6 && (
+                  <div className="flex-shrink-0 flex flex-col items-center">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
+                      +{selectedChat.members.length - 6}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Group Messages */}
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scroll p-4 space-y-3">
+                {(selectedChat.messages || []).length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-sm">
+                    Grup henüz oluşturuldu. İlk mesajı sen gönder!
+                  </div>
+                ) : (
+                  (selectedChat.messages || []).map(msg => {
+                    const isMine = msg.senderId === authUser?.uid;
+                    return (
+                      <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                        {!isMine && (
+                          <div className="w-6 h-6 rounded-full overflow-hidden mr-2 flex-shrink-0">
+                            {msg.senderAvatar ? (
+                              <img src={msg.senderAvatar} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-slate-200 flex items-center justify-center text-[10px]">👤</div>
+                            )}
+                          </div>
+                        )}
+                        <div className={`max-w-[70%]`}>
+                          {!isMine && (
+                            <p className="text-[10px] text-slate-500 mb-0.5 ml-1">{msg.senderName}</p>
+                          )}
+                          <div className={`px-4 py-2.5 rounded-2xl ${
+                            isMine ? 'bg-brand text-white rounded-br-md' : 'glass rounded-bl-md'
+                          }`}>
+                            <p className="text-sm">{msg.text}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              
+              {/* Group Message Input */}
+              <div className="p-3 border-t border-slate-200 flex gap-2 safe-bottom">
+                <input
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendGroupMessage()}
+                  placeholder="Gruba mesaj yaz..."
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 border-none text-sm"
+                />
+                <button 
+                  onClick={sendGroupMessage}
+                  disabled={!newMessage.trim()}
+                  className="btn-primary px-4 rounded-xl disabled:opacity-50"
+                >
+                  <Icon name="send" size={18} />
+                </button>
+              </div>
             </div>
           ) : (
             // Chat View
@@ -11337,6 +12225,149 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                     ))}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+          
+          {/* Create Group Modal */}
+          {showCreateGroup && (
+            <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
+              <div className="w-full max-w-md glass rounded-3xl p-5 max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-lg">{t('createGroup')}</h3>
+                  <button onClick={() => { setShowCreateGroup(false); setSelectedGroupMembers([]); setGroupName(''); setGroupTopic(''); }} className="p-2 rounded-xl hover:bg-slate-200/60">
+                    <Icon name="x" size={20} />
+                  </button>
+                </div>
+                
+                {/* Grup Bilgileri */}
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 mb-1.5 block">{t('groupName')} *</label>
+                    <input
+                      value={groupName}
+                      onChange={e => setGroupName(e.target.value)}
+                      placeholder="örn: Stil Takımı"
+                      className="w-full"
+                      maxLength={30}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 mb-1.5 block">{t('groupTopic')}</label>
+                    <input
+                      value={groupTopic}
+                      onChange={e => setGroupTopic(e.target.value)}
+                      placeholder="örn: Haftalık kombin paylaşımı"
+                      className="w-full"
+                      maxLength={50}
+                    />
+                  </div>
+                </div>
+                
+                {/* Üye Seçimi */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-semibold text-slate-500">{t('selectMembers')} (min. 2 kişi)</label>
+                    <span className="text-xs text-brand font-bold">{selectedGroupMembers.length}/9 seçili</span>
+                  </div>
+                  
+                  <p className="text-[10px] text-slate-400 mb-3">{t('onlyFollowersCanJoin')}</p>
+                  
+                  {friends.length === 0 ? (
+                    <div className="text-center py-6 bg-slate-50 rounded-xl">
+                      <Icon name="users" size={24} className="mx-auto text-slate-300 mb-2" />
+                      <p className="text-slate-500 text-sm">Önce birilerini takip et</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scroll">
+                      {friends.map(friend => {
+                        const isSelected = selectedGroupMembers.some(m => m.id === friend.id);
+                        return (
+                          <button
+                            key={friend.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedGroupMembers(prev => prev.filter(m => m.id !== friend.id));
+                              } else if (selectedGroupMembers.length < 9) {
+                                setSelectedGroupMembers(prev => [...prev, {
+                                  id: friend.id,
+                                  name: friend.displayName || friend.username,
+                                  avatar: friend.profilePhoto || friend.avatar
+                                }]);
+                              }
+                            }}
+                            className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition ${
+                              isSelected ? 'bg-brand/10 ring-2 ring-brand' : 'hover:bg-slate-100'
+                            }`}
+                          >
+                            <img 
+                              src={friend.profilePhoto || friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.id}`}
+                              className="w-10 h-10 rounded-xl object-cover"
+                            />
+                            <span className="flex-1 text-left font-medium text-sm">{friend.displayName || friend.username}</span>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                              isSelected ? 'bg-brand' : 'bg-slate-200'
+                            }`}>
+                              {isSelected && <Icon name="check" size={12} className="text-white" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Oluştur Butonu */}
+                <button
+                  onClick={createGroup}
+                  disabled={selectedGroupMembers.length < 2 || !groupName.trim()}
+                  className="w-full btn-primary py-3 rounded-xl font-bold mt-6 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <Icon name="users" size={18} />
+                  Grup Oluştur ({selectedGroupMembers.length + 1} kişi)
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Edit Group Modal */}
+          {showEditGroup && editingGroup && (
+            <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
+              <div className="w-full max-w-sm glass rounded-3xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold">{t('editGroup')}</h3>
+                  <button onClick={() => { setShowEditGroup(false); setEditingGroup(null); }} className="p-2 rounded-xl hover:bg-slate-200/60">
+                    <Icon name="x" size={20} />
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 mb-1.5 block">{t('groupName')}</label>
+                    <input
+                      value={groupName}
+                      onChange={e => setGroupName(e.target.value)}
+                      className="w-full"
+                      maxLength={30}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 mb-1.5 block">{t('groupTopic')}</label>
+                    <input
+                      value={groupTopic}
+                      onChange={e => setGroupTopic(e.target.value)}
+                      className="w-full"
+                      maxLength={50}
+                    />
+                  </div>
+                </div>
+                
+                <button
+                  onClick={updateGroupSettings}
+                  className="w-full btn-primary py-3 rounded-xl font-bold mt-6"
+                >
+                  Kaydet
+                </button>
               </div>
             </div>
           )}
@@ -11554,6 +12585,22 @@ const App = () => {
   const [lastTryTime, setLastTryTime] = useState(0);
   const COOLDOWN_MS = 30000;
   
+  // Referral code from URL
+  const [pendingReferralCode, setPendingReferralCode] = useState(null);
+  
+  // URL'den referral kodunu yakala
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      console.log('🎁 Referral code detected:', refCode);
+      setPendingReferralCode(refCode);
+      // URL'den parametreyi temizle (history'yi değiştirmeden)
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
+  
   // Language state for re-rendering
   const [lang, setLang] = useState(currentLanguage);
   
@@ -11571,6 +12618,7 @@ const App = () => {
   const [notifications, setNotifications] = useState([]); // All notifications
   const [dmChats, setDmChats] = useState([]); // DM conversations
   const [selectedChat, setSelectedChat] = useState(null); // Currently open chat
+  const [groups, setGroups] = useState([]); // Group chats
   const [settings, setSettings] = useState({
     profilePublic: true,
     combosPublic: true,
@@ -11738,52 +12786,55 @@ const App = () => {
   
   const cartTotal = cart.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
   
+  // Son kullanılan kredi tipini takip et (iade için)
+  const lastUsedCreditTypeRef = React.useRef(null);
+  
   // Kredi sistemi fonksiyonları
   // Universal kredi sistemi - hem keşfet hem kombin için
   const useCredit = (source = 'shop') => {
     if (!user) return false;
     
-    // Önce ücretsiz haftalık hakları kontrol et
-    if ((user.freeShopTries || 0) > 0) {
-      const newFreeShop = user.freeShopTries - 1;
-      const totalRemaining = newFreeShop + (user.credits || 0);
-      setUser(prev => ({ ...prev, freeShopTries: newFreeShop }));
+    // Ücretsiz hakları kontrol et (tek seferlik, yenilenmez)
+    if (source === 'avatar' && (user.freeAvatarTry || 0) > 0) {
+      const newVal = user.freeAvatarTry - 1;
+      setUser(prev => ({ ...prev, freeAvatarTry: newVal }));
       if (db && authUser?.uid) {
-        db.collection('users').doc(authUser.uid).update({ freeShopTries: newFreeShop })
-          .catch(e => console.error('❌ freeShopTries save error:', e.code, e.message));
+        db.collection('users').doc(authUser.uid).update({ freeAvatarTry: newVal })
+          .catch(e => console.error('❌ freeAvatarTry save error:', e));
       }
-      setToast({ open: true, type: 'success', title: '🪙 Kredi kullanıldı', message: `Kalan: ${totalRemaining}` });
-      
-      // Paywall: Son 1 hak kaldığında göster
-      if (totalRemaining === 1) {
-        setTimeout(() => {
-          setPaywallType('weeklyTries');
-          setShowPaywall(true);
-        }, 1500);
-      }
+      lastUsedCreditTypeRef.current = 'freeAvatar'; // İade için kaydet
+      setToast({ open: true, type: 'success', title: '🎁 Ücretsiz avatar hakkı kullanıldı', message: 'İlk avatarını oluşturuyorsun!' });
       return true;
     }
     
-    // Ücretsiz hak yoksa kredi kullan
+    if (source === 'shop' && (user.freeShopTry || 0) > 0) {
+      const newVal = user.freeShopTry - 1;
+      setUser(prev => ({ ...prev, freeShopTry: newVal }));
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ freeShopTry: newVal })
+          .catch(e => console.error('❌ freeShopTry save error:', e));
+      }
+      lastUsedCreditTypeRef.current = 'freeShop'; // İade için kaydet
+      setToast({ open: true, type: 'success', title: '🎁 Ücretsiz deneme hakkı kullanıldı', message: 'İlk shop denemeni yaptın!' });
+      return true;
+    }
+    
+    if (source === 'combo' && (user.freeComboTry || 0) > 0) {
+      const newVal = user.freeComboTry - 1;
+      setUser(prev => ({ ...prev, freeComboTry: newVal }));
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ freeComboTry: newVal })
+          .catch(e => console.error('❌ freeComboTry save error:', e));
+      }
+      lastUsedCreditTypeRef.current = 'freeCombo'; // İade için kaydet
+      setToast({ open: true, type: 'success', title: '🎁 Ücretsiz kombin hakkı kullanıldı', message: 'İlk kombinini denedin!' });
+      return true;
+    }
+    
+    // Ücretsiz hak yoksa satın alınmış kredi kullan
     const currentCredits = user.credits || 0;
     if (currentCredits <= 0) {
-      // Premium abonelik kontrolü
-      if (user.subscription?.active && (user.subscription?.remainingCredits || 0) > 0) {
-        const newRemaining = user.subscription.remainingCredits - 1;
-        setUser(prev => ({
-          ...prev,
-          subscription: { ...prev.subscription, remainingCredits: newRemaining }
-        }));
-        if (db && authUser?.uid) {
-          db.collection('users').doc(authUser.uid).update({ 
-            'subscription.remainingCredits': newRemaining 
-          }).catch(e => console.error('❌ subscription.remainingCredits save error:', e.code, e.message));
-        }
-        setToast({ open: true, type: 'info', title: '💎 Premium kredi kullanıldı', message: `Kalan: ${newRemaining}` });
-        return true;
-      }
-      
-      // Hiç hak yok - Paywall göster
+      // Hiç kredi yok - Paywall göster
       setPaywallType('noCredits');
       setShowPaywall(true);
       return false;
@@ -11794,26 +12845,57 @@ const App = () => {
     setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
       db.collection('users').doc(authUser.uid).update({ credits: newCredits })
-        .catch(e => console.error('❌ credits save error:', e.code, e.message));
+        .catch(e => console.error('❌ credits save error:', e));
     }
+    lastUsedCreditTypeRef.current = 'paidCredit'; // İade için kaydet
     setToast({ open: true, type: 'info', title: t('creditUsed'), message: `${t('creditsRemaining')}: ${newCredits}` });
     return true;
   };
   
-  // Video kredi kontrolü - Paywall ile
-  const checkVideoAccess = () => {
-    const videoTokens = user?.videoTokens || 0;
-    if (videoTokens <= 0) {
-      setPaywallType('videoAccess');
-      setShowPaywall(true);
-      return false;
+  // Kredi iade et (hata durumunda)
+  const refundCredit = (source = 'shop') => {
+    if (!user || !db || !authUser?.uid) return;
+    
+    // lastUsedCreditTypeRef'ten gerçek kullanılan tipi al
+    const actualType = lastUsedCreditTypeRef.current;
+    
+    if (!actualType) {
+      console.log('⚠️ İade edilecek kredi tipi bulunamadı');
+      return;
     }
-    return true;
+    
+    // Kullanılan tipe göre iade et
+    if (actualType === 'freeAvatar') {
+      const newVal = (user.freeAvatarTry || 0) + 1;
+      setUser(prev => ({ ...prev, freeAvatarTry: newVal }));
+      db.collection('users').doc(authUser.uid).update({ freeAvatarTry: newVal }).catch(() => {});
+      setToast({ open: true, type: 'info', title: '💰 Kredi İade Edildi', message: 'Ücretsiz avatar hakkınız geri verildi' });
+    } else if (actualType === 'freeShop') {
+      const newVal = (user.freeShopTry || 0) + 1;
+      setUser(prev => ({ ...prev, freeShopTry: newVal }));
+      db.collection('users').doc(authUser.uid).update({ freeShopTry: newVal }).catch(() => {});
+      setToast({ open: true, type: 'info', title: '💰 Kredi İade Edildi', message: 'Ücretsiz shop hakkınız geri verildi' });
+    } else if (actualType === 'freeCombo') {
+      const newVal = (user.freeComboTry || 0) + 1;
+      setUser(prev => ({ ...prev, freeComboTry: newVal }));
+      db.collection('users').doc(authUser.uid).update({ freeComboTry: newVal }).catch(() => {});
+      setToast({ open: true, type: 'info', title: '💰 Kredi İade Edildi', message: 'Ücretsiz kombin hakkınız geri verildi' });
+    } else if (actualType === 'paidCredit') {
+      // Normal kredi iade et
+      const newCredits = (user.credits || 0) + 1;
+      setUser(prev => ({ ...prev, credits: newCredits }));
+      db.collection('users').doc(authUser.uid).update({ credits: newCredits }).catch(() => {});
+      setToast({ open: true, type: 'info', title: '💰 Kredi İade Edildi', message: 'Krediniz geri verildi' });
+    }
+    
+    // Kullanılan tipi sıfırla
+    lastUsedCreditTypeRef.current = null;
+    console.log('💰 Kredi iade edildi:', actualType);
   };
   
   // Kıyafet yükleme kontrolü - Paywall ile
   const checkClothingUploadAccess = (currentCount) => {
-    const clothingLimit = user?.clothingUploadLimit || 5; // Free: 5, packages add more
+    const clothingLimit = user?.clothingUploadLimit || 5;
     if (currentCount >= clothingLimit) {
       setPaywallType('clothingUpload');
       setShowPaywall(true);
@@ -11827,35 +12909,242 @@ const App = () => {
     setUser(prev => ({ ...prev, credits: newCredits }));
     if (db && authUser?.uid) {
       db.collection('users').doc(authUser.uid).update({ credits: newCredits })
-        .catch(e => console.error('❌ addCredits save error:', e.code, e.message));
+        .catch(e => console.error('❌ addCredits save error:', e));
     }
   };
   
-  // Video token kullanımı
-  const useVideoToken = () => {
-    if (!user) return false;
-    const currentVideoTokens = user.videoTokens || 0;
-    if (currentVideoTokens <= 0) {
-      setToast({ open: true, type: 'error', title: 'Yetersiz Video Kredisi', message: 'Video paketi satın alın.' });
-      setShowSubscription(true);
+  // Referral kredi kazanma (güvenlik kontrollü)
+  const earnReferralCredit = async (referredUserId, reason = 'avatar_created') => {
+    if (!user || !db || !authUser?.uid) return;
+    
+    // Aylık limit kontrolü (max 10 referral/ay)
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const monthKey = `${currentYear}-${currentMonth}`;
+    let creditsThisMonth = user.referralCreditsThisMonth || 0;
+    
+    // Ay değiştiyse sıfırla
+    if (user.referralLastResetMonth !== monthKey) {
+      creditsThisMonth = 0;
+    }
+    
+    if (creditsThisMonth >= 10) {
+      console.log('⚠️ Aylık referral limiti doldu (10/10)');
+      setToast({ open: true, type: 'warning', title: t('referralLimitReached'), message: 'Gelecek ay tekrar kazanabilirsin' });
       return false;
     }
-    const newVideoTokens = currentVideoTokens - 1;
-    setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
-    if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens })
-        .catch(e => console.error('❌ videoTokens save error:', e.code, e.message));
+    
+    // Aynı kullanıcıdan daha önce kredi alınmış mı kontrol et
+    const referralsRef = db.collection('users').doc(authUser.uid).collection('referral_history');
+    const existingReferral = await referralsRef.where('referredUserId', '==', referredUserId).where('reason', '==', reason).get();
+    
+    if (!existingReferral.empty) {
+      console.log('⚠️ Bu kullanıcıdan zaten bu sebep için kredi alınmış');
+      return false;
     }
-    setToast({ open: true, type: 'info', title: '🎬 Video kredisi kullanıldı', message: `Kalan: ${newVideoTokens}` });
+    
+    // Kredi ekle
+    const newCredits = (user.credits || 0) + 1;
+    const newReferralEarned = (user.referralCreditsEarned || 0) + 1;
+    
+    setUser(prev => ({ 
+      ...prev, 
+      credits: newCredits,
+      referralCreditsEarned: newReferralEarned,
+      referralCreditsThisMonth: creditsThisMonth + 1,
+      referralLastResetMonth: monthKey
+    }));
+    
+    // Firebase'e kaydet
+    await db.collection('users').doc(authUser.uid).update({
+      credits: newCredits,
+      referralCreditsEarned: newReferralEarned,
+      referralCreditsThisMonth: creditsThisMonth + 1,
+      referralLastResetMonth: monthKey
+    }).catch(e => console.error('❌ referral credit error:', e));
+    
+    // Referral geçmişine kaydet (duplicate kontrolü için)
+    await referralsRef.add({
+      referredUserId,
+      reason, // 'avatar_created' veya 'package_purchased'
+      earnedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      creditsEarned: 1
+    }).catch(e => console.error('❌ referral history error:', e));
+    
+    const reasonText = reason === 'avatar_created' ? 'Arkadaşın avatar oluşturdu!' : 'Arkadaşın paket satın aldı!';
+    setToast({ open: true, type: 'success', title: '🎉 Referans Kredisi!', message: `${reasonText} +1 kredi kazandın` });
+    
     return true;
   };
-
-  const addVideoTokens = (amount) => {
-    const newVideoTokens = (user?.videoTokens || 0) + amount;
-    setUser(prev => ({ ...prev, videoTokens: newVideoTokens }));
-    if (db && authUser?.uid) {
-      db.collection('users').doc(authUser.uid).update({ videoTokens: newVideoTokens })
-        .catch(e => console.error('❌ addVideoTokens save error:', e.code, e.message));
+  
+  // Referral kodu ile referans veren kullanıcıyı bul
+  const findReferrerByCode = async (referralCode) => {
+    if (!db || !referralCode) return null;
+    
+    try {
+      const snapshot = await db.collection('users')
+        .where('referralCode', '==', referralCode.toUpperCase())
+        .limit(1)
+        .get();
+      
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        return { uid: doc.id, ...doc.data() };
+      }
+    } catch (e) {
+      console.error('❌ Referrer lookup error:', e);
+    }
+    return null;
+  };
+  
+  // Referans veren kullanıcıya kredi ver (avatar oluşturulduğunda çağrılır)
+  const triggerReferralReward = async (newUserDeviceId) => {
+    if (!user?.referredBy || !db || !authUser?.uid) return;
+    
+    // Kendi device ID'mizi al
+    const myDeviceId = getDeviceId();
+    
+    // Referans veren kullanıcının device ID'si ile karşılaştır
+    try {
+      const referrerDoc = await db.collection('users').doc(user.referredBy).get();
+      if (referrerDoc.exists) {
+        const referrerData = referrerDoc.data();
+        
+        // Device ID kontrolü - aynı cihazdan açılan hesaplar sayılmaz
+        if (referrerData.deviceId && referrerData.deviceId === myDeviceId) {
+          console.log('⚠️ Referral rejected: Same device detected');
+          return;
+        }
+        
+        // Referans veren kullanıcının aylık limitini kontrol et
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        const monthKey = `${currentYear}-${currentMonth}`;
+        let referrerCreditsThisMonth = referrerData.referralCreditsThisMonth || 0;
+        
+        if (referrerData.referralLastResetMonth !== monthKey) {
+          referrerCreditsThisMonth = 0;
+        }
+        
+        if (referrerCreditsThisMonth >= 10) {
+          console.log('⚠️ Referrer monthly limit reached');
+          return;
+        }
+        
+        // Daha önce bu kullanıcı için kredi verilmiş mi kontrol et
+        const historySnapshot = await db.collection('users').doc(user.referredBy)
+          .collection('referral_history')
+          .where('referredUserId', '==', authUser.uid)
+          .where('reason', '==', 'avatar_created')
+          .get();
+        
+        if (!historySnapshot.empty) {
+          console.log('⚠️ Referral already rewarded for this user');
+          return;
+        }
+        
+        // Referans verene kredi ver
+        const newReferrerCredits = (referrerData.credits || 0) + 1;
+        const newReferrerEarned = (referrerData.referralCreditsEarned || 0) + 1;
+        
+        await db.collection('users').doc(user.referredBy).update({
+          credits: newReferrerCredits,
+          referralCreditsEarned: newReferrerEarned,
+          referralCreditsThisMonth: referrerCreditsThisMonth + 1,
+          referralLastResetMonth: monthKey
+        });
+        
+        // Referral geçmişine kaydet
+        await db.collection('users').doc(user.referredBy).collection('referral_history').add({
+          referredUserId: authUser.uid,
+          referredUsername: user.username || user.displayName,
+          reason: 'avatar_created',
+          earnedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          creditsEarned: 1
+        });
+        
+        // Referans verene bildirim gönder
+        await db.collection('users').doc(user.referredBy).collection('notifications').add({
+          type: 'referral_reward',
+          message: `${user.username || 'Bir arkadaşın'} avatar oluşturdu! +1 kredi kazandın 🎉`,
+          senderName: user.username || user.displayName,
+          senderAvatar: user.profilePhoto || user.baseAvatar,
+          read: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('✅ Referral reward sent to:', user.referredBy);
+      }
+    } catch (e) {
+      console.error('❌ Referral reward error:', e);
+    }
+  };
+  
+  // Paket satın alındığında referans verene kredi ver
+  const triggerReferralRewardOnPurchase = async () => {
+    if (!user?.referredBy || !db || !authUser?.uid) return;
+    
+    try {
+      const referrerDoc = await db.collection('users').doc(user.referredBy).get();
+      if (!referrerDoc.exists) return;
+      
+      const referrerData = referrerDoc.data();
+      
+      // Device ID kontrolü
+      const myDeviceId = getDeviceId();
+      if (referrerData.deviceId && referrerData.deviceId === myDeviceId) {
+        console.log('⚠️ Referral rejected on purchase: Same device');
+        return;
+      }
+      
+      // Aylık limit kontrolü
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const monthKey = `${currentYear}-${currentMonth}`;
+      let referrerCreditsThisMonth = referrerData.referralCreditsThisMonth || 0;
+      
+      if (referrerData.referralLastResetMonth !== monthKey) {
+        referrerCreditsThisMonth = 0;
+      }
+      
+      if (referrerCreditsThisMonth >= 10) {
+        console.log('⚠️ Referrer monthly limit reached on purchase');
+        return;
+      }
+      
+      // Referans verene kredi ver
+      const newReferrerCredits = (referrerData.credits || 0) + 1;
+      const newReferrerEarned = (referrerData.referralCreditsEarned || 0) + 1;
+      
+      await db.collection('users').doc(user.referredBy).update({
+        credits: newReferrerCredits,
+        referralCreditsEarned: newReferrerEarned,
+        referralCreditsThisMonth: referrerCreditsThisMonth + 1,
+        referralLastResetMonth: monthKey
+      });
+      
+      // Referral geçmişine kaydet
+      await db.collection('users').doc(user.referredBy).collection('referral_history').add({
+        referredUserId: authUser.uid,
+        referredUsername: user.username || user.displayName,
+        reason: 'package_purchased',
+        earnedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        creditsEarned: 1
+      });
+      
+      // Referans verene bildirim gönder
+      await db.collection('users').doc(user.referredBy).collection('notifications').add({
+        type: 'referral_reward',
+        message: `${user.username || 'Bir arkadaşın'} paket satın aldı! +1 kredi kazandın 🎉`,
+        senderName: user.username || user.displayName,
+        senderAvatar: user.profilePhoto || user.baseAvatar,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      console.log('✅ Referral purchase reward sent to:', user.referredBy);
+    } catch (e) {
+      console.error('❌ Referral purchase reward error:', e);
     }
   };
   
@@ -11889,9 +13178,17 @@ const App = () => {
         }).catch(e => console.error('❌ subscription save error:', e.code, e.message));
       }
       setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: 'Premium üye oldunuz!' });
+      
+      // Referans verene ödül gönder (paket alımı)
+      await triggerReferralRewardOnPurchase();
+      
     } else if (type === 'credits') {
       addCredits(amount);
       setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: `+${amount} Kredi eklendi` });
+      
+      // Referans verene ödül gönder (paket alımı)
+      await triggerReferralRewardOnPurchase();
+      
     } else if (type === 'videoTokens') {
       addVideoTokens(amount);
       setToast({ open: true, type: 'success', title: 'Ödeme Başarılı', message: `+${amount} Video kredisi eklendi` });
@@ -12108,16 +13405,52 @@ const App = () => {
     isFirstSnapshotRef.current = true; // Reset for new user
     
     // Kayıt sırasında gelen username ve displayName
+    // pendingReferralCode varsa referredBy olarak ayarla
+    let referredByUid = authUser.referredBy || null;
+    
+    // URL'den gelen referral kodunu işle (async IIFE)
+    (async () => {
+      if (pendingReferralCode && !referredByUid) {
+        const referrer = await findReferrerByCode(pendingReferralCode);
+        if (referrer && referrer.uid !== authUser.uid) {
+          // Device ID kontrolü - aynı cihazdan gelen referral'ları reddet
+          const myDeviceId = getDeviceId();
+          if (referrer.deviceId !== myDeviceId) {
+            referredByUid = referrer.uid;
+            console.log('✅ Referral code validated, referrer:', referrer.uid);
+          } else {
+            console.log('⚠️ Referral rejected: Same device as referrer');
+          }
+        }
+        setPendingReferralCode(null); // Kullanıldı, temizle
+      }
+    })();
+    
+    const currentMonthKey = `${new Date().getFullYear()}-${new Date().getMonth()}`;
+    
     const initialUserData = authUser.username ? {
       username: authUser.username,
       displayName: authUser.displayName || null,
       email: authUser.email || null,
       credits: 0,
-      videoTokens: 0,
-      freeShopTries: 4,  // Haftalık 4 deneme hakkı
-      freeComboTries: 0,   // Kombin ve keşfet aynı havuzdan
-      lastFreeReset: getWeekNumber(), // Haftalık reset
-      subscription: null,  // Yeni kullanıcılar ücretsiz üye
+      // Ücretsiz haklar - tek seferlik, yenilenmez
+      freeAvatarTry: authUser.isReturningEmail ? 0 : 1,  // 1 avatar oluşturma hakkı
+      freeShopTry: authUser.isReturningEmail ? 0 : 1,    // 1 shop deneme hakkı
+      freeComboTry: authUser.isReturningEmail ? 0 : 1,   // 1 kombin deneme hakkı
+      subscription: null,
+      clothingUploadLimit: 5,  // Varsayılan 5 kıyafet yükleme hakkı
+      clothingUploadCount: 0,
+      avatarRefreshCount: 0,   // Avatar yenileme sayısı
+      avatarRefreshLimit: 0,   // Satın alınan avatar yenileme hakkı
+      // Referral sistemi
+      referralCode: generateReferralCode(authUser.uid),
+      referredBy: referredByUid,
+      referralCreditsEarned: 0,
+      referralCreditsThisMonth: 0,
+      referralLastResetMonth: currentMonthKey,
+      referralActivated: false, // Avatar oluşturulduğunda true olacak
+      // Device tracking for abuse prevention
+      deviceId: getDeviceId(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     } : null;
     
@@ -12195,20 +13528,11 @@ const App = () => {
             }
           }
           
-          // Günlük ücretsiz hakları kontrol et
-          // Haftalık reset kontrolü
-          const currentWeek = getWeekNumber();
-          let freeShopTries = data.freeShopTries ?? 4;
-          const freeComboTries = data.freeComboTries ?? 0;
-          
-          if (data.lastFreeReset !== currentWeek) {
-            freeShopTries = 4;  // Haftalık 4 hak
-            // Firestore'a kaydet (async, bekleme)
-            db.collection('users').doc(userId).update({ 
-              freeShopTries: 4, 
-              lastFreeReset: currentWeek 
-            }).catch(e => console.warn('Free tries reset error:', e));
-          }
+          // Ücretsiz haklar artık yenilenmiyor - tek seferlik
+          // Eski kullanıcıları yeni sisteme migrate et
+          const freeAvatarTry = data.freeAvatarTry ?? (data.baseAvatar ? 0 : 1);
+          const freeShopTry = data.freeShopTry ?? (data.freeShopTries > 0 ? 1 : 0);
+          const freeComboTry = data.freeComboTry ?? (data.freeComboTries > 0 ? 1 : 0);
           
           // User state'i güncelle - ALWAYS update user for credits etc
           setUser(prev => {
@@ -12217,13 +13541,23 @@ const App = () => {
               displayName: resolvedDisplayName || prev?.displayName || null,
               profilePhoto: data.profilePhoto,
               email: data.email,
+              emailVerified: authUser.emailVerified || false,
               credits: data.credits ?? 0,
-              videoTokens: data.videoTokens ?? 0,
-              freeShopTries: freeShopTries,
-              freeComboTries: freeComboTries,
-              lastFreeReset: currentWeek,
+              // Yeni ücretsiz hak sistemi
+              freeAvatarTry: freeAvatarTry,
+              freeShopTry: freeShopTry,
+              freeComboTry: freeComboTry,
               subscription: data.subscription || null,
-              clothingUploadPurchased: data.clothingUploadPurchased || false,
+              // Kıyafet yükleme sistemi
+              clothingUploadLimit: data.clothingUploadLimit ?? 5,
+              clothingUploadCount: data.clothingUploadCount ?? 0,
+              // Avatar yenileme sistemi
+              avatarRefreshCount: data.avatarRefreshCount ?? 0,
+              avatarRefreshLimit: data.avatarRefreshLimit ?? 0,
+              // Referral sistemi
+              referralCode: data.referralCode || generateReferralCode(userId),
+              referredBy: data.referredBy || null,
+              referralCreditsEarned: data.referralCreditsEarned ?? 0,
               // Avatar parametreleri
               gender: data.params?.gender || data.gender,
               age: data.params?.age || data.age,
@@ -12252,6 +13586,19 @@ const App = () => {
             if (data.favorites && Array.isArray(data.favorites)) setFavorites(data.favorites);
             if (data.tryHistory && Array.isArray(data.tryHistory)) setTryHistory(data.tryHistory);
             if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
+            
+            // Mevcut kullanıcı için avatar kontrolü - YENİ KULLANICI DEĞİL
+            // createdAt varsa ve avatar yoksa, avatar oluşturma prompt'u göster
+            // Ama sadece daha önce avatar oluşturmuş ve silmiş kullanıcılar için kontrol et
+            const hasAvatar = baseAvatarDataUrl || data.baseAvatarDataUrl || data.baseAvatarStorageUrl;
+            const isExistingUser = data.createdAt != null; // Firestore'da createdAt varsa mevcut kullanıcı
+            
+            // Avatar kontrolü: Mevcut kullanıcı (createdAt var) + Avatar yok + daha önce avatar oluşturmuş (freeAvatarTry 0)
+            // Bu, daha önce avatar oluşturmuş ama bir şekilde silmiş kullanıcıları yakalamak için
+            if (isExistingUser && !hasAvatar && freeAvatarTry === 0) {
+              console.log('⚠️ Mevcut kullanıcı avatar olmadan giriş yaptı');
+              // Avatar prompt'u gösterme - kullanıcı deneme yapmak istediğinde otomatik gösterilecek
+            }
             
             isFirstSnapshotRef.current = false; // Mark first load complete
           } else {
@@ -12287,12 +13634,15 @@ const App = () => {
             const basicProfile = {
               email: authUser.email,
               credits: 0,
-              videoTokens: 0,
-              freeShopTries: 4,
-              freeComboTries: 0,
+              freeAvatarTry: 1,
+              freeShopTry: 1,
+              freeComboTry: 1,
               clothingUploadLimit: 5,
               clothingUploadCount: 0,
-              lastFreeReset: new Date().toDateString(),
+              avatarRefreshCount: 0,
+              avatarRefreshLimit: 0,
+              referralCode: generateReferralCode(authUser.uid),
+              deviceId: getDeviceId(),
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             db.collection('users').doc(userId).set(basicProfile)
@@ -12911,7 +14261,9 @@ const App = () => {
       setResult({ open: true, image: img, item });
       setToast({ open: true, type: 'success', title: t('success'), message: 'Deneme görseli hazır!' });
     } catch (e) {
-      setToast({ open: true, type: 'error', title: 'Deneme hatası', message: e.message || 'Bir hata oluştu' });
+      // Hata durumunda krediyi iade et
+      refundCredit('shop');
+      // refundCredit zaten toast gösteriyor, ek hata mesajı göstermeye gerek yok
     } finally {
       setTrying(false);
       setTryItem(null);
@@ -13106,13 +14458,29 @@ const App = () => {
       <>
         <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark">
           <AvatarWizard 
-            onComplete={(avatarData) => {
+            onComplete={async (avatarData) => {
               setUser(prev => ({ ...prev, ...avatarData }));
               setShowAvatarWizard(false);
               setShowAvatarPrompt(false);
+              
+              // Referral ödülünü tetikle (ilk avatar oluşturma)
+              if (user?.referredBy && !user?.referralActivated) {
+                console.log('🎁 Triggering referral reward for first avatar...');
+                await triggerReferralReward();
+                
+                // Kullanıcının referralActivated durumunu güncelle
+                if (db && authUser?.uid) {
+                  db.collection('users').doc(authUser.uid).update({
+                    referralActivated: true
+                  }).catch(e => console.error('referralActivated update error:', e));
+                }
+                setUser(prev => ({ ...prev, referralActivated: true }));
+              }
             }} 
             setToast={setToast} 
-            initialParams={user} 
+            initialParams={user}
+            useCredit={useCredit}
+            refundCredit={refundCredit}
           />
         </div>
         <Toast toast={toast} onClose={() => setToast({ open: false })} />
@@ -13214,8 +14582,7 @@ const App = () => {
               </div>
             </div>
             <div className="flex items-center gap-4 mt-4 text-sm">
-              <span className="text-amber-500">🪙 {(user.freeShopTries || 0) + (user.credits || 0)}</span>
-              {user.videoTokens > 0 && <span className="text-brand">🎬 {user.videoTokens}</span>}
+              <span className="text-amber-500">🪙 {(user.freeAvatarTry || 0) + (user.freeShopTry || 0) + (user.freeComboTry || 0) + (user.credits || 0)}</span>
             </div>
           </div>
         </div>
@@ -13246,6 +14613,7 @@ const App = () => {
               onShowSubscription={() => setShowSubscription(true)}
               onAddCustomClothing={addCustomClothing}
               useCredit={useCredit}
+              refundCredit={refundCredit}
               onAddToCart={addToCart}
               showAvatarPrompt={showAvatarPrompt}
               setShowAvatarPrompt={setShowAvatarPrompt}
@@ -13303,6 +14671,9 @@ const App = () => {
               setDmChats={setDmChats}
               selectedChat={selectedChat}
               setSelectedChat={setSelectedChat}
+              groups={groups}
+              setGroups={setGroups}
+              setMainTab={setTab}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -13328,6 +14699,10 @@ const App = () => {
               setFollowRequests={setFollowRequests}
               sentFollowRequests={sentFollowRequests}
               setSentFollowRequests={setSentFollowRequests}
+              groups={groups}
+              setGroups={setGroups}
+              notifications={notifications}
+              setNotifications={setNotifications}
             />
           )}
         </div>
@@ -13396,6 +14771,7 @@ const App = () => {
               onShowSubscription={() => setShowSubscription(true)}
               onAddCustomClothing={addCustomClothing}
               useCredit={useCredit}
+              refundCredit={refundCredit}
               onAddToCart={addToCart}
               showAvatarPrompt={showAvatarPrompt}
               setShowAvatarPrompt={setShowAvatarPrompt}
@@ -13453,6 +14829,9 @@ const App = () => {
               setDmChats={setDmChats}
               selectedChat={selectedChat}
               setSelectedChat={setSelectedChat}
+              groups={groups}
+              setGroups={setGroups}
+              setMainTab={setTab}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -13478,6 +14857,10 @@ const App = () => {
               setFollowRequests={setFollowRequests}
               sentFollowRequests={sentFollowRequests}
               setSentFollowRequests={setSentFollowRequests}
+              groups={groups}
+              setGroups={setGroups}
+              notifications={notifications}
+              setNotifications={setNotifications}
             />
           )}
         </div>
