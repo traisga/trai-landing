@@ -10497,6 +10497,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     setPosting(true);
     
     const postId = Date.now();
+    const imageToUpload = selectedImage; // Closure için kopyala
     
     // Önce local state'i güncelle (hızlı görünsün)
     const newPost = {
@@ -10505,7 +10506,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       authorName: user.username || user.displayName || 'Kullanıcı',
       authorUsername: user.username,
       authorAvatar: user.profilePhoto || user.baseAvatar || user.avatar,
-      image: selectedImage, // Başta data URL
+      image: imageToUpload,
       caption: caption,
       askFeedback: askFeedback,
       visibility: visibility,
@@ -10525,18 +10526,24 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     // Arka planda Storage'a yükle ve Firestore'a kaydet
     (async () => {
       try {
-        let imageUrl = selectedImage;
+        let imageUrl = imageToUpload;
         
         // Storage'a yükle
-        if (selectedImage.startsWith('data:') && storage && authUser?.uid) {
-          const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
-          await imageRef.putString(selectedImage, 'data_url');
-          imageUrl = await imageRef.getDownloadURL();
-          
-          // Local state'teki URL'i güncelle
-          setPosts(prev => prev.map(p => 
-            p.id === postId ? { ...p, image: imageUrl } : p
-          ));
+        if (imageToUpload && imageToUpload.startsWith('data:') && storage && authUser?.uid) {
+          try {
+            const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
+            await imageRef.putString(imageToUpload, 'data_url');
+            imageUrl = await imageRef.getDownloadURL();
+            console.log('✅ Post image uploaded:', imageUrl);
+            
+            // Local state'teki URL'i güncelle
+            setPosts(prev => prev.map(p => 
+              p.id === postId ? { ...p, image: imageUrl } : p
+            ));
+          } catch (uploadErr) {
+            console.error('❌ Post image upload error:', uploadErr);
+            // Upload başarısız olsa bile post'u kaydet
+          }
         }
         
         // Firebase'e kaydet
@@ -10545,8 +10552,10 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             ...newPost,
             image: imageUrl
           });
+          console.log('✅ Post saved to Firebase with id:', postId);
+        } else {
+          console.error('❌ db is not available');
         }
-        console.log('✅ Post saved to Firebase');
       } catch (e) {
         console.error('❌ Post save error:', e);
       }
