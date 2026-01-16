@@ -10494,72 +10494,68 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       setToast({ open: true, type: 'error', title: 'Görsel Yok', message: 'Paylaşmak için bir görsel seç' });
       return;
     }
+    
+    if (!authUser?.uid || !db) {
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Giriş yapılmamış veya bağlantı yok' });
+      return;
+    }
+    
     setPosting(true);
     
-    const postId = Date.now();
-    const imageToUpload = selectedImage; // Closure için kopyala
-    
-    // Önce local state'i güncelle (hızlı görünsün)
-    const newPost = {
-      id: postId,
-      authorId: authUser?.uid,
-      authorName: user.username || user.displayName || 'Kullanıcı',
-      authorUsername: user.username,
-      authorAvatar: user.profilePhoto || user.baseAvatar || user.avatar,
-      image: imageToUpload,
-      caption: caption,
-      askFeedback: askFeedback,
-      visibility: visibility,
-      likes: [],
-      comments: [],
-      createdAt: postId
-    };
-    
-    setPosts(prev => [newPost, ...prev]);
-    setSelectedImage(null);
-    setCaption('');
-    setAskFeedback(false);
-    setTab('myPosts');
-    setPosting(false);
-    setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Gönderin yayınlandı' });
-    
-    // Arka planda Storage'a yükle ve Firestore'a kaydet
-    (async () => {
-      try {
-        let imageUrl = imageToUpload;
-        
-        // Storage'a yükle
-        if (imageToUpload && imageToUpload.startsWith('data:') && storage && authUser?.uid) {
-          try {
-            const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
-            await imageRef.putString(imageToUpload, 'data_url');
-            imageUrl = await imageRef.getDownloadURL();
-            console.log('✅ Post image uploaded:', imageUrl);
-            
-            // Local state'teki URL'i güncelle
-            setPosts(prev => prev.map(p => 
-              p.id === postId ? { ...p, image: imageUrl } : p
-            ));
-          } catch (uploadErr) {
-            console.error('❌ Post image upload error:', uploadErr);
-            // Upload başarısız olsa bile post'u kaydet
-          }
+    try {
+      const postId = Date.now();
+      let imageUrl = selectedImage;
+      
+      // 1. Önce görseli Storage'a yükle
+      if (selectedImage.startsWith('data:') && storage) {
+        try {
+          console.log('📤 Post görseli yükleniyor...');
+          const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
+          await imageRef.putString(selectedImage, 'data_url');
+          imageUrl = await imageRef.getDownloadURL();
+          console.log('✅ Post görseli yüklendi:', imageUrl);
+        } catch (uploadErr) {
+          console.error('❌ Post görsel yükleme hatası:', uploadErr);
+          setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel yüklenemedi: ' + uploadErr.message });
+          setPosting(false);
+          return;
         }
-        
-        // Firebase'e kaydet
-        if (db) {
-          await db.collection('posts').doc(String(postId)).set({
-            ...newPost,
-            image: imageUrl
-          });
-          console.log('✅ Post saved to Firebase with id:', postId);
-        } else {
-          console.error('❌ db is not available');
-        }
-      } catch (e) {
-        console.error('❌ Post save error:', e);
       }
-    })();
+      
+      // 2. Post objesini oluştur
+      const newPost = {
+        id: postId,
+        authorId: authUser.uid,
+        authorName: user?.username || user?.displayName || 'Kullanıcı',
+        authorUsername: user?.username || '',
+        authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
+        image: imageUrl,
+        caption: caption,
+        askFeedback: askFeedback,
+        visibility: visibility,
+        likes: [],
+        comments: [],
+        createdAt: postId
+      };
+      
+      // 3. Firebase'e kaydet
+      console.log('💾 Post Firebase\'e kaydediliyor...', postId);
+      await db.collection('posts').doc(String(postId)).set(newPost);
+      console.log('✅ Post Firebase\'e kaydedildi:', postId);
+      
+      // 4. Başarılı - UI'ı temizle
+      setSelectedImage(null);
+      setCaption('');
+      setAskFeedback(false);
+      setTab('feed');
+      setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Gönderin yayınlandı' });
+      
+    } catch (e) {
+      console.error('❌ Post kaydetme hatası:', e);
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı: ' + e.message });
+    }
+    
+    setPosting(false);
   };
 
   const likePost = async (postId) => {
