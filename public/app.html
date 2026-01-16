@@ -11022,7 +11022,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     p.authorId === authUser?.uid
   ).sort((a, b) => b.createdAt - a.createdAt);
 
-  const createPost = () => {
+  const createPost = async () => {
     if (!selectedImage) {
       setToast({ open: true, type: 'error', title: 'Görsel Yok', message: 'Paylaşmak için bir görsel seç' });
       return;
