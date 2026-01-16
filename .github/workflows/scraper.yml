@@ -12,7 +12,7 @@ on:
   # Sadece scraper dosyası değiştiğinde çalış
   push:
     paths:
-      - 'scraper.js'
+      - 'scraper-fixed.js'
       - '.github/workflows/scraper.yml'
 
 jobs:
