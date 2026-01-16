@@ -11029,47 +11029,61 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     }
     setPosting(true);
     
-    try {
-      // Görseli Firebase Storage'a yükle
-      let imageUrl = selectedImage;
-      if (selectedImage.startsWith('data:') && storage && authUser?.uid) {
-        const postId = Date.now();
-        const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
-        await imageRef.putString(selectedImage, 'data_url');
-        imageUrl = await imageRef.getDownloadURL();
-      }
-      
-      const newPost = {
-        id: Date.now(),
-        authorId: authUser?.uid,
-        authorName: user.username || user.displayName || 'Kullanıcı',
-        authorUsername: user.username,
-        authorAvatar: user.profilePhoto || user.baseAvatar || user.avatar,
-        image: imageUrl,
-        caption: caption,
-        askFeedback: askFeedback,
-        visibility: visibility,
-        likes: [],
-        comments: [],
-        createdAt: Date.now()
-      };
-      
-      // Firebase'e kaydet
-      if (db) {
-        await db.collection('posts').doc(String(newPost.id)).set(newPost);
-      }
-      
-      setPosts(prev => [newPost, ...prev]);
-      setSelectedImage(null);
-      setCaption('');
-      setAskFeedback(false);
-      setTab('myPosts');
-      setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Gönderin yayınlandı' });
-    } catch (e) {
-      console.error('Post create error:', e);
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı' });
-    }
+    const postId = Date.now();
+    
+    // Önce local state'i güncelle (hızlı görünsün)
+    const newPost = {
+      id: postId,
+      authorId: authUser?.uid,
+      authorName: user.username || user.displayName || 'Kullanıcı',
+      authorUsername: user.username,
+      authorAvatar: user.profilePhoto || user.baseAvatar || user.avatar,
+      image: selectedImage, // Başta data URL
+      caption: caption,
+      askFeedback: askFeedback,
+      visibility: visibility,
+      likes: [],
+      comments: [],
+      createdAt: postId
+    };
+    
+    setPosts(prev => [newPost, ...prev]);
+    setSelectedImage(null);
+    setCaption('');
+    setAskFeedback(false);
+    setTab('myPosts');
     setPosting(false);
+    setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Gönderin yayınlandı' });
+    
+    // Arka planda Storage'a yükle ve Firestore'a kaydet
+    (async () => {
+      try {
+        let imageUrl = selectedImage;
+        
+        // Storage'a yükle
+        if (selectedImage.startsWith('data:') && storage && authUser?.uid) {
+          const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
+          await imageRef.putString(selectedImage, 'data_url');
+          imageUrl = await imageRef.getDownloadURL();
+          
+          // Local state'teki URL'i güncelle
+          setPosts(prev => prev.map(p => 
+            p.id === postId ? { ...p, image: imageUrl } : p
+          ));
+        }
+        
+        // Firebase'e kaydet
+        if (db) {
+          await db.collection('posts').doc(String(postId)).set({
+            ...newPost,
+            image: imageUrl
+          });
+        }
+        console.log('✅ Post saved to Firebase');
+      } catch (e) {
+        console.error('❌ Post save error:', e);
+      }
+    })();
   };
 
   const likePost = async (postId) => {
@@ -14799,8 +14813,12 @@ const App = () => {
               <h3 className="font-bold text-sm text-slate-500 mb-3">{t('recentTryOns') || 'Son Denemeler'}</h3>
               <div className="grid grid-cols-2 gap-2">
                 {tryHistory.slice(0, 4).map(item => (
-                  <div key={item.id} className="aspect-[3/4] rounded-xl overflow-hidden">
-                    <img src={item.image} className="w-full h-full object-cover" />
+                  <div 
+                    key={item.id} 
+                    className="aspect-[3/4] rounded-xl overflow-hidden cursor-pointer hover:ring-2 ring-brand2 transition group"
+                    onClick={() => onTryOnResult(item.image, item.items || [])}
+                  >
+                    <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition" />
                   </div>
                 ))}
               </div>
@@ -15124,6 +15142,42 @@ const App = () => {
                 lastMessageBy: authUser.uid,
                 updatedAt: Date.now()
               }, { merge: true });
+              
+              // Update local state immediately for sender
+              const localMsg = {
+                id: Date.now(),
+                senderId: authUser.uid,
+                senderName: user?.displayName || user?.username || 'Kullanıcı',
+                type: 'combo',
+                image: imageUrl,
+                items: (items || []).map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  brandName: item.brandName,
+                  price: item.price,
+                  image: item.image
+                })),
+                text: '📸 Bir kombin paylaştı',
+                timestamp: Date.now()
+              };
+              
+              setDmChats(prev => {
+                const existing = prev.find(c => c.id === chatId);
+                if (existing) {
+                  return prev.map(c => c.id === chatId 
+                    ? { ...c, messages: [...(c.messages || []), localMsg] }
+                    : c
+                  );
+                } else {
+                  return [...prev, {
+                    id: chatId,
+                    recipientId,
+                    name: recipientName,
+                    messages: [localMsg],
+                    approved: true
+                  }];
+                }
+              });
             }
             
             setToast({ open: true, type: 'success', title: 'Gönderildi! ✅', message: `${userIds.length} kişiye kombin gönderildi` });
