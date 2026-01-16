@@ -3838,11 +3838,25 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           alert("Kullanıcı Adı: " + usernameErrors[0]);
           return;
         }
-        if (!usernameStatus.available) {
-          alert("Kullanıcı Adı: " + (usernameStatus.error || 'Bu kullanıcı adı kullanılamaz'));
+        // Kontrol devam ediyorsa bekle
+        if (usernameStatus.checking) {
+          alert("Kullanıcı adı kontrol ediliyor, lütfen bekleyin...");
+          return;
+        }
+        if (usernameStatus.available === false) {
+          alert("Kullanıcı Adı: " + (usernameStatus.error || 'Bu kullanıcı adı zaten alınmış'));
+          return;
+        }
+        // Kontrol yapılmamışsa engelle
+        if (usernameStatus.available !== true) {
+          alert("Kullanıcı adı kontrolü yapılıyor, lütfen bekleyin...");
           return;
         }
         // Email availability check
+        if (emailStatus.checking) {
+          alert("E-posta kontrol ediliyor, lütfen bekleyin...");
+          return;
+        }
         if (emailStatus.available === false) {
           alert("E-posta: " + (emailStatus.error || 'Bu e-posta adresi zaten kullanılıyor'));
           return;
@@ -8320,553 +8334,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
           </div>
         )}
 
-        {/* FRIENDS TAB */}
-        {tab === 'followers' && (
-          <div className="p-4 space-y-4 fade-in">
-            {/* Follow Requests Section */}
-            {followRequests.length > 0 && (
-              <div className="glass rounded-2xl p-4">
-                <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-                  <span className="w-6 h-6 bg-brand text-white rounded-full flex items-center justify-center text-xs">{followRequests.length}</span>
-                  Takip İstekleri
-                </h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {followRequests.map(req => (
-                    <div key={req.fromUid} className="flex items-center gap-3 p-2 bg-white/50 rounded-xl">
-                      <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center overflow-hidden">
-                        {req.fromPhoto ? (
-                          <img src={req.fromPhoto} className="w-full h-full rounded-xl object-cover" />
-                        ) : (
-                          <span className="text-sm">👤</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm truncate">{req.fromDisplayName || req.fromUsername}</div>
-                        <div className="text-xs text-slate-500">@{req.fromUsername}</div>
-                      </div>
-                      <div className="flex gap-1">
-                        <button 
-                          onClick={() => acceptFollowRequest(req)} 
-                          className="p-2 rounded-xl bg-green-500 text-white hover:bg-green-600"
-                          title="Kabul Et"
-                        >
-                          <Icon name="check" size={16} />
-                        </button>
-                        <button 
-                          onClick={() => rejectFollowRequest(req)} 
-                          className="p-2 rounded-xl bg-red-500 text-white hover:bg-red-600"
-                          title="Reddet"
-                        >
-                          <Icon name="x" size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Pending Sent Requests */}
-            {sentFollowRequests.length > 0 && (
-              <div className="glass rounded-2xl p-4">
-                <h3 className="font-bold text-sm mb-3 text-slate-600">Gönderilen İstekler ({sentFollowRequests.length})</h3>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {sentFollowRequests.map(req => (
-                    <div key={req.uid} className="flex items-center gap-3 p-2 bg-white/50 rounded-xl">
-                      <div className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center overflow-hidden">
-                        {req.profilePhoto ? (
-                          <img src={req.profilePhoto} className="w-full h-full rounded-lg object-cover" />
-                        ) : (
-                          <span className="text-xs">👤</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">@{req.username}</div>
-                        <div className="text-xs text-amber-600">Beklemede...</div>
-                      </div>
-                      <button 
-                        onClick={() => cancelFollowRequest(req.uid)} 
-                        className="text-xs text-red-500 hover:text-red-600"
-                      >
-                        İptal
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Follow User Button */}
-            <button onClick={() => setShowAddFriend(true)} className="w-full btn-primary py-4 rounded-xl font-semibold flex items-center justify-center gap-2">
-              <Icon name="userPlus" size={18} />Kullanıcı Bul
-            </button>
-
-            {/* Following List */}
-            {friends.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto mb-4">
-                  <Icon name="users" size={28} className="text-slate-400" />
-                </div>
-                <p className="font-semibold text-slate-500">{t('notFollowingAnyone')}</p>
-                <p className="text-sm text-slate-400 mt-1">Kullanıcı ara ve takip isteği gönder</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <h3 className="font-bold text-sm text-slate-600">Arkadaşlar ({friends.length})</h3>
-                {friends.map(friend => (
-                  <div key={friend.id} className="glass rounded-2xl p-4 flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center overflow-hidden">
-                      {friend.avatar ? (
-                        <img src={friend.avatar} className="w-full h-full rounded-xl object-cover" />
-                      ) : (
-                        <span className="text-lg">👤</span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold">{friend.name}</div>
-                      <div className="text-xs text-slate-500">@{friend.username || 'kullanici'}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => startDM(friend)} 
-                        className="p-2 rounded-xl hover:bg-slate-200/60"
-                        title={t('sendMessage')}
-                      >
-                        <Icon name="mail" size={18} className="text-brand2" />
-                      </button>
-                      <button onClick={() => removeFriend(friend.id)} className="p-2 rounded-xl hover:bg-red-500/20" title="Takibi Bırak">
-                        <Icon name="userMinus" size={18} className="text-red-400" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add/Follow User Modal */}
-            {showAddFriend && (
-              <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
-                <div className="w-full max-w-sm glass rounded-3xl p-6 scale-in">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg">Kullanıcı Bul</h3>
-                    <button onClick={() => { setShowAddFriend(false); setFriendUsername(''); setFriendSearchResult({ searching: false, found: null, error: null }); }} className="p-2 rounded-xl hover:bg-slate-200/60">
-                      <Icon name="x" size={20} />
-                    </button>
-                  </div>
-                  <p className="text-sm text-slate-500 mb-4">Kullanıcı adı ile ara</p>
-                  
-                  <div className="relative mb-4">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">@</span>
-                    <input
-                      type="text"
-                      value={friendUsername}
-                      onChange={e => setFriendUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.\-]/g, ''))}
-                      placeholder="kullanici_adi"
-                      className="pl-10 pr-10"
-                      maxLength={20}
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                      {friendSearchResult.searching && (
-                        <div className="w-4 h-4 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
-                      )}
-                      {!friendSearchResult.searching && friendSearchResult.found && (
-                        <Icon name="check" size={18} className="text-green-400" />
-                      )}
-                      {!friendSearchResult.searching && friendSearchResult.error && (
-                        <Icon name="x" size={18} className="text-red-400" />
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Search result */}
-                  {friendSearchResult.found && (
-                    <div className="bg-slate-100 rounded-xl p-3 mb-4 flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center overflow-hidden">
-                        {friendSearchResult.found.profilePhoto ? (
-                          <img src={friendSearchResult.found.profilePhoto} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-lg">👤</span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold">{friendSearchResult.found.displayName || friendSearchResult.found.username}</div>
-                        <div className="text-xs text-slate-500">@{friendSearchResult.found.username}</div>
-                      </div>
-                      <Icon name="check" size={20} className="text-green-400" />
-                    </div>
-                  )}
-                  
-                  {friendSearchResult.error && (
-                    <p className="text-sm text-red-400 mb-4">{friendSearchResult.error}</p>
-                  )}
-                  
-                  <div className="flex gap-3">
-                    <button onClick={() => { setShowAddFriend(false); setFriendUsername(''); setFriendSearchResult({ searching: false, found: null, error: null }); }} className="flex-1 btn-ghost py-3 rounded-xl font-semibold">{t('cancel')}</button>
-                    <button 
-                      onClick={sendFollowRequest} 
-                      disabled={!friendSearchResult.found || sentFollowRequests.some(r => r.uid === friendSearchResult.found?.uid)}
-                      className="flex-1 btn-primary py-3 rounded-xl font-semibold disabled:opacity-50"
-                    >
-                      {sentFollowRequests.some(r => r.uid === friendSearchResult.found?.uid) ? 'İstek Gönderildi' : 'İstek Gönder'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* MESSAGES TAB - DM & Groups */}
-        {tab === 'messages' && (
-          <div className="h-full flex flex-col fade-in">
-            {!selectedChat ? (
-              // Chat List View
-              <div className="flex flex-col h-full">
-                {/* New Chat/Group Buttons */}
-                <div className="p-4 flex gap-2">
-                  <button 
-                    onClick={() => setShowNewChat(true)} 
-                    className="flex-1 btn-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
-                  >
-                    <Icon name="mail" size={16} />{t('newMessage')}
-                  </button>
-                  <button 
-                    onClick={() => setShowCreateGroup(true)} 
-                    className="flex-1 btn-ghost py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
-                  >
-                    <Icon name="users" size={16} />Grup Oluştur
-                  </button>
-                </div>
-                
-                {/* Message Requests */}
-                {pendingRequestsCount > 0 && (
-                  <div className="px-4 mb-2">
-                    <button 
-                      onClick={() => setTab('requests')}
-                      className="w-full bg-amber-100 border border-amber-200 rounded-xl p-3 flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon name="mail" size={18} className="text-amber-600" />
-                        <span className="font-medium text-amber-800">{t('messageRequest')}</span>
-                      </div>
-                      <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">{pendingRequestsCount}</span>
-                    </button>
-                  </div>
-                )}
-                
-                {/* Groups Section */}
-                {groups.length > 0 && (
-                  <div className="px-4 mb-2">
-                    <p className="text-xs font-semibold text-slate-500 mb-2">GRUPLAR</p>
-                    <div className="space-y-2">
-                      {groups.map(group => {
-                        const lastMsg = (group.messages || []).slice(-1)[0];
-                        return (
-                          <button
-                            key={group.id}
-                            onClick={() => setSelectedChat({ type: 'group', ...group })}
-                            className="w-full glass rounded-2xl p-3 flex items-center gap-3 text-left hover:bg-slate-100 transition"
-                          >
-                            <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center">
-                              <Icon name="users" size={20} className="text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold">{group.name}</div>
-                              <div className="text-xs text-slate-500 truncate">
-                                {lastMsg ? `${lastMsg.senderName}: ${lastMsg.text}` : `${group.members.length} üye`}
-                              </div>
-                            </div>
-                            <Icon name="chevronRight" size={18} className="text-slate-400" />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                
-                {/* DM Chats */}
-                <div className="flex-1 overflow-y-auto custom-scroll px-4">
-                  {groups.length > 0 && <p className="text-xs font-semibold text-slate-500 mb-2">{t('messagesLabel')}</p>}
-                  
-                  {dmChats.length === 0 && groups.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto mb-4">
-                        <Icon name="mail" size={28} className="text-slate-400" />
-                      </div>
-                      <p className="font-semibold text-slate-500">{t('noMessages')}</p>
-                      <p className="text-sm text-slate-400 mt-1">{t('startNewMessage')}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {dmChats.filter(c => c.approved !== false || c.messages?.length > 0).map(chat => {
-                        const lastMsg = (chat.messages || []).slice(-1)[0];
-                        return (
-                          <button
-                            key={chat.id}
-                            onClick={() => setSelectedChat({ type: 'dm', ...chat })}
-                            className="w-full glass rounded-2xl p-3 flex items-center gap-3 text-left hover:bg-slate-100 transition"
-                          >
-                            <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center overflow-hidden">
-                              {chat.avatar ? (
-                                <img src={chat.avatar} className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="text-lg">👤</span>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold">{chat.name}</div>
-                              <div className="text-xs text-slate-500 truncate">
-                                {lastMsg ? lastMsg.text : t('noMessages')}
-                              </div>
-                            </div>
-                            {!chat.approved && (
-                              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-lg">{t('request')}</span>
-                            )}
-                            <Icon name="chevronRight" size={18} className="text-slate-400" />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              // Chat View (DM or Group)
-              <div className="flex flex-col h-full overflow-hidden">
-                {/* Chat Header */}
-                <div className="flex-shrink-0 p-4 border-b border-slate-200 flex items-center gap-3">
-                  <button onClick={() => setSelectedChat(null)} className="p-2 -ml-2 rounded-xl hover:bg-slate-200/60">
-                    <Icon name="chevronLeft" size={20} />
-                  </button>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    selectedChat.type === 'group' 
-                      ? 'bg-brand' 
-                      : 'bg-brand'
-                  }`}>
-                    {selectedChat.type === 'group' ? (
-                      <Icon name="users" size={18} className="text-white" />
-                    ) : selectedChat.avatar ? (
-                      <img src={selectedChat.avatar} className="w-full h-full rounded-xl object-cover" />
-                    ) : (
-                      <span>👤</span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">{selectedChat.name}</div>
-                    <div className="text-xs text-slate-500">
-                      {selectedChat.type === 'group' 
-                        ? `${selectedChat.members?.length || 0} üye`
-                        : 'Çevrimiçi'
-                      }
-                    </div>
-                  </div>
-                  {selectedChat.type === 'group' && (
-                    <button className="p-2 rounded-xl hover:bg-slate-200/60">
-                      <Icon name="settings" size={18} className="text-slate-500" />
-                    </button>
-                  )}
-                </div>
-                
-                {/* Approval Warning for non-follower DMs */}
-                {selectedChat.type === 'dm' && selectedChat.approved === false && (
-                  <div className="mx-4 mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-                    <p className="text-sm text-amber-800">
-                      {t('notFollowingWarning')}
-                    </p>
-                  </div>
-                )}
-
-                {/* Messages */}
-                <div className="flex-1 min-h-0 overflow-y-auto custom-scroll p-4 space-y-3">
-                  {getChatMessages(selectedChat.id, selectedChat.type).length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 text-sm">
-                      {t('beFirstToMessage')}
-                    </div>
-                  ) : (
-                    getChatMessages(selectedChat.id, selectedChat.type).map(msg => {
-                      const isMine = msg.senderId === authUser?.uid;
-                      return (
-                        <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl ${
-                            isMine ? 'bg-brand text-white rounded-br-md' : 'glass rounded-bl-md'
-                          }`}>
-                            {selectedChat.type === 'group' && !isMine && (
-                              <p className="text-xs font-semibold text-brand2 mb-1">{msg.senderName}</p>
-                            )}
-                            {/* Combo/Image Message */}
-                            {msg.type === 'combo' && msg.image && (
-                              <div className="mb-2">
-                                <img src={msg.image} className="rounded-xl max-w-full max-h-64 object-contain" />
-                                {msg.items && msg.items.length > 0 && (
-                                  <p className={`text-xs mt-1 ${isMine ? 'text-white/70' : 'text-slate-500'}`}>
-                                    📸 {msg.items.length} ürünlü kombin
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                            <p className="text-sm">{msg.text}</p>
-                            {/* Regular image (not combo) */}
-                            {msg.type !== 'combo' && msg.image && (
-                              <img src={msg.image} className="mt-2 rounded-lg max-w-full max-h-48 object-contain" />
-                            )}
-                            <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-slate-400'}`}>
-                              {new Date(msg.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                {/* Message Input */}
-                <div className="p-4 border-t border-slate-200 flex gap-3">
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={e => setNewMessage(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                    placeholder={t('typeMessage')}
-                    className="flex-1"
-                  />
-                  <button onClick={sendMessage} className="btn-primary px-5 rounded-xl">
-                    <Icon name="send" size={18} />
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* New Chat Modal */}
-            {showNewChat && (
-              <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
-                <div className="w-full max-w-sm glass rounded-3xl p-6 scale-in max-h-[80vh] overflow-y-auto">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg">{t('newMessage')}</h3>
-                    <button onClick={() => setShowNewChat(false)} className="p-2 rounded-xl hover:bg-slate-200/60">
-                      <Icon name="x" size={20} />
-                    </button>
-                  </div>
-                  
-                  <p className="text-sm text-slate-500 mb-4">{t('whoToMessage')}</p>
-                  
-                  {friends.length === 0 ? (
-                    <p className="text-center py-8 text-slate-400 text-sm">
-                      {t('notFollowingAnyone')}
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {friends.map(person => (
-                        <button
-                          key={person.id}
-                          onClick={() => startDM(person)}
-                          className="w-full glass rounded-xl p-3 flex items-center gap-3 text-left hover:bg-slate-100 transition"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center overflow-hidden">
-                            {person.avatar ? (
-                              <img src={person.avatar} className="w-full h-full object-cover" />
-                            ) : (
-                              <span>👤</span>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-semibold">{person.name}</div>
-                            <div className="text-xs text-slate-500">@{person.username}</div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Create Group Modal */}
-            {showCreateGroup && (
-              <div className="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
-                <div className="w-full max-w-sm glass rounded-3xl p-6 scale-in max-h-[80vh] overflow-y-auto">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg">Grup Oluştur</h3>
-                    <button onClick={() => { setShowCreateGroup(false); setGroupName(''); setSelectedGroupMembers([]); }} className="p-2 rounded-xl hover:bg-slate-200/60">
-                      <Icon name="x" size={20} />
-                    </button>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <label className="text-xs text-slate-500 mb-1.5 block">Grup Adı</label>
-                    <input
-                      type="text"
-                      value={groupName}
-                      onChange={e => setGroupName(e.target.value)}
-                      placeholder="Grup adı gir..."
-                      maxLength={30}
-                    />
-                  </div>
-                  
-                  <p className="text-sm text-slate-500 mb-2">Üye ekle (max 6 kişi)</p>
-                  
-                  {/* Selected members */}
-                  {selectedGroupMembers.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {selectedGroupMembers.map(m => (
-                        <div key={m.uid} className="flex items-center gap-1 bg-brand/10 text-brand px-2 py-1 rounded-lg text-sm">
-                          <span>{m.name}</span>
-                          <button onClick={() => toggleGroupMember(m)} className="ml-1">
-                            <Icon name="x" size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {friends.length === 0 ? (
-                    <p className="text-center py-8 text-slate-400 text-sm">
-                      Grup oluşturmak için önce birilerini takip et
-                    </p>
-                  ) : (
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {friends.map(person => {
-                        const isSelected = selectedGroupMembers.some(m => m.uid === person.uid);
-                        return (
-                          <button
-                            key={person.id}
-                            onClick={() => toggleGroupMember(person)}
-                            className={`w-full rounded-xl p-3 flex items-center gap-3 text-left transition ${
-                              isSelected ? 'bg-brand/10 border-2 border-brand' : 'glass hover:bg-slate-100'
-                            }`}
-                          >
-                            <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center overflow-hidden">
-                              {person.avatar ? (
-                                <img src={person.avatar} className="w-full h-full object-cover" />
-                              ) : (
-                                <span>👤</span>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold">{person.name}</div>
-                              <div className="text-xs text-slate-500">@{person.username}</div>
-                            </div>
-                            {isSelected && <Icon name="check" size={20} className="text-brand" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-3 mt-4">
-                    <button onClick={() => { setShowCreateGroup(false); setGroupName(''); setSelectedGroupMembers([]); }} className="flex-1 btn-ghost py-3 rounded-xl font-semibold">İptal</button>
-                    <button 
-                      onClick={createGroup}
-                      disabled={!groupName.trim() || selectedGroupMembers.length === 0}
-                      className="flex-1 btn-primary py-3 rounded-xl font-semibold disabled:opacity-50"
-                    >
-                      Oluştur
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* NOTIFICATIONS TAB */}
         {tab === 'notifications' && (
@@ -12317,16 +11784,6 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                       maxLength={30}
                     />
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-500 mb-1.5 block">{t('groupTopic')}</label>
-                    <input
-                      value={groupTopic}
-                      onChange={e => setGroupTopic(e.target.value)}
-                      placeholder="örn: Haftalık kombin paylaşımı"
-                      className="w-full"
-                      maxLength={50}
-                    />
-                  </div>
                 </div>
                 
                 {/* Üye Seçimi */}
@@ -13431,26 +12888,53 @@ const App = () => {
   // Load data on mount - DON'T load user here, wait for auth
   useEffect(() => {
     // Posts'u Firebase'den yükle (herkes için public olanları)
+    const loadPosts = async () => {
+      if (!db) {
+        console.log('⏳ Posts: db henüz hazır değil');
+        return;
+      }
+      try {
+        console.log('📥 Posts yükleniyor...');
+        const snapshot = await db.collection('posts')
+          .orderBy('createdAt', 'desc')
+          .limit(100)
+          .get();
+        
+        const loadedPosts = snapshot.docs.map(doc => doc.data());
+        console.log('✅ Posts yüklendi:', loadedPosts.length);
+        setPosts(loadedPosts);
+      } catch (e) {
+        console.error('❌ Posts load error:', e);
+        // Fallback to localStorage
+        const ps = safeJsonParse(localStorage.getItem('trai_posts_v1'), []);
+        if (Array.isArray(ps)) setPosts(ps);
+      }
+    };
+    
+    // db hazır olduğunda yükle
     if (db) {
-      const loadPosts = async () => {
-        try {
-          const snapshot = await db.collection('posts')
-            .orderBy('createdAt', 'desc')
-            .limit(100)
-            .get();
-          
-          const loadedPosts = snapshot.docs.map(doc => doc.data());
-          setPosts(loadedPosts);
-        } catch (e) {
-          console.error('Posts load error:', e);
-          // Fallback to localStorage
-          const ps = safeJsonParse(localStorage.getItem('trai_posts_v1'), []);
-          if (Array.isArray(ps)) setPosts(ps);
-        }
-      };
       loadPosts();
     }
-  }, []);
+  }, [db]);
+  
+  // Posts için realtime listener - diğer kullanıcıların paylaşımlarını anlık görmek için
+  useEffect(() => {
+    if (!db) return;
+    
+    console.log('🔄 Posts realtime listener başlatılıyor...');
+    const unsubscribe = db.collection('posts')
+      .orderBy('createdAt', 'desc')
+      .limit(100)
+      .onSnapshot(snapshot => {
+        const loadedPosts = snapshot.docs.map(doc => doc.data());
+        console.log('🔄 Posts güncellendi (realtime):', loadedPosts.length);
+        setPosts(loadedPosts);
+      }, error => {
+        console.error('❌ Posts realtime error:', error);
+      });
+    
+    return () => unsubscribe();
+  }, [db]);
 
   // Load user-specific data AFTER auth is confirmed - onSnapshot ile CANLI dinleme
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -14983,9 +14467,9 @@ const App = () => {
                 imageUrl = await storageRef.getDownloadURL();
                 console.log('✅ Combo image uploaded to Storage');
               } catch (uploadErr) {
-                console.warn('⚠️ Combo image upload failed, using base64:', uploadErr);
-                // Fallback: compress the image or skip
-                imageUrl = null; // Don't save huge base64
+                console.warn('⚠️ Combo image upload failed, keeping original:', uploadErr);
+                // Hata durumunda orijinal görsel kullanılsın
+                imageUrl = combo.image;
               }
             }
             
@@ -15091,10 +14575,16 @@ const App = () => {
                 imageUrl = await storageRef.getDownloadURL();
                 console.log('✅ DM image uploaded:', imageUrl);
               } catch (uploadErr) {
-                console.warn('⚠️ Image upload failed:', uploadErr);
-                // Continue without image URL
-                imageUrl = null;
+                console.warn('⚠️ Image upload failed, using original:', uploadErr);
+                // Hata durumunda orijinal image'ı kullan (data URL)
+                imageUrl = image;
               }
+            }
+            
+            // imageUrl boşsa hata ver
+            if (!imageUrl) {
+              setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel yüklenemedi' });
+              return;
             }
             
             // Send to each selected user
