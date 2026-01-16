@@ -5609,7 +5609,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
       const historyItem = { id: Date.now(), image: cachedResult, items, background: selectedBg, createdAt: Date.now() };
       setTryHistory(prev => [historyItem, ...prev].slice(0, 50));
       onTryOnResult(cachedResult, items);
-      setToast({ open: true, type: 'success', title: 'Hızlı Sonuç ⚡', message: 'Önceki deneme yüklendi!' });
+      // Görsel zaten ResultModal'da gösteriliyor, ekstra toast gereksiz
       return;
     }
     
@@ -6683,7 +6683,6 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                       onClick={() => {
                         if (onShareToFeed) {
                           onShareToFeed(item.image, item.items || []);
-                          setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Sosyal akışta yayınlandı' });
                         }
                       }}
                       className="flex-1 btn-primary py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1"
@@ -11030,70 +11029,123 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     }
     setPosting(true);
     
-    const newPost = {
+    try {
+      // Görseli Firebase Storage'a yükle
+      let imageUrl = selectedImage;
+      if (selectedImage.startsWith('data:') && storage && authUser?.uid) {
+        const postId = Date.now();
+        const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
+        await imageRef.putString(selectedImage, 'data_url');
+        imageUrl = await imageRef.getDownloadURL();
+      }
+      
+      const newPost = {
+        id: Date.now(),
+        authorId: authUser?.uid,
+        authorName: user.username || user.displayName || 'Kullanıcı',
+        authorUsername: user.username,
+        authorAvatar: user.profilePhoto || user.baseAvatar || user.avatar,
+        image: imageUrl,
+        caption: caption,
+        askFeedback: askFeedback,
+        visibility: visibility,
+        likes: [],
+        comments: [],
+        createdAt: Date.now()
+      };
+      
+      // Firebase'e kaydet
+      if (db) {
+        await db.collection('posts').doc(String(newPost.id)).set(newPost);
+      }
+      
+      setPosts(prev => [newPost, ...prev]);
+      setSelectedImage(null);
+      setCaption('');
+      setAskFeedback(false);
+      setTab('myPosts');
+      setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Gönderin yayınlandı' });
+    } catch (e) {
+      console.error('Post create error:', e);
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı' });
+    }
+    setPosting(false);
+  };
+
+  const likePost = async (postId) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const hasLiked = post.likes.includes(authUser?.uid);
+    const newLikes = hasLiked 
+      ? post.likes.filter(id => id !== authUser?.uid)
+      : [...post.likes, authUser?.uid];
+    
+    setPosts(prev => prev.map(p => {
+      if (p.id === postId) {
+        return { ...p, likes: newLikes };
+      }
+      return p;
+    }));
+    
+    // Firebase'e kaydet
+    if (db) {
+      try {
+        await db.collection('posts').doc(String(postId)).update({ likes: newLikes });
+      } catch (e) {
+        console.error('Like update error:', e);
+      }
+    }
+  };
+
+  const addComment = async (postId) => {
+    if (!comment.trim()) return;
+    
+    const newComment = {
       id: Date.now(),
       authorId: authUser?.uid,
       authorName: user.username || user.displayName || 'Kullanıcı',
       authorUsername: user.username,
-      authorAvatar: user.profilePhoto || user.baseAvatar || user.avatar,
-      image: selectedImage,
-      caption: caption,
-      askFeedback: askFeedback,
-      visibility: visibility,
-      likes: [],
-      comments: [],
+      text: comment,
       createdAt: Date.now()
     };
     
-    setPosts(prev => [newPost, ...prev]);
-    setSelectedImage(null);
-    setCaption('');
-    setAskFeedback(false);
-    setTab('myPosts');
-    setPosting(false);
-    setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Gönderin yayınlandı' });
-  };
-
-  const likePost = (postId) => {
     setPosts(prev => prev.map(p => {
       if (p.id === postId) {
-        const hasLiked = p.likes.includes(authUser?.uid);
-        return {
-          ...p,
-          likes: hasLiked 
-            ? p.likes.filter(id => id !== authUser?.uid)
-            : [...p.likes, authUser?.uid]
-        };
-      }
-      return p;
-    }));
-  };
-
-  const addComment = (postId) => {
-    if (!comment.trim()) return;
-    setPosts(prev => prev.map(p => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          comments: [...p.comments, {
-            id: Date.now(),
-            authorId: authUser?.uid,
-            authorName: user.username || user.displayName || 'Kullanıcı',
-            authorUsername: user.username,
-            text: comment,
-            createdAt: Date.now()
-          }]
-        };
+        return { ...p, comments: [...p.comments, newComment] };
       }
       return p;
     }));
     setComment('');
+    
+    // Firebase'e kaydet
+    if (db) {
+      try {
+        const post = posts.find(p => p.id === postId);
+        if (post) {
+          await db.collection('posts').doc(String(postId)).update({ 
+            comments: [...post.comments, newComment] 
+          });
+        }
+      } catch (e) {
+        console.error('Comment update error:', e);
+      }
+    }
   };
 
-  const deletePost = (postId) => {
+  const deletePost = async (postId) => {
     if (confirm(t('deletePostConfirm'))) {
       setPosts(prev => prev.filter(p => p.id !== postId));
       setSelectedPost(null);
+      
+      // Firebase'den de sil
+      if (db) {
+        try {
+          await db.collection('posts').doc(String(postId)).delete();
+        } catch (e) {
+          console.error('Delete post error:', e);
+        }
+      }
     }
   };
 
@@ -11105,7 +11157,6 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     // Upload image to Firebase Storage for shareable link
     if (post.image && post.image.startsWith('data:image') && storage && authUser?.uid) {
       try {
-        setToast({ open: true, type: 'info', title: 'Hazırlanıyor...', message: 'Görsel yükleniyor' });
         const timestamp = Date.now();
         const storageRef = storage.ref(`shared/${authUser.uid}/${timestamp}.jpg`);
         const response = await fetch(post.image);
@@ -13365,10 +13416,26 @@ const App = () => {
 
   // Load data on mount - DON'T load user here, wait for auth
   useEffect(() => {
-    // Only load non-user-specific data on mount
-    // User data will be loaded after auth is confirmed
-    const ps = safeJsonParse(localStorage.getItem('trai_posts_v1'), []);
-    if (Array.isArray(ps)) setPosts(ps);
+    // Posts'u Firebase'den yükle (herkes için public olanları)
+    if (db) {
+      const loadPosts = async () => {
+        try {
+          const snapshot = await db.collection('posts')
+            .orderBy('createdAt', 'desc')
+            .limit(100)
+            .get();
+          
+          const loadedPosts = snapshot.docs.map(doc => doc.data());
+          setPosts(loadedPosts);
+        } catch (e) {
+          console.error('Posts load error:', e);
+          // Fallback to localStorage
+          const ps = safeJsonParse(localStorage.getItem('trai_posts_v1'), []);
+          if (Array.isArray(ps)) setPosts(ps);
+        }
+      };
+      loadPosts();
+    }
   }, []);
 
   // Load user-specific data AFTER auth is confirmed - onSnapshot ile CANLI dinleme
@@ -14219,10 +14286,9 @@ const App = () => {
     // Check cache first - no cooldown or token usage for cached results
     const cacheKey = `single_${item.id}`;
     if (tryOnCache[cacheKey]) {
-      // Use cached result
+      // Use cached result - görsel zaten ResultModal'da gösteriliyor
       addToCloset(item);
       setResult({ open: true, image: tryOnCache[cacheKey], item });
-      setToast({ open: true, type: 'success', title: 'Hızlı Sonuç ⚡', message: 'Önceki deneme görseli yüklendi!' });
       return;
     }
     
@@ -14439,7 +14505,6 @@ const App = () => {
   const logout = async () => {
     if (auth) await auth.signOut();
     setAuthUser(null);
-    setToast({ open: true, type: 'success', title: 'Çıkış yapıldı', message: 'Görüşürüz!' });
   };
 
   // Auth screen
@@ -14994,8 +15059,6 @@ const App = () => {
             setToast({ open: true, type: 'error', title: 'Hata', message: 'Giriş yapılmamış' });
             return;
           }
-          
-          setToast({ open: true, type: 'info', title: '📤 Gönderiliyor...', message: 'Lütfen bekleyin' });
           
           try {
             // Upload image to Firebase Storage first
