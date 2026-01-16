@@ -5,6 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>TrAi • Sanal Stil Asistanın</title>
   
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="TrAi ile kıyafetleri sanal olarak dene. Yapay zeka destekli stil asistanı ile gardırobunu yönet, kombiler oluştur ve alışveriş yap.">
+  <meta name="keywords" content="sanal deneme, virtual try-on, moda, stil, yapay zeka, AI fashion, kombin, gardırop">
+  <meta name="author" content="TrAi">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="TrAi • Sanal Stil Asistanın">
+  <meta property="og:description" content="Yapay zeka destekli sanal kıyafet deneme uygulaması. Dene. Keşfet. Parla.">
+  <meta property="og:url" content="https://trai.style">
+  <meta property="og:site_name" content="TrAi">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="TrAi • Sanal Stil Asistanın">
+  <meta name="twitter:description" content="Yapay zeka destekli sanal kıyafet deneme uygulaması.">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#2962FF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TrAi">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="TrAi">
+  <meta name="msapplication-TileColor" content="#2962FF">
+  
+  <!-- DNS Prefetch & Preconnect - Faster loading -->
+  <link rel="dns-prefetch" href="//cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  <link rel="dns-prefetch" href="//firebasestorage.googleapis.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
   <!-- Favicon - TrAi Logo -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23f472b6'/%3E%3Cstop offset='100%25' style='stop-color:%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='62' font-family='system-ui,sans-serif' font-size='32' font-weight='bold' fill='white' text-anchor='middle'%3ETrAi%3C/text%3E%3C/svg%3E">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23f472b6'/%3E%3Cstop offset='100%25' style='stop-color:%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='62' font-family='system-ui,sans-serif' font-size='32' font-weight='bold' fill='white' text-anchor='middle'%3ETrAi%3C/text%3E%3C/svg%3E">
@@ -54,7 +93,18 @@
       background:#F5F5F7;
       color:#111111;overflow:hidden;-webkit-font-smoothing:antialiased;
       position:fixed;width:100%;top:0;left:0;
-      min-height:100vh;min-height:100dvh;min-height:-webkit-fill-available
+      min-height:100vh;min-height:100dvh;min-height:-webkit-fill-available;
+      -webkit-overflow-scrolling:touch;
+    }
+    /* Performance: Scroll containers */
+    .overflow-y-auto,.overflow-x-auto,.custom-scroll{
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-y;
+      contain:content;
+    }
+    /* Performance: Card containers */
+    .product-card,.glass{
+      contain:layout style paint;
     }
     .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom,0px),16px)}
     .safe-top{padding-top:max(env(safe-area-inset-top,0px),0px)}
@@ -93,28 +143,28 @@
     input:focus,select:focus,textarea:focus{outline:none;border-color:#2962FF;box-shadow:0 0 0 3px rgba(41,98,255,.12)}
     input::placeholder,textarea::placeholder{color:#9CA3AF}
     select option{background:#fff;color:#111111}
-    .fade-in{animation:fadeIn .22s ease-out}
+    .fade-in{animation:fadeIn .22s ease-out;will-change:opacity,transform}
     @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .slide-up{animation:slideUp .33s ease-out}
+    .slide-up{animation:slideUp .33s ease-out;will-change:opacity,transform}
     @keyframes slideUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
     .product-card{transition:all .24s}
     .product-card:hover{transform:translateY(-3px)}
     .badge{background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1)}
-    .ring-pulse{animation:ringPulse 1.25s infinite}
+    .ring-pulse{animation:ringPulse 1.25s infinite;will-change:transform,opacity}
     @keyframes ringPulse{0%{transform:scale(.78);opacity:.9}100%{transform:scale(1.8);opacity:0}}
     .shadow-soft{box-shadow:0 8px 30px rgba(0,0,0,.12)}
     .bg-gradient-premium{background:#FFFFFF}
-    .float{animation:float 3s ease-in-out infinite}
+    .float{animation:float 3s ease-in-out infinite;will-change:transform}
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
     .btn-secondary{background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.08);transition:all .2s;color:#111111}
     .btn-secondary:hover{background:rgba(0,0,0,.08)}
-    .scale-in{animation:scaleIn .3s cubic-bezier(.16,1,.3,1)}
+    .scale-in{animation:scaleIn .3s cubic-bezier(.16,1,.3,1);will-change:transform,opacity}
     @keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-    .pulse{animation:pulse 2s ease-in-out infinite}
+    .pulse{animation:pulse 2s ease-in-out infinite;will-change:transform,opacity}
     @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.8}}
-    .animate-bounce-right{animation:bounceRight 1s ease-in-out infinite}
+    .animate-bounce-right{animation:bounceRight 1s ease-in-out infinite;will-change:transform}
     @keyframes bounceRight{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
-    .animate-bounce-left{animation:bounceLeft 1s ease-in-out infinite}
+    .animate-bounce-left{animation:bounceLeft 1s ease-in-out infinite;will-change:transform}
     @keyframes bounceLeft{0%,100%{transform:translateX(0)}50%{transform:translateX(-8px)}}
     
     /* Desktop Responsive Layout */
@@ -185,6 +235,15 @@
       background: rgba(41, 98, 255, 0.12);
       color: #2962FF;
       font-weight: 600;
+    }
+    
+    /* Accessibility: Respect reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
     
     /* Drag and Drop Styles */
@@ -1529,7 +1588,6 @@ try {
   FIREBASE_OK = true;
   // Test Firebase connection
   auth.onAuthStateChanged(() => {
-    console.log('Firebase Auth connected successfully');
   });
 } catch (e) {
   FIREBASE_OK = false;
@@ -1540,11 +1598,9 @@ try {
 // Helper: Upload avatar to Firebase Storage
 async function uploadAvatarToStorage(userId, avatarDataUrl) {
   if (!FIREBASE_OK || !storage || !avatarDataUrl) {
-    console.warn('⚠️ uploadAvatarToStorage: Missing requirements', { FIREBASE_OK, hasStorage: !!storage, hasAvatar: !!avatarDataUrl });
     return null;
   }
   try {
-    console.log('📤 Uploading avatar to Storage...');
     const ref = storage.ref(`avatars/${userId}/base-avatar.png`);
     // Convert data URL to blob
     const response = await fetch(avatarDataUrl);
@@ -1553,7 +1609,6 @@ async function uploadAvatarToStorage(userId, avatarDataUrl) {
     await ref.put(blob, { contentType: 'image/png' });
     // Get download URL
     const url = await ref.getDownloadURL();
-    console.log('✅ Avatar uploaded successfully');
     return url;
   } catch (e) {
     console.error('❌ Avatar upload error:', e.code, e.message);
@@ -1586,7 +1641,6 @@ async function downloadAvatarFromStorage(userId) {
     } catch (e) {
       // storage/object-not-found hatası normal - avatar yok demek
       if (e.code === 'storage/object-not-found') {
-        console.log('ℹ️ Avatar Storage\'da bulunamadı');
         return null;
       }
       throw e;
@@ -1596,7 +1650,6 @@ async function downloadAvatarFromStorage(userId) {
   try {
     return await Promise.race([downloadPromise, timeoutPromise]);
   } catch (e) {
-    console.warn('⚠️ Avatar indirme hatası:', e.message);
     return null;
   }
 }
@@ -1741,7 +1794,6 @@ function debugLog(step, message, type = 'info') {
   
   // Console'a da yaz
   const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warn' ? '⚠️' : '📍';
-  console.log(`${icon} [${step}] ${message}`);
   
   // UI güncelle
   if (typeof window !== 'undefined' && window.updateDebugPanel) {
@@ -2068,11 +2120,9 @@ async function shareImage(dataUrl, options = {}) {
         });
         return true;
       } catch (shareErr) {
-        console.log('Share cancelled or failed:', shareErr);
       }
     }
   } catch (err) {
-    console.log('Native share not available:', err);
   }
   
   // Final fallback: Open in new tab
@@ -2094,7 +2144,6 @@ async function uploadAndShareImage(dataUrl, authUser, storage) {
     await storageRef.put(blob);
     const imageUrl = await storageRef.getDownloadURL();
     
-    console.log('✅ Image uploaded for sharing:', imageUrl);
     
     // Create share text with trai.style link
     const shareText = `TrAi Style ile oluşturduğum kombine bak! ✨\n\n🔗 Görsel: ${imageUrl}\n\n📱 Sen de dene: https://trai.style`;
@@ -2259,7 +2308,6 @@ const AI = {
               }
             }
             
-            console.log(`✅ Görsel: ${elapsed}s, ${rawSize}KB`);
             return rawDataUrl;
           }
         }
@@ -3070,18 +3118,6 @@ const TRENDYOL_DATA = (typeof TRENDYOL_PRODUCTS !== 'undefined' && Array.isArray
   ? TRENDYOL_PRODUCTS 
   : [];
 
-console.log(`📥 Yüklenen ham veri: ${TRENDYOL_DATA.length} ürün`);
-
-// Debug first few items to see brand structure
-if (TRENDYOL_DATA.length > 0) {
-  console.log('🔍 İlk 3 ürün yapısı:', TRENDYOL_DATA.slice(0, 3).map(p => ({
-    brand: p.brand,
-    brandName: p.brandName,
-    brandId: p.brandId,
-    name: p.name?.substring(0, 30)
-  })));
-}
-
 // Fix brand names - ensure brandName is properly extracted
 const ALL_PRODUCTS = TRENDYOL_DATA.map((p, i) => {
   // Brand name priority: brandName > brand > extract from name
@@ -3201,13 +3237,9 @@ const ALL_PRODUCTS = TRENDYOL_DATA.map((p, i) => {
   };
 });
 
-
-console.log(`📦 Ürün Veritabanı: ${ALL_PRODUCTS.length} Trendyol ürünü`);
-
 // Debug: Show sample brand names
 if (ALL_PRODUCTS.length > 0) {
   const sampleBrands = [...new Set(ALL_PRODUCTS.slice(0, 20).map(p => p.brandName))];
-  console.log(`🏷️ Örnek markalar:`, sampleBrands);
 }
 
 // Generate BRANDS dynamically from ALL_PRODUCTS
@@ -3250,9 +3282,7 @@ const BRANDS = (() => {
   // Sadece en az 2 ürünü olan markaları göster
   const filteredBrands = brands.filter(b => b.count >= 2);
   
-  console.log(`🏷️ ${filteredBrands.length} farklı marka bulundu (${brands.length - filteredBrands.length} tekil marka filtrelendi)`);
   if (filteredBrands.length > 0) {
-    console.log(`🔝 En çok ürünlü markalar:`, filteredBrands.slice(0, 5).map(b => `${b.name}(${b.count})`));
   }
   
   return filteredBrands;
@@ -3680,11 +3710,12 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           setUsernameStatus({ checking: false, available: true, error: null });
         }
       } catch (e) {
-        // If Firestore not available, assume available
-        setUsernameStatus({ checking: false, available: true, error: null });
+        console.error('Username check error:', e);
+        setUsernameStatus({ checking: false, available: false, error: 'Kontrol yapılamadı, tekrar deneyin' });
       }
     } else {
-      setUsernameStatus({ checking: false, available: true, error: null });
+      // db yoksa kayıt yapılamaz
+      setUsernameStatus({ checking: false, available: false, error: 'Bağlantı hatası, sayfayı yenileyin' });
     }
   };
 
@@ -3734,12 +3765,13 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
         if (e.code === 'auth/invalid-email') {
           setEmailStatus({ checking: false, available: false, error: 'Geçersiz e-posta adresi' });
         } else {
-          // Assume available if can't check
-          setEmailStatus({ checking: false, available: true, error: null });
+          console.error('Email check error:', e);
+          setEmailStatus({ checking: false, available: false, error: 'Kontrol yapılamadı, tekrar deneyin' });
         }
       }
     } else {
-      setEmailStatus({ checking: false, available: true, error: null });
+      // auth yoksa kayıt yapılamaz
+      setEmailStatus({ checking: false, available: false, error: 'Bağlantı hatası, sayfayı yenileyin' });
     }
   };
 
@@ -3805,7 +3837,6 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     // SAYFA YENİLENMESİNİ ENGELLE
     if (e) e.preventDefault();
     
-    console.log('🔵 ADIM 1: Submit başladı');
     
     try {
       // Firebase kontrol
@@ -3817,18 +3848,15 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
         alert("HATA: Firebase Auth başlatılamadı.");
         return;
       }
-      console.log('🔵 ADIM 2: Firebase OK');
       
       // Alan kontrolleri
       if (!email || !pass) {
         alert("E-posta ve şifre gerekli.");
         return;
       }
-      console.log('🔵 ADIM 3: Email/Pass OK');
 
       // Kayıt validasyonları
       if (mode === 'register') {
-        console.log('🔵 ADIM 4: Register kontrolleri');
         if (!username) { 
           alert("Kullanıcı adı gerekli."); 
           return; 
@@ -3861,6 +3889,11 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           alert("E-posta: " + (emailStatus.error || 'Bu e-posta adresi zaten kullanılıyor'));
           return;
         }
+        // Email kontrolü yapılmamışsa engelle
+        if (emailStatus.available !== true) {
+          alert("E-posta kontrolü yapılıyor, lütfen bekleyin...");
+          return;
+        }
         const errors = validatePassword(pass);
         if (errors.length > 0) {
           alert("Zayıf Şifre: " + errors.join(', '));
@@ -3875,33 +3908,27 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           alert("Zorunlu izinleri onaylayın."); 
           return; 
         }
-        console.log('🔵 ADIM 5: Validasyonlar OK');
       }
 
       setBusy(true);
-      console.log('🔵 ADIM 6: Firebase Auth işlemi başlıyor...');
       
       // Giriş veya Kayıt
       const c = mode === 'login' 
         ? await auth.signInWithEmailAndPassword(email, pass) 
         : await auth.createUserWithEmailAndPassword(email, pass);
       
-      console.log('🟢 ADIM 7: Auth başarılı:', c.user.uid);
       
       // Yeni kayıtta Firestore işlemleri
       if (mode === 'register' && c.user && db) {
-        console.log('🔵 ADIM 8: Firestore kayıt');
         
         // Check if this email was previously deleted (abuse prevention)
         let isReturningUser = false;
         try {
           const deletedEmailDoc = await db.collection('deletedEmails').doc(email.toLowerCase()).get();
           if (deletedEmailDoc.exists) {
-            console.log('⚠️ Previously deleted email detected - no free trials');
             isReturningUser = true;
           }
         } catch (e) {
-          console.warn('⚠️ Deleted email check error:', e);
         }
         
         try {
@@ -3924,21 +3951,17 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             returningUser: isReturningUser,
             createdAt: Date.now()
           }, { merge: true });
-          console.log('🟢 ADIM 9: Firestore OK');
         } catch (dbErr) {
-          console.warn('⚠️ Firestore hatası (devam ediliyor):', dbErr.message);
         }
         
         // Email doğrulama
         if (!c.user.emailVerified) {
           try {
-            console.log('📧 Email doğrulama gönderiliyor...', c.user.email);
             const actionCodeSettings = {
               url: window.location.origin + '/?verified=true',
               handleCodeInApp: false
             };
             await c.user.sendEmailVerification(actionCodeSettings);
-            console.log('✅ Email doğrulama gönderildi');
             setToast({ open: true, type: 'info', title: 'Doğrulama Emaili', message: 'Lütfen email kutunuzu kontrol edin' });
           } catch (verifyErr) {
             console.error('❌ Email doğrulama hatası:', verifyErr.code, verifyErr.message);
@@ -3951,7 +3974,6 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
       }
       
       // Başarılı
-      console.log('🟢 ADIM 10: İşlem tamamlandı!');
       if (mode === 'register') localStorage.setItem('trai_terms_v1', '1');
       onAuthed({ 
         uid: c.user.uid, 
@@ -4326,7 +4348,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         )}
         
-        <button onClick={(e) => submit(e)} disabled={busy || (mode === 'register' && (!requiredConsentsOk || passErrors.length > 0 || !usernameStatus.available || emailStatus.available === false))} className="w-full btn-primary py-4 rounded-2xl font-bold disabled:opacity-50 mb-4">
+        <button type="button" onClick={(e) => submit(e)} disabled={busy || (mode === 'register' && (!requiredConsentsOk || passErrors.length > 0 || !usernameStatus.available || emailStatus.available === false))} className="w-full btn-primary py-4 rounded-2xl font-bold disabled:opacity-50 mb-4">
           {busy ? <span className="flex items-center justify-center gap-2"><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t('processing')}</span> : (mode === 'login' ? t('login') : t('register'))}
         </button>
         
@@ -4849,7 +4871,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null, useCredit, r
                 <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-4">
                   {photos.map((p, i) => (
                     <div key={i} className="aspect-square rounded-2xl overflow-hidden border-2 border-brand2">
-                      <img src={p} className="w-full h-full object-cover" />
+                      <img src={p} className="w-full h-full object-cover" loading="lazy" />
                     </div>
                   ))}
                   {Array(3 - photos.length).fill(0).map((_, i) => (
@@ -4894,7 +4916,7 @@ const AvatarWizard = ({ onComplete, setToast, initialParams = null, useCredit, r
           <div className="flex-shrink-0 px-4 py-2 flex gap-2 justify-center">
             {photos.map((p, i) => (
               <div key={i} className="w-12 h-12 rounded-lg overflow-hidden border-2 border-brand2">
-                <img src={p} className="w-full h-full object-cover" />
+                <img src={p} className="w-full h-full object-cover" loading="lazy" />
               </div>
             ))}
           </div>
@@ -5885,7 +5907,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                                 : 'border-transparent hover:border-slate-300'
                             }`}
                           >
-                            <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" />
+                            <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" />
                           </div>
                         ))}
                       </div>
@@ -5927,7 +5949,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
               >
                 {/* Base Avatar - object-cover with top alignment for better fit */}
                 {(user?.baseAvatar || user?.avatar) ? (
-                  <img src={user?.baseAvatar || user?.avatar} className="w-full h-full object-cover object-top" />
+                  <img src={user?.baseAvatar || user?.avatar} className="w-full h-full object-cover object-top" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-slate-100">
                     <Icon name="user" size={48} className="text-slate-300" />
@@ -5958,7 +5980,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
               <div className="flex gap-2 mt-4 items-center justify-center flex-wrap">
                 {selected.top && (
                   <div className="item-added relative">
-                    <img src={selected.top.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-brand" />
+                    <img src={selected.top.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-brand" loading="lazy" />
                     <button onClick={() => setSelected(s => ({...s, top: null}))} className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                       <Icon name="x" size={10} className="text-white" />
                     </button>
@@ -5967,7 +5989,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                 )}
                 {selected.bottom && (
                   <div className="item-added relative">
-                    <img src={selected.bottom.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-amber-500" />
+                    <img src={selected.bottom.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-amber-500" loading="lazy" />
                     <button onClick={() => setSelected(s => ({...s, bottom: null}))} className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                       <Icon name="x" size={10} className="text-white" />
                     </button>
@@ -5976,7 +5998,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                 )}
                 {selected.outerwear && (
                   <div className="item-added relative">
-                    <img src={selected.outerwear.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-blue-500" />
+                    <img src={selected.outerwear.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-blue-500" loading="lazy" />
                     <button onClick={() => setSelected(s => ({...s, outerwear: null}))} className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                       <Icon name="x" size={10} className="text-white" />
                     </button>
@@ -5985,7 +6007,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                 )}
                 {selected.fullbody && (
                   <div className="item-added relative">
-                    <img src={selected.fullbody.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-brand" />
+                    <img src={selected.fullbody.image} className="w-12 h-12 rounded-lg object-cover ring-2 ring-brand" loading="lazy" />
                     <button onClick={() => setSelected(s => ({...s, fullbody: null}))} className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                       <Icon name="x" size={10} className="text-white" />
                     </button>
@@ -6111,7 +6133,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                                 : 'border-transparent hover:border-slate-300'
                             }`}
                           >
-                            <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" />
+                            <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" />
                           </div>
                         ))}
                       </div>
@@ -6165,7 +6187,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                               : 'border-transparent hover:border-slate-300'
                           }`}
                         >
-                          <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" />
+                          <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" />
                         </div>
                       ))}
                     </div>
@@ -6192,7 +6214,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                               : 'border-transparent hover:border-slate-300'
                           }`}
                         >
-                          <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" />
+                          <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" />
                         </div>
                       ))}
                     </div>
@@ -6317,7 +6339,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                 {filteredClosetItems.map(item => (
                   <div key={item.id} className={`relative group ${viewMode === 'list' ? 'glass rounded-xl p-3 flex items-center gap-3' : ''}`}>
                     <div className={`${viewMode === 'grid' ? 'aspect-[3/4] w-full' : 'w-16 h-20 flex-shrink-0'} rounded-xl overflow-hidden bg-slate-100`}>
-                      <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" loading="lazy" />
                       {item.isCustom && (
                         <div className="absolute top-1 left-1 bg-amber-400 text-[8px] text-white px-1.5 py-0.5 rounded font-bold">
                           {t('myClothes')}
@@ -6352,8 +6374,6 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
           </div>
         </>
       )}
-
-
       {/* WEATHER TAB */}
       {tab === 'weather' && (
         <div className="flex-1 overflow-y-auto custom-scroll p-4 pb-24">
@@ -6495,7 +6515,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                       className="relative w-full aspect-[3/4] rounded-xl overflow-hidden mb-3 cursor-pointer group"
                       onClick={() => onTryOnResult(combo.image, combo.items || [])}
                     >
-                      <img src={combo.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={combo.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" loading="lazy" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
                         <div className="opacity-0 group-hover:opacity-100 bg-white/90 rounded-full p-3 transition">
                           <Icon name="eye" size={24} className="text-slate-700" />
@@ -6509,7 +6529,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                     <div className="flex gap-2 mb-3">
                       {(combo.items || []).map((item, i) => (
                         <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200">
-                          <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                          <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" loading="lazy" />
                         </div>
                       ))}
                     </div>
@@ -6627,7 +6647,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
               {favorites.map(item => (
                 <div key={item.id} className="glass rounded-2xl overflow-hidden">
                   <div className="aspect-square relative">
-                    <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                    <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" loading="lazy" />
                     <button 
                       onClick={() => toggleFavorite(item)}
                       className="absolute top-2 right-2 p-2 rounded-xl bg-slate-900/40"
@@ -6677,7 +6697,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                       onTryOnResult(item.image, item.items || []);
                     }}
                   >
-                    <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                    <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" loading="lazy" />
                     <div className="absolute top-2 right-2 bg-black/50 rounded-lg px-2 py-1">
                       <Icon name="eye" size={14} className="text-white" />
                     </div>
@@ -6846,7 +6866,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                   <div className="grid grid-cols-3 gap-2">
                     {closet.filter(item => item.isCustom).map(item => (
                       <div key={item.id} className="relative aspect-[3/4] rounded-xl overflow-hidden glass">
-                        <img src={item.image} className="w-full h-full object-cover" />
+                        <img src={item.image} className="w-full h-full object-cover" loading="lazy" />
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                           <p className="text-white text-xs font-medium truncate">{item.name}</p>
                         </div>
@@ -6892,7 +6912,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                 >
                   {uploadPhoto ? (
                     <>
-                      <img src={uploadPhoto} className="w-full h-full object-contain rounded-xl" />
+                      <img src={uploadPhoto} className="w-full h-full object-contain rounded-xl" loading="lazy" />
                       <button 
                         onClick={(e) => { e.stopPropagation(); setUploadPhoto(null); }}
                         className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full"
@@ -7509,12 +7529,11 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         fromUsername: user.username,
         fromDisplayName: user.displayName,
         fromPhoto: user.profilePhoto || null,
-        message: `${user.username || user.displayName} seni takip etmek istiyor`,
+        message: `${user.displayName || user.username} seni takip etmek istiyor`,
         read: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       
-      console.log('✅ Follow request sent');
       
       // INSTANT UPDATE: Local state'i hemen güncelle
       setSentFollowRequests(prev => [...prev, {
@@ -7593,12 +7612,11 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         fromUsername: user.username,
         fromDisplayName: user.displayName,
         fromPhoto: user.profilePhoto || null,
-        message: `${user.username || user.displayName} takip isteğini kabul etti`,
+        message: `${user.displayName || user.username} takip isteğini kabul etti`,
         read: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       
-      console.log('✅ Follow request accepted - mutual follow created');
       
       // INSTANT UPDATE: Local state'i hemen güncelle
       // İsteği listeden kaldır
@@ -7638,7 +7656,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       await db.collection('users').doc(myUid).collection('followRequests').doc(fromUid).delete();
       await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(myUid).delete();
       
-      console.log('✅ Follow request rejected');
       
       // Update local state
       setFollowRequests(prev => prev.filter(r => r.fromUid !== fromUid));
@@ -7659,7 +7676,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       await db.collection('users').doc(targetUid).collection('followRequests').doc(myUid).delete();
       await db.collection('users').doc(myUid).collection('sentFollowRequests').doc(targetUid).delete();
       
-      console.log('✅ Follow request cancelled');
       setSentFollowRequests(prev => prev.filter(r => r.uid !== targetUid));
       
     } catch (e) {
@@ -7681,7 +7697,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       await db.collection('users').doc(targetUid).collection('following').doc(myUid).delete().catch(() => {});
       await db.collection('users').doc(targetUid).collection('followers').doc(myUid).delete().catch(() => {});
       
-      console.log('✅ Mutual unfollow successful');
       
       // Update local state
       setFriends(prev => prev.filter(f => f.uid !== targetUid && f.id !== targetUid));
@@ -7707,7 +7722,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     
     const msg = {
       senderId: myUid,
-      senderName: user.username || user.displayName,
+      senderName: user.displayName || user.username,
       senderPhoto: user.profilePhoto || null,
       text: newMessage.trim(),
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -7733,7 +7748,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         await chatRef.set({
           participants: [myUid, recipientUid],
           participantNames: {
-            [myUid]: user.username || user.displayName,
+            [myUid]: user.displayName || user.username,
             [recipientUid]: selectedChat.name
           },
           lastMessage: newMessage.trim(),
@@ -7745,14 +7760,13 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         // Add message to subcollection
         await chatRef.collection('messages').add(msg);
         
-        console.log('✅ Message sent');
       }
       
       // Update local state immediately for responsiveness
       const localMsg = {
         id: Date.now(),
         senderId: myUid,
-        senderName: user.username || user.displayName,
+        senderName: user.displayName || user.username,
         text: newMessage.trim(),
         timestamp: Date.now()
       };
@@ -7879,7 +7893,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       id: Date.now(),
       name: groupName,
       members: [
-        { uid: authUser?.uid, name: user.username || user.displayName, avatar: user.profilePhoto },
+        { uid: authUser?.uid, name: user.displayName || user.username, avatar: user.profilePhoto },
         ...selectedGroupMembers
       ],
       messages: [],
@@ -7931,7 +7945,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     const chatId = selectedChat.id;
     if (!chatId || typeof chatId !== 'string' || !chatId.includes('_')) return;
     
-    console.log('📨 Starting real-time message listener for:', chatId);
     
     const unsubscribe = db.collection('chats').doc(chatId).collection('messages')
       .orderBy('timestamp', 'asc')
@@ -7954,7 +7967,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             });
           });
           
-          console.log('📨 Messages updated:', messagesList.length, messagesList.map(m => ({ type: m.type, hasImage: !!m.image })));
           
           // Update dmChats with loaded messages
           setDmChats(prev => prev.map(c => 
@@ -7967,7 +7979,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       );
     
     return () => {
-      console.log('🔌 Message listener unsubscribed');
       unsubscribe();
     };
   }, [selectedChat?.id]);
@@ -8015,9 +8026,9 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               className="w-24 h-24 rounded-full overflow-hidden border-4 border-brand2/50 shadow-lg relative group"
             >
               {user.profilePhoto ? (
-                <img src={user.profilePhoto} className="w-full h-full object-cover" />
+                <img src={user.profilePhoto} className="w-full h-full object-cover" loading="lazy" />
               ) : (
-                <img src={user.baseAvatar || user.avatar} className="w-full h-full object-cover object-top scale-150" />
+                <img src={user.baseAvatar || user.avatar} className="w-full h-full object-cover object-top scale-150" loading="lazy" />
               )}
               <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                 <Icon name="camera" size={20} />
@@ -8157,7 +8168,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             {/* Full Body Avatar */}
             <div className="glass rounded-3xl overflow-hidden">
               <div className="aspect-[3/4] relative bg-gradient-to-b from-white/5 to-transparent">
-                <img src={user.baseAvatar || user.avatar} className="w-full h-full object-contain" />
+                <img src={user.baseAvatar || user.avatar} className="w-full h-full object-contain" loading="lazy" />
                 <div className="absolute top-3 right-3 bg-brand2/90 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
                   <Icon name="sparkles" size={12} />Full Body
                 </div>
@@ -8333,8 +8344,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             </div>
           </div>
         )}
-
-
         {/* NOTIFICATIONS TAB */}
         {tab === 'notifications' && (
           <div className="p-4 space-y-4 fade-in">
@@ -8440,7 +8449,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                       {/* Avatar or Icon */}
                       {notification.senderAvatar ? (
                         <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                          <img src={notification.senderAvatar} className="w-full h-full object-cover" />
+                          <img src={notification.senderAvatar} className="w-full h-full object-cover" loading="lazy" />
                         </div>
                       ) : (
                         <div className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center flex-shrink-0`}>
@@ -8787,7 +8796,7 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
         {/* Product Preview */}
         <div className="p-4 flex gap-3 items-center border-b border-slate-100">
           <div className="w-16 h-20 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-            {product.image && <img src={product.image} className="w-full h-full object-cover" />}
+            {product.image && <img src={product.image} className="w-full h-full object-cover" loading="lazy" />}
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{product.name}</p>
@@ -8932,7 +8941,7 @@ const DMShareModal = ({ open, image, items, friends, groups, onClose, onSend, cu
         <div className="p-4 border-b border-slate-200">
           <div className="flex gap-3 items-center">
             <div className="w-16 h-20 rounded-xl overflow-hidden bg-slate-100">
-              {image && <img src={image} className="w-full h-full object-cover" />}
+              {image && <img src={image} className="w-full h-full object-cover" loading="lazy" />}
             </div>
             <div>
               <p className="font-semibold text-sm">Kombin Görseli</p>
@@ -9116,7 +9125,6 @@ const CartModal = ({ open, cart, onClose, onRemove, onUpdateQuantity, total }) =
           closedCount++;
         }
       } catch(e) {
-        console.log('Could not close popup');
       }
     });
     setOpenPopups([]);
@@ -10129,7 +10137,7 @@ const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed
         <div className="flex-shrink-0 p-3 border-t border-white/10 bg-slate-900/80">
           {item && (
             <div className="flex items-center gap-3">
-              <img src={item.image} className="w-12 h-12 rounded-lg object-cover" />
+              <img src={item.image} className="w-12 h-12 rounded-lg object-cover" loading="lazy" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-white/50">{item.brandName}</p>
                 <p className="font-semibold text-white truncate">{item.name}</p>
@@ -10141,7 +10149,7 @@ const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
               {items.map((i, idx) => (
                 <div key={idx} className="flex-shrink-0 flex items-center gap-2 bg-white/10 rounded-lg px-2 py-1.5">
-                  <img src={i.image} className="w-8 h-8 rounded object-cover" />
+                  <img src={i.image} className="w-8 h-8 rounded object-cover" loading="lazy" />
                   <span className="text-xs text-white">{i.name}</span>
                 </div>
               ))}
@@ -10253,7 +10261,7 @@ const AdviceModal = ({ open, item, advice, loading, onClose }) => {
       </div>
       <div className="flex-1 overflow-auto custom-scroll p-4">
         <div className="flex gap-3 mb-4">
-          <div className="w-20 h-28 rounded-xl overflow-hidden"><img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" /></div>
+          <div className="w-20 h-28 rounded-xl overflow-hidden"><img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" loading="lazy" /></div>
           <div>
             <p className="text-xs text-slate-500">{item.brandName}</p>
             <p className="font-bold">{item.name}</p>
@@ -10325,9 +10333,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       name: groupName.trim(),
       topic: groupTopic.trim() || null,
       creatorId: authUser?.uid,
-      creatorName: user.username || user.displayName,
+      creatorName: user.displayName || user.username,
       members: [
-        { id: authUser?.uid, name: user.username || user.displayName, avatar: user.profilePhoto || user.baseAvatar, role: 'admin' },
+        { id: authUser?.uid, name: user.displayName || user.username, avatar: user.profilePhoto || user.baseAvatar, role: 'admin' },
         ...selectedGroupMembers.map(m => ({ ...m, role: 'member' }))
       ],
       messages: [],
@@ -10352,7 +10360,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             groupId: newGroup.id,
             groupName: newGroup.name,
             senderId: authUser.uid,
-            senderName: user.username || user.displayName,
+            senderName: user.displayName || user.username,
             senderAvatar: user.profilePhoto || user.baseAvatar,
             read: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -10381,7 +10389,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     const msg = {
       id: Date.now(),
       senderId: authUser?.uid,
-      senderName: user.username || user.displayName,
+      senderName: user.displayName || user.username,
       senderAvatar: user.profilePhoto || user.baseAvatar,
       text: newMessage.trim(),
       type: 'text',
@@ -10509,7 +10517,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       const newPost = {
         id: postId,
         authorId: authUser.uid,
-        authorName: user?.username || user?.displayName || 'Kullanıcı',
+        authorName: user?.displayName || user?.username || 'Kullanıcı',
         authorUsername: user?.username || '',
         authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
         image: selectedImage, // Direkt data URL kullan
@@ -10522,9 +10530,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       };
       
       // Firebase'e kaydet
-      console.log('💾 Post Firebase\'e kaydediliyor...', postId);
       await db.collection('posts').doc(String(postId)).set(newPost);
-      console.log('✅ Post Firebase\'e kaydedildi:', postId);
       
       // Başarılı - UI'ı temizle
       setSelectedImage(null);
@@ -10573,7 +10579,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     const newComment = {
       id: Date.now(),
       authorId: authUser?.uid,
-      authorName: user.username || user.displayName || 'Kullanıcı',
+      authorName: user.displayName || user.username || 'Kullanıcı',
       authorUsername: user.username,
       text: comment,
       createdAt: Date.now()
@@ -10644,7 +10650,6 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         uploadedImageUrl = await storageRef.getDownloadURL();
         shareUrl = uploadedImageUrl;
       } catch (e) {
-        console.warn('⚠️ Image upload for share failed:', e);
       }
     }
     
@@ -10778,7 +10783,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         fromUsername: user.username,
         fromDisplayName: user.displayName,
         fromPhoto: user.profilePhoto || null,
-        message: `${user.username || user.displayName} seni takip etmek istiyor`,
+        message: `${user.displayName || user.username} seni takip etmek istiyor`,
         read: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -10855,12 +10860,11 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         fromUsername: user.username,
         fromDisplayName: user.displayName,
         fromPhoto: user.profilePhoto || null,
-        message: `${user.username || user.displayName} takip isteğini kabul etti`,
+        message: `${user.displayName || user.username} takip isteğini kabul etti`,
         read: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       
-      console.log('✅ Follow request accepted - mutual follow created');
       
       // Local state will be updated by real-time listeners
       setToast({ open: true, type: 'success', title: 'Kabul Edildi', message: `${request.fromUsername} artık arkadaşın` });
@@ -10916,7 +10920,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         <div className="p-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand">
             {post.authorAvatar ? (
-              <img src={post.authorAvatar} className="w-full h-full object-cover" />
+              <img src={post.authorAvatar} className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
             )}
@@ -11097,7 +11101,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                       onClick={() => setSelectedImage(item.image)}
                       className="aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-brand2 transition"
                     >
-                      <img src={item.image} crossOrigin="anonymous" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={item.image} crossOrigin="anonymous" loading="lazy" className="w-full h-full object-cover" loading="lazy" />
                     </button>
                   ))}
                 </div>
@@ -11112,7 +11116,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 className="w-full glass rounded-2xl p-4 flex items-center gap-4 hover:bg-slate-100 transition"
               >
                 <div className="w-16 h-20 rounded-xl overflow-hidden">
-                  <img src={user.baseAvatar || user.avatar} className="w-full h-full object-cover" />
+                  <img src={user.baseAvatar || user.avatar} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="text-left">
                   <p className="font-semibold">Avatarını Paylaş</p>
@@ -11125,7 +11129,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               {/* Preview */}
               <div className="relative">
                 <div className="aspect-[3/4] rounded-2xl overflow-hidden">
-                  <img src={selectedImage} className="w-full h-full object-cover" />
+                  <img src={selectedImage} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <button
                   onClick={() => setSelectedImage(null)}
@@ -11486,7 +11490,6 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                               read: data.read
                             };
                           });
-                          console.log('📨 SocialFeed messages loaded:', messages.length, messages.map(m => ({ type: m.type, hasImage: !!m.image })));
                           setSelectedChat(prev => prev?.id === chat.id ? { ...prev, messages, loading: false } : prev);
                         } catch(err) {
                           console.error('Messages load error:', err);
@@ -11552,7 +11555,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   <div key={member.id} className="flex-shrink-0 flex flex-col items-center">
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200">
                       {member.avatar ? (
-                        <img src={member.avatar} className="w-full h-full object-cover" />
+                        <img src={member.avatar} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs">👤</div>
                       )}
@@ -11583,7 +11586,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                         {!isMine && (
                           <div className="w-6 h-6 rounded-full overflow-hidden mr-2 flex-shrink-0">
                             {msg.senderAvatar ? (
-                              <img src={msg.senderAvatar} className="w-full h-full object-cover" />
+                              <img src={msg.senderAvatar} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
                               <div className="w-full h-full bg-slate-200 flex items-center justify-center text-[10px]">👤</div>
                             )}
@@ -11660,7 +11663,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                         }`}>
                           {msg.type === 'combo' && msg.image && (
                             <div className="mb-2">
-                              <img src={msg.image} className="rounded-lg max-w-full max-h-64 object-contain" />
+                              <img src={msg.image} className="rounded-lg max-w-full max-h-64 object-contain" loading="lazy" />
                               {msg.items && msg.items.length > 0 && (
                                 <p className={`text-xs mt-1 ${isMine ? 'text-white/70' : 'text-slate-500'}`}>
                                   {msg.items.length} ürünlü kombin
@@ -11670,7 +11673,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                           )}
                           <p className="text-sm">{msg.text}</p>
                           {msg.type !== 'combo' && msg.image && (
-                            <img src={msg.image} className="mt-2 rounded-lg max-w-full max-h-48 object-contain" />
+                            <img src={msg.image} className="mt-2 rounded-lg max-w-full max-h-48 object-contain" loading="lazy" />
                           )}
                         </div>
                       </div>
@@ -11889,7 +11892,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
           <div className="flex-1 overflow-y-auto custom-scroll bg-dark">
             {/* Post görseli - sınırlı boyut */}
             <div className="max-h-[50vh] overflow-hidden">
-              <img src={selectedPost.image} className="w-full object-contain max-h-[50vh]" />
+              <img src={selectedPost.image} className="w-full object-contain max-h-[50vh]" loading="lazy" />
             </div>
             
             {/* Post bilgileri */}
@@ -11897,7 +11900,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand">
                   {selectedPost.authorAvatar ? (
-                    <img src={selectedPost.authorAvatar} className="w-full h-full object-cover" />
+                    <img src={selectedPost.authorAvatar} className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
                   )}
@@ -12118,7 +12121,6 @@ const App = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     if (refCode) {
-      console.log('🎁 Referral code detected:', refCode);
       setPendingReferralCode(refCode);
       // URL'den parametreyi temizle (history'yi değiştirmeden)
       const newUrl = window.location.pathname;
@@ -12385,7 +12387,6 @@ const App = () => {
     const actualType = lastUsedCreditTypeRef.current;
     
     if (!actualType) {
-      console.log('⚠️ İade edilecek kredi tipi bulunamadı');
       return;
     }
     
@@ -12415,7 +12416,6 @@ const App = () => {
     
     // Kullanılan tipi sıfırla
     lastUsedCreditTypeRef.current = null;
-    console.log('💰 Kredi iade edildi:', actualType);
   };
   
   // Kıyafet yükleme kontrolü - Paywall ile
@@ -12454,7 +12454,6 @@ const App = () => {
     }
     
     if (creditsThisMonth >= 10) {
-      console.log('⚠️ Aylık referral limiti doldu (10/10)');
       setToast({ open: true, type: 'warning', title: t('referralLimitReached'), message: 'Gelecek ay tekrar kazanabilirsin' });
       return false;
     }
@@ -12464,7 +12463,6 @@ const App = () => {
     const existingReferral = await referralsRef.where('referredUserId', '==', referredUserId).where('reason', '==', reason).get();
     
     if (!existingReferral.empty) {
-      console.log('⚠️ Bu kullanıcıdan zaten bu sebep için kredi alınmış');
       return false;
     }
     
@@ -12537,7 +12535,6 @@ const App = () => {
         
         // Device ID kontrolü - aynı cihazdan açılan hesaplar sayılmaz
         if (referrerData.deviceId && referrerData.deviceId === myDeviceId) {
-          console.log('⚠️ Referral rejected: Same device detected');
           return;
         }
         
@@ -12552,7 +12549,6 @@ const App = () => {
         }
         
         if (referrerCreditsThisMonth >= 10) {
-          console.log('⚠️ Referrer monthly limit reached');
           return;
         }
         
@@ -12564,7 +12560,6 @@ const App = () => {
           .get();
         
         if (!historySnapshot.empty) {
-          console.log('⚠️ Referral already rewarded for this user');
           return;
         }
         
@@ -12582,7 +12577,7 @@ const App = () => {
         // Referral geçmişine kaydet
         await db.collection('users').doc(user.referredBy).collection('referral_history').add({
           referredUserId: authUser.uid,
-          referredUsername: user.username || user.displayName,
+          referredUsername: user.displayName || user.username,
           reason: 'avatar_created',
           earnedAt: firebase.firestore.FieldValue.serverTimestamp(),
           creditsEarned: 1
@@ -12592,13 +12587,12 @@ const App = () => {
         await db.collection('users').doc(user.referredBy).collection('notifications').add({
           type: 'referral_reward',
           message: `${user.username || 'Bir arkadaşın'} avatar oluşturdu! +1 kredi kazandın 🎉`,
-          senderName: user.username || user.displayName,
+          senderName: user.displayName || user.username,
           senderAvatar: user.profilePhoto || user.baseAvatar,
           read: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        console.log('✅ Referral reward sent to:', user.referredBy);
       }
     } catch (e) {
       console.error('❌ Referral reward error:', e);
@@ -12618,7 +12612,6 @@ const App = () => {
       // Device ID kontrolü
       const myDeviceId = getDeviceId();
       if (referrerData.deviceId && referrerData.deviceId === myDeviceId) {
-        console.log('⚠️ Referral rejected on purchase: Same device');
         return;
       }
       
@@ -12633,7 +12626,6 @@ const App = () => {
       }
       
       if (referrerCreditsThisMonth >= 10) {
-        console.log('⚠️ Referrer monthly limit reached on purchase');
         return;
       }
       
@@ -12651,7 +12643,7 @@ const App = () => {
       // Referral geçmişine kaydet
       await db.collection('users').doc(user.referredBy).collection('referral_history').add({
         referredUserId: authUser.uid,
-        referredUsername: user.username || user.displayName,
+        referredUsername: user.displayName || user.username,
         reason: 'package_purchased',
         earnedAt: firebase.firestore.FieldValue.serverTimestamp(),
         creditsEarned: 1
@@ -12661,13 +12653,12 @@ const App = () => {
       await db.collection('users').doc(user.referredBy).collection('notifications').add({
         type: 'referral_reward',
         message: `${user.username || 'Bir arkadaşın'} paket satın aldı! +1 kredi kazandın 🎉`,
-        senderName: user.username || user.displayName,
+        senderName: user.displayName || user.username,
         senderAvatar: user.profilePhoto || user.baseAvatar,
         read: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       
-      console.log('✅ Referral purchase reward sent to:', user.referredBy);
     } catch (e) {
       console.error('❌ Referral purchase reward error:', e);
     }
@@ -12893,18 +12884,15 @@ const App = () => {
     // Posts'u Firebase'den yükle (herkes için public olanları)
     const loadPosts = async () => {
       if (!db) {
-        console.log('⏳ Posts: db henüz hazır değil');
         return;
       }
       try {
-        console.log('📥 Posts yükleniyor...');
         const snapshot = await db.collection('posts')
           .orderBy('createdAt', 'desc')
           .limit(100)
           .get();
         
         const loadedPosts = snapshot.docs.map(doc => doc.data());
-        console.log('✅ Posts yüklendi:', loadedPosts.length);
         setPosts(loadedPosts);
       } catch (e) {
         console.error('❌ Posts load error:', e);
@@ -12924,13 +12912,11 @@ const App = () => {
   useEffect(() => {
     if (!db) return;
     
-    console.log('🔄 Posts realtime listener başlatılıyor...');
     const unsubscribe = db.collection('posts')
       .orderBy('createdAt', 'desc')
       .limit(100)
       .onSnapshot(snapshot => {
         const loadedPosts = snapshot.docs.map(doc => doc.data());
-        console.log('🔄 Posts güncellendi (realtime):', loadedPosts.length);
         setPosts(loadedPosts);
       }, error => {
         console.error('❌ Posts realtime error:', error);
@@ -12966,7 +12952,6 @@ const App = () => {
     }
     
     const userId = authUser.uid;
-    console.log('🔑 Auth confirmed, userId:', userId);
     
     // Set loading state
     setLoadingAvatar(true);
@@ -12985,9 +12970,7 @@ const App = () => {
           const myDeviceId = getDeviceId();
           if (referrer.deviceId !== myDeviceId) {
             referredByUid = referrer.uid;
-            console.log('✅ Referral code validated, referrer:', referrer.uid);
           } else {
-            console.log('⚠️ Referral rejected: Same device as referrer');
           }
         }
         setPendingReferralCode(null); // Kullanıldı, temizle
@@ -13023,7 +13006,6 @@ const App = () => {
     } : null;
     
     if (!db) {
-      console.warn('⚠️ Firestore bağlantısı yok');
       setLoadingAvatar(false);
       setDataLoaded(true);
       setInitialLoadComplete(true);
@@ -13035,23 +13017,18 @@ const App = () => {
       async (doc) => {
         // CRITICAL FIX: Skip if we're currently saving (prevents read-after-write loop)
         if (pendingSaveRef.current) {
-          console.log('⏭️ Skipping snapshot - save in progress');
           return;
         }
         
-        console.log('📡 onSnapshot triggered, exists:', doc.exists, 'isFirst:', isFirstSnapshotRef.current);
         
         if (doc.exists) {
           const data = doc.data();
-          console.log('📦 Firestore data keys:', Object.keys(data));
-          console.log('👤 Username from Firestore:', data.username, '| DisplayName:', data.displayName);
           
           // CRITICAL FIX: If username is missing, try to fetch from usernames collection
           let resolvedUsername = data.username;
           let resolvedDisplayName = data.displayName;
           
           if (!resolvedUsername) {
-            console.log('⚠️ Username missing in users doc, searching in usernames collection...');
             try {
               const usernamesSnapshot = await db.collection('usernames')
                 .where('uid', '==', userId)
@@ -13061,7 +13038,6 @@ const App = () => {
               if (!usernamesSnapshot.empty) {
                 const usernameDoc = usernamesSnapshot.docs[0];
                 resolvedUsername = usernameDoc.data().username || usernameDoc.id;
-                console.log('✅ Found username from usernames collection:', resolvedUsername);
                 
                 // Also update the users doc to include username for future
                 db.collection('users').doc(userId).update({
@@ -13070,7 +13046,6 @@ const App = () => {
                 }).catch(e => console.warn('Could not update users doc with username:', e.message));
               }
             } catch (e) {
-              console.warn('Could not fetch from usernames collection:', e.message);
             }
           }
           
@@ -13082,14 +13057,11 @@ const App = () => {
           let baseAvatarDataUrl = null;
           
           if (!avatarDownloadedRef.current && data.baseAvatarStorageUrl) {
-            console.log('🖼️ Avatar indiriliyor...');
             try {
               baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
               if (baseAvatarDataUrl) {
-                console.log('✅ Avatar indirildi');
                 avatarDownloadedRef.current = true;
               } else {
-                console.log('⚠️ Avatar bulunamadı');
               }
             } catch (e) {
               console.error('❌ Avatar indirme hatası:', e.message);
@@ -13145,10 +13117,8 @@ const App = () => {
           
           // CRITICAL FIX: Only load arrays on FIRST snapshot
           if (shouldLoadData) {
-            console.log('📥 Initial load - populating state from Firestore');
             if (data.closet && Array.isArray(data.closet)) {
               setCloset(data.closet);
-              console.log('👕 Closet loaded:', data.closet.length, 'items');
             }
             if (data.savedCombos && Array.isArray(data.savedCombos)) setSavedCombos(data.savedCombos);
             if (data.favorites && Array.isArray(data.favorites)) setFavorites(data.favorites);
@@ -13164,13 +13134,11 @@ const App = () => {
             // Avatar kontrolü: Mevcut kullanıcı (createdAt var) + Avatar yok + daha önce avatar oluşturmuş (freeAvatarTry 0)
             // Bu, daha önce avatar oluşturmuş ama bir şekilde silmiş kullanıcıları yakalamak için
             if (isExistingUser && !hasAvatar && freeAvatarTry === 0) {
-              console.log('⚠️ Mevcut kullanıcı avatar olmadan giriş yaptı');
               // Avatar prompt'u gösterme - kullanıcı deneme yapmak istediğinde otomatik gösterilecek
             }
             
             isFirstSnapshotRef.current = false; // Mark first load complete
           } else {
-            console.log('⏭️ Subsequent snapshot - preserving local state');
           }
           
           setLoadingAvatar(false);
@@ -13180,12 +13148,10 @@ const App = () => {
           
         } else {
           // Kullanıcı Firestore'da yok - yeni profil oluştur
-          console.log('🆕 Yeni kullanıcı, profil oluşturuluyor...');
           
           if (initialUserData) {
             db.collection('users').doc(userId).set(initialUserData)
               .then(() => {
-                console.log('✅ Yeni profil oluşturuldu');
                 setUser({
                   ...initialUserData,
                   createdAt: Date.now()
@@ -13198,7 +13164,6 @@ const App = () => {
               });
           } else {
             // initialUserData yok - sadece temel bilgilerle devam et
-            console.log('⚠️ initialUserData yok, temel profil oluşturuluyor');
             const basicProfile = {
               email: authUser.email,
               credits: 0,
@@ -13241,7 +13206,6 @@ const App = () => {
     
     // Cleanup - component unmount veya authUser değiştiğinde dinleyiciyi kaldır
     return () => {
-      console.log('🔌 Firestore listener unsubscribed');
       unsubscribe();
     };
   }, [authUser]);
@@ -13251,7 +13215,6 @@ const App = () => {
     if (!authUser?.uid || !db) return;
     
     const userId = authUser.uid;
-    console.log('👥 Loading following list...');
     
     const unsubscribe = db.collection('users').doc(userId).collection('following')
       .orderBy('followedAt', 'desc')
@@ -13272,7 +13235,6 @@ const App = () => {
               addedAt: data.followedAt?.toMillis?.() || Date.now()
             });
           });
-          console.log('✅ Following loaded:', followingList.length);
           setFriends(followingList);
         },
         (error) => {
@@ -13288,7 +13250,6 @@ const App = () => {
     if (!authUser?.uid || !db) return;
     
     const userId = authUser.uid;
-    console.log('📩 Loading follow requests...');
     
     const unsubscribe = db.collection('users').doc(userId).collection('followRequests')
       .orderBy('createdAt', 'desc')
@@ -13307,7 +13268,6 @@ const App = () => {
               createdAt: data.createdAt?.toMillis?.() || Date.now()
             });
           });
-          console.log('✅ Follow requests loaded:', requests.length);
           setFollowRequests(requests);
         },
         (error) => {
@@ -13338,7 +13298,6 @@ const App = () => {
               status: data.status
             });
           });
-          console.log('✅ Sent follow requests loaded:', requests.length);
           setSentFollowRequests(requests);
         },
         (error) => {
@@ -13354,7 +13313,6 @@ const App = () => {
     if (!authUser?.uid || !db) return;
     
     const userId = authUser.uid;
-    console.log('🔔 Loading notifications...');
     
     const unsubscribe = db.collection('users').doc(userId).collection('notifications')
       .orderBy('createdAt', 'desc')
@@ -13375,7 +13333,6 @@ const App = () => {
               createdAt: data.createdAt?.toMillis?.() || Date.now()
             });
           });
-          console.log('✅ Notifications loaded:', notifs.length);
           setNotifications(notifs);
         },
         (error) => {
@@ -13391,7 +13348,6 @@ const App = () => {
     if (!authUser?.uid || !db) return;
     
     const userId = authUser.uid;
-    console.log('💬 Loading chats...');
     
     const unsubscribe = db.collection('chats')
       .where('participants', 'array-contains', userId)
@@ -13422,7 +13378,6 @@ const App = () => {
                 };
               }
             } catch (e) {
-              console.log('Could not fetch avatar for', uid);
             }
           }
           
@@ -13447,7 +13402,6 @@ const App = () => {
           // Sort by lastMessageTime (client-side)
           chatsList.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
           
-          console.log('✅ Chats loaded:', chatsList.length);
           // Merge with existing local state to preserve loaded messages
           setDmChats(prev => {
             return chatsList.map(chat => {
@@ -13490,7 +13444,6 @@ const App = () => {
         });
       });
       
-      console.log('✅ Messages loaded:', messagesList.length, messagesList.map(m => ({ type: m.type, hasImage: !!m.image })));
       
       // Update dmChats with loaded messages
       setDmChats(prev => prev.map(c => 
@@ -13570,7 +13523,6 @@ const App = () => {
               baseAvatarDataUrl: avatarData.substring(0, 500000) // Store truncated backup (500KB max)
             }, { merge: true })
               .then(() => {
-                console.log('✅ User data saved to Firestore');
                 pendingSaveRef.current = false;
               })
               .catch(e => {
@@ -13583,7 +13535,6 @@ const App = () => {
           pendingSaveRef.current = true;
           db.collection('users').doc(userId).set(userData, { merge: true })
             .then(() => {
-              console.log('✅ User data saved (no avatar)');
               pendingSaveRef.current = false;
             })
             .catch(e => {
@@ -13604,11 +13555,9 @@ const App = () => {
       
       // Debounce: wait 1 second before saving
       closetSaveTimeoutRef.current = setTimeout(() => {
-        console.log('💾 Saving closet:', closet.length, 'items');
         pendingSaveRef.current = true;
         db.collection('users').doc(authUser.uid).update({ closet })
           .then(() => {
-            console.log('✅ Closet saved');
             pendingSaveRef.current = false;
           })
           .catch(e => {
@@ -13631,7 +13580,6 @@ const App = () => {
         pendingSaveRef.current = true;
         db.collection('users').doc(authUser.uid).update({ settings })
           .then(() => {
-            console.log('✅ Settings saved');
             pendingSaveRef.current = false;
           })
           .catch(e => {
@@ -13654,7 +13602,6 @@ const App = () => {
         pendingSaveRef.current = true;
         db.collection('users').doc(authUser.uid).update({ savedCombos })
           .then(() => {
-            console.log('✅ Saved combos saved');
             pendingSaveRef.current = false;
           })
           .catch(e => {
@@ -13677,7 +13624,6 @@ const App = () => {
         pendingSaveRef.current = true;
         db.collection('users').doc(authUser.uid).update({ favorites })
           .then(() => {
-            console.log('✅ Favorites saved');
             pendingSaveRef.current = false;
           })
           .catch(e => {
@@ -13700,7 +13646,6 @@ const App = () => {
         pendingSaveRef.current = true;
         db.collection('users').doc(authUser.uid).update({ tryHistory: tryHistory.slice(0, 30) })
           .then(() => {
-            console.log('✅ Try history saved');
             pendingSaveRef.current = false;
           })
           .catch(e => {
@@ -13727,7 +13672,6 @@ const App = () => {
   const addCustomClothing = async (item) => {
     // Add to local state - closet will be automatically saved via useEffect
     setCloset(prev => [...prev, { ...item, isCustom: true, addedAt: Date.now() }]);
-    console.log('👕 Custom clothing added:', item.name);
     // No need for separate Firestore save - the closet useEffect handles it
   };
 
@@ -13921,9 +13865,7 @@ const App = () => {
             const batch = db.batch();
             postsSnapshot.forEach(doc => batch.delete(doc.ref));
             await batch.commit();
-            console.log('✅ User posts deleted from Firestore');
           } catch (e) {
-            console.warn('⚠️ Posts delete error:', e);
           }
           
           // Delete user's comments from posts
@@ -13939,7 +13881,6 @@ const App = () => {
             });
             await batch.commit();
           } catch (e) {
-            console.warn('⚠️ Comments cleanup error:', e);
           }
           
           // Delete follows where user is involved
@@ -13950,9 +13891,7 @@ const App = () => {
             followsFromSnapshot.forEach(doc => batch.delete(doc.ref));
             followsToSnapshot.forEach(doc => batch.delete(doc.ref));
             await batch.commit();
-            console.log('✅ User follows deleted');
           } catch (e) {
-            console.warn('⚠️ Follows delete error:', e);
           }
         }
         
@@ -13972,9 +13911,7 @@ const App = () => {
             const combosList = await combosRef.listAll().catch(() => ({ items: [] }));
             await Promise.all(combosList.items.map(item => item.delete().catch(() => {})));
             
-            console.log('✅ User storage files deleted');
           } catch (e) {
-            console.warn('⚠️ Storage delete error:', e);
           }
         }
         
@@ -14031,7 +13968,6 @@ const App = () => {
               
               // Referral ödülünü tetikle (ilk avatar oluşturma)
               if (user?.referredBy && !user?.referralActivated) {
-                console.log('🎁 Triggering referral reward for first avatar...');
                 await triggerReferralReward();
                 
                 // Kullanıcının referralActivated durumunu güncelle
@@ -14135,7 +14071,7 @@ const App = () => {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand">
                 {(user.profilePhoto || user.baseAvatar) ? (
-                  <img src={user.profilePhoto || user.baseAvatar} className="w-full h-full object-cover" />
+                  <img src={user.profilePhoto || user.baseAvatar} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white">
                     <Icon name="user" size={20} />
@@ -14197,7 +14133,7 @@ const App = () => {
                 const newPost = {
                   id: Date.now(),
                   authorId: authUser?.uid,
-                  authorName: user?.username || user?.displayName || 'Kullanıcı',
+                  authorName: user?.displayName || user?.username || 'Kullanıcı',
                   authorUsername: user?.username,
                   authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
                   image: image,
@@ -14305,7 +14241,7 @@ const App = () => {
                     className="aspect-[3/4] rounded-xl overflow-hidden cursor-pointer hover:ring-2 ring-brand2 transition group"
                     onClick={() => onTryOnResult(item.image, item.items || [])}
                   >
-                    <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                    <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy" />
                   </div>
                 ))}
               </div>
@@ -14359,7 +14295,7 @@ const App = () => {
                 const newPost = {
                   id: Date.now(),
                   authorId: authUser?.uid,
-                  authorName: user?.username || user?.displayName || 'Kullanıcı',
+                  authorName: user?.displayName || user?.username || 'Kullanıcı',
                   authorUsername: user?.username,
                   authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
                   image: image,
@@ -14492,7 +14428,7 @@ const App = () => {
             const newPost = {
               id: postId,
               authorId: authUser.uid,
-              authorName: user?.username || user?.displayName || 'Kullanıcı',
+              authorName: user?.displayName || user?.username || 'Kullanıcı',
               authorUsername: user?.username || '',
               authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
               image: result.image, // Direkt kullan
@@ -14507,7 +14443,6 @@ const App = () => {
             
             // Firebase'e kaydet
             await db.collection('posts').doc(String(postId)).set(newPost);
-            console.log('✅ Post Firebase\'e kaydedildi');
             
             setResult({ open: false });
             setTab('social');
@@ -14755,7 +14690,7 @@ const App = () => {
               {dailyRecommendation.items.fullbody && (
                 <div className="glass rounded-2xl p-3 col-span-2">
                   <div className="flex items-center gap-3">
-                    <img src={dailyRecommendation.items.fullbody.image} className="w-20 h-20 rounded-xl object-cover ring-2 ring-brand" />
+                    <img src={dailyRecommendation.items.fullbody.image} className="w-20 h-20 rounded-xl object-cover ring-2 ring-brand" loading="lazy" />
                     <div>
                       <p className="text-xs text-brand">👗 {t('dressLabel')}</p>
                       <p className="font-semibold">{dailyRecommendation.items.fullbody.name}</p>
@@ -14766,14 +14701,14 @@ const App = () => {
               )}
               {dailyRecommendation.items.top && (
                 <div className="glass rounded-2xl p-3">
-                  <img src={dailyRecommendation.items.top.image} className="w-full aspect-square rounded-xl object-cover ring-2 ring-brand2 mb-2" />
+                  <img src={dailyRecommendation.items.top.image} className="w-full aspect-square rounded-xl object-cover ring-2 ring-brand2 mb-2" loading="lazy" />
                   <p className="text-xs text-brand2">👕 {t('topLabel')}</p>
                   <p className="font-semibold text-sm truncate">{dailyRecommendation.items.top.name}</p>
                 </div>
               )}
               {dailyRecommendation.items.bottom && (
                 <div className="glass rounded-2xl p-3">
-                  <img src={dailyRecommendation.items.bottom.image} className="w-full aspect-square rounded-xl object-cover ring-2 ring-accent mb-2" />
+                  <img src={dailyRecommendation.items.bottom.image} className="w-full aspect-square rounded-xl object-cover ring-2 ring-accent mb-2" loading="lazy" />
                   <p className="text-xs text-accent">👖 {t('bottomLabel')}</p>
                   <p className="font-semibold text-sm truncate">{dailyRecommendation.items.bottom.name}</p>
                 </div>
@@ -14781,7 +14716,7 @@ const App = () => {
               {dailyRecommendation.items.outerwear && (
                 <div className="glass rounded-2xl p-3 col-span-2">
                   <div className="flex items-center gap-3">
-                    <img src={dailyRecommendation.items.outerwear.image} className="w-20 h-20 rounded-xl object-cover ring-2 ring-blue-400" />
+                    <img src={dailyRecommendation.items.outerwear.image} className="w-20 h-20 rounded-xl object-cover ring-2 ring-blue-400" loading="lazy" />
                     <div>
                       <p className="text-xs text-blue-400">🧥 {t('outerwearLabel')}</p>
                       <p className="font-semibold">{dailyRecommendation.items.outerwear.name}</p>
@@ -14829,7 +14764,7 @@ const App = () => {
                 const newPost = {
                   id: Date.now(),
                   authorId: authUser?.uid,
-                  authorName: user?.username || user?.displayName || 'Kullanıcı',
+                  authorName: user?.displayName || user?.username || 'Kullanıcı',
                   authorUsername: user?.username,
                   authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
                   image: image,
