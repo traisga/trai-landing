@@ -1,16 +1,19 @@
 {
-"name": "trai-fashion",
-"version": "1.0.0",
-"private": true,
-"scripts": {
-"dev": "next dev",
-"build": "next build",
-"start": "next start"
-},
-"dependencies": {
-"next": "14.2.3",
-"react": "18.2.0",
-"react-dom": "18.2.0",
-"firebase": "10.7.1"
-}
+  "name": "trai-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "scrape": "node scraper.js",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "puppeteer": "^22.0.0"
+  }
 }
