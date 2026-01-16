@@ -10511,7 +10511,18 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         try {
           console.log('📤 Post görseli yükleniyor...');
           const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
-          await imageRef.putString(selectedImage, 'data_url');
+          
+          // data URL'den blob oluştur (content type doğru olsun)
+          const response = await fetch(selectedImage);
+          const blob = await response.blob();
+          
+          // Content type'ı kontrol et
+          const contentType = blob.type || 'image/png';
+          console.log('📤 Content type:', contentType, 'Size:', blob.size);
+          
+          // Metadata ile yükle
+          const metadata = { contentType: contentType };
+          await imageRef.put(blob, metadata);
           imageUrl = await imageRef.getDownloadURL();
           console.log('✅ Post görseli yüklendi:', imageUrl);
         } catch (uploadErr) {
@@ -14693,11 +14704,13 @@ const App = () => {
         user={user} 
         onClose={() => setShowSubscription(false)}
         onSubscribe={() => { setShowSubscription(false); setPaymentType('subscription'); setShowPayment(true); }}
-        onBuyTokens={(amount, type, price) => { 
+        onBuyCredits={(amount, type, price, clothingLimit, avatarRefresh) => { 
           setShowSubscription(false); 
           setPaymentType(type); 
           setTokenAmount(amount);
           setTokenPrice(price);
+          // clothingLimit ve avatarRefresh bilgilerini sakla
+          window.pendingPurchase = { clothingLimit, avatarRefresh };
           setShowPayment(true); 
         }}
         loading={paymentLoading}
