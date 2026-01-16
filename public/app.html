@@ -238,11 +238,7 @@
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-storage-compat.js"></script>
 
 <!-- Trendyol Products Database -->
-<script>
-    var script = document.createElement('script');
-    script.src = 'public/trendyol_products.js?v=' + new Date().getTime();
-    document.head.appendChild(script);
-</script>
+<script src="trendyol_products.js"></script>
 
 <script type="text/babel">
 const { useEffect, useMemo, useRef, useState } = React;
@@ -14565,27 +14561,12 @@ const App = () => {
           }
           
           try {
-            // Upload image to Firebase Storage first
-            let imageUrl = image;
-            if (image && image.startsWith('data:image') && storage) {
-              try {
-                const timestamp = Date.now();
-                const storageRef = storage.ref(`dm_images/${authUser.uid}/${timestamp}.jpg`);
-                const response = await fetch(image);
-                const blob = await response.blob();
-                await storageRef.put(blob);
-                imageUrl = await storageRef.getDownloadURL();
-                console.log('✅ DM image uploaded:', imageUrl);
-              } catch (uploadErr) {
-                console.warn('⚠️ Image upload failed, using original:', uploadErr);
-                // Hata durumunda orijinal image'ı kullan (data URL)
-                imageUrl = image;
-              }
-            }
+            // Storage'ı atla - direkt data URL kullan (CORS sorunu var)
+            const imageUrl = image;
             
             // imageUrl boşsa hata ver
             if (!imageUrl) {
-              setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel yüklenemedi' });
+              setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel bulunamadı' });
               return;
             }
             
@@ -14605,7 +14586,7 @@ const App = () => {
                 senderName: user?.displayName || user?.username || 'Kullanıcı',
                 recipientId,
                 type: 'combo',
-                image: imageUrl, // Now it's a proper URL
+                image: imageUrl,
                 items: (items || []).map(item => ({
                   id: item.id,
                   name: item.name,
