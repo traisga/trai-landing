@@ -44,7 +44,7 @@ jobs:
       
       # 5. Scraper'ı çalıştır
       - name: Run scraper
-        run: node scraper.js
+        run: node scraper-fixed.js
         env:
           CI: true
       
