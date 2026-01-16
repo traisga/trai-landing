@@ -16,7 +16,7 @@
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:;
     font-src 'self' https://fonts.gstatic.com data:;
     img-src 'self' data: blob: https: *;
-    connect-src 'self' https: wss:;
+    connect-src 'self' https: wss: data: blob:;
   ">
   
   <!-- Security: Prevent MIME sniffing -->
@@ -11121,25 +11121,6 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   <p className="text-xs text-slate-500">Dijital ikizini göster</p>
                 </div>
               </button>
-
-              {/* Upload */}
-              <label className="w-full glass rounded-2xl p-4 flex items-center justify-center gap-3 cursor-pointer hover:bg-slate-100 transition">
-                <Icon name="upload" size={20} className="text-brand2" />
-                <span className="font-semibold">Galeriden Yükle</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (ev) => setSelectedImage(ev.target?.result);
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-              </label>
             </div>
           ) : (
             <>
