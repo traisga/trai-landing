@@ -14459,8 +14459,9 @@ const App = () => {
                 const response = await fetch(combo.image);
                 const blob = await response.blob();
                 
-                // Upload
-                await storageRef.put(blob);
+                // Upload with metadata
+                const metadata = { contentType: blob.type || 'image/png' };
+                await storageRef.put(blob, metadata);
                 imageUrl = await storageRef.getDownloadURL();
                 console.log('✅ Combo image uploaded to Storage');
               } catch (uploadErr) {
@@ -14494,27 +14495,61 @@ const App = () => {
             setToast({ open: true, type: 'error', title: 'Hata', message: 'Kombin kaydedilemedi' });
           }
         }}
-        onShareToFeed={() => {
-          // Sosyal akışa paylaş
-          const newPost = {
-            id: Date.now(),
-            authorId: authUser?.uid,
-            authorName: user?.username || user?.displayName || 'Kullanıcı',
-            authorUsername: user?.username,
-            authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
-            image: result.image, // SocialFeed 'image' alanını kullanıyor
-            items: result.items || (result.item ? [result.item] : []),
-            caption: '',
-            askFeedback: false,
-            visibility: 'public',
-            likes: [],
-            comments: [],
-            createdAt: Date.now()
-          };
-          setPosts(prev => [newPost, ...prev]);
-          setResult({ open: false });
-          setTab('social');
-          setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Kombinin sosyal akışta yayınlandı' });
+        onShareToFeed={async () => {
+          // Sosyal akışa paylaş - Firebase'e kaydet
+          if (!authUser?.uid || !db) {
+            setToast({ open: true, type: 'error', title: 'Hata', message: 'Giriş yapılmamış' });
+            return;
+          }
+          
+          try {
+            const postId = Date.now();
+            let imageUrl = result.image;
+            
+            // Storage'a yükle
+            if (result.image && result.image.startsWith('data:') && storage) {
+              try {
+                console.log('📤 Post görseli yükleniyor...');
+                const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
+                const response = await fetch(result.image);
+                const blob = await response.blob();
+                const metadata = { contentType: blob.type || 'image/png' };
+                await imageRef.put(blob, metadata);
+                imageUrl = await imageRef.getDownloadURL();
+                console.log('✅ Post görseli yüklendi');
+              } catch (uploadErr) {
+                console.warn('⚠️ Upload failed, using original:', uploadErr);
+                imageUrl = result.image;
+              }
+            }
+            
+            const newPost = {
+              id: postId,
+              authorId: authUser.uid,
+              authorName: user?.username || user?.displayName || 'Kullanıcı',
+              authorUsername: user?.username || '',
+              authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
+              image: imageUrl,
+              items: result.items || (result.item ? [result.item] : []),
+              caption: '',
+              askFeedback: false,
+              visibility: 'public',
+              likes: [],
+              comments: [],
+              createdAt: postId
+            };
+            
+            // Firebase'e kaydet
+            await db.collection('posts').doc(String(postId)).set(newPost);
+            console.log('✅ Post Firebase\'e kaydedildi');
+            
+            setResult({ open: false });
+            setTab('social');
+            setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Kombinin sosyal akışta yayınlandı' });
+          } catch (err) {
+            console.error('Share to feed error:', err);
+            setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı' });
+          }
         }}
         onShareToDM={() => {
           // DM Share Modal'ı aç
