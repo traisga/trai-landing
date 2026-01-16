@@ -1,22 +1,22 @@
 name: 4 Saatlik Ürün Güncelleme
 
 on:
-  # 1. HER 4 SAATTE BİR OTOMATİK ÇALIŞIR
-  # (UTC saatiyle: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00)
-  # (Türkiye saatiyle: 03:00, 07:00, 11:00, 15:00, 19:00, 23:00)
+  # 1. HER 4 SAATTE BİR OTOMATİK (Bu aynen kalsın)
   schedule:
     - cron: '0 */4 * * *'
 
-  # 2. SEN KOD YÜKLEDİĞİNDE ÇALIŞIR (Test için)
+  # 2. SADECE SCRAPER DOSYASI DEĞİŞİRSE ÇALIŞ (FİLTRE)
   push:
     branches:
       - main
       - master
+    paths:
+      - 'scraper-fixed.js'               # <-- Sadece bu dosya değişirse tetikle
+      - '.github/workflows/daily-update.yml' # <-- Veya bu ayar dosyası değişirse
 
-  # 3. GITHUB SİTESİNDEKİ "RUN" BUTONUNU AKTİF EDER
+  # 3. MANUEL BUTON (Aynen kalsın)
   workflow_dispatch:
 
-# Git'e dosya yükleyebilmesi için izin
 permissions:
   contents: write
 
@@ -25,33 +25,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Adım 1: Senin kodlarını GitHub sunucusuna indir
-    - name: Depoyu Çek (Checkout)
+    - name: Depoyu Çek
       uses: actions/checkout@v3
 
-    # Adım 2: Node.js (Javascript motoru) kur
     - name: Node.js Kurulumu
       uses: actions/setup-node@v3
       with:
         node-version: '18'
 
-    # Adım 3: Gerekli paketleri (Puppeteer vb.) yükle
     - name: Paketleri Yükle
       run: npm install
 
-    # Adım 4: Scraper Kodunu Çalıştır
     - name: Scraper'ı Başlat
       run: node scraper-fixed.js
-      # Not: 'scraper-fixed.js' dosyanın ana dizinde olduğundan emin ol.
 
-    # Adım 5: Oluşan dosyaları (js ve json) GitHub'a geri yükle
-    - name: Değişiklikleri Kaydet ve Gönder (Push)
+    - name: Sonuçları Kaydet
       run: |
         git config --global user.name 'Otomatik Bot'
         git config --global user.email 'bot@noreply.github.com'
-        
-        # Public klasöründeki yeni dosyaları ekle
         git add public/trendyol_products.js public/trendyol_products.json
-        
-        # Eğer değişiklik varsa commit at ve pushla, yoksa hata verme
-        git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 4 Saatlik Otomatik Güncelleme" && git push)
+        # Değişiklik varsa commit at, yoksa hata verme
+        git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Otomatik Güncelleme" && git push)
