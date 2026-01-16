@@ -1,20 +1,18 @@
 name: 4 Saatlik Ürün Güncelleme
 
 on:
-  # 1. HER 4 SAATTE BİR OTOMATİK (Bu aynen kalsın)
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 */4 * * *' # 4 Saatte bir çalış
 
-  # 2. SADECE SCRAPER DOSYASI DEĞİŞİRSE ÇALIŞ (FİLTRE)
   push:
     branches:
       - main
       - master
     paths:
-      - 'scraper-fixed.js'               # <-- Sadece bu dosya değişirse tetikle
-      - '.github/workflows/daily-update.yml' # <-- Veya bu ayar dosyası değişirse
+      - 'scraper-fixed.js'
+      - '.github/workflows/daily-update.yml'
+      - 'package.json' # Artık package.json değişince de çalışsın
 
-  # 3. MANUEL BUTON (Aynen kalsın)
   workflow_dispatch:
 
 permissions:
@@ -33,8 +31,18 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Paketleri Yükle
-      run: npm install
+    # [YENİ ADIM] Chrome için gerekli Linux sistem dosyalarını kur
+    # Bu adım olmazsa Puppeteer "Browser açılamadı" hatası verir.
+    - name: Linux Kütüphanelerini Yükle
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
+
+    # [YENİ ADIM] package-lock.json'ı sil ve Temiz Kurulum Yap
+    - name: Paketleri Zorla Yükle
+      run: |
+        rm -f package-lock.json
+        npm install
 
     - name: Scraper'ı Başlat
       run: node scraper-fixed.js
@@ -44,5 +52,4 @@ jobs:
         git config --global user.name 'Otomatik Bot'
         git config --global user.email 'bot@noreply.github.com'
         git add public/trendyol_products.js public/trendyol_products.json
-        # Değişiklik varsa commit at, yoksa hata verme
         git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Otomatik Güncelleme" && git push)
