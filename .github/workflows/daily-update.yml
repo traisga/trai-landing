@@ -1,0 +1,37 @@
+name: Günlük Ürün Güncelleme
+
+on:
+  schedule:
+    # Her gün saat 04:00 ve 16:00'da (Türkiye saatiyle yaklaşık 07:00 ve 19:00) çalışır
+    - cron: '0 4,16 * * *'
+  workflow_dispatch: # GitHub sitesinden butona basarak elle çalıştırmak istersen
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Depoyu Çek (Checkout)
+      uses: actions/checkout@v3
+
+    - name: Node.js Kurulumu
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Paketleri Yükle
+      run: npm install
+
+    - name: Scraper'ı Çalıştır
+      run: node scraper-fixed.js
+      # Dosya adının 'scraper-fixed.js' olduğundan emin ol!
+
+    - name: Değişiklikleri Kaydet ve Gönder (Push)
+      run: |
+        git config --global user.name 'Otomatik Bot'
+        git config --global user.email 'bot@noreply.github.com'
+        git add public/trendyol_products.js public/trendyol_products.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Günlük Fiyat Güncellemesi" && git push)
