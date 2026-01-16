@@ -10504,43 +10504,15 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     
     try {
       const postId = Date.now();
-      let imageUrl = selectedImage;
       
-      // 1. Önce görseli Storage'a yükle
-      if (selectedImage.startsWith('data:') && storage) {
-        try {
-          console.log('📤 Post görseli yükleniyor...');
-          const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
-          
-          // data URL'den blob oluştur (content type doğru olsun)
-          const response = await fetch(selectedImage);
-          const blob = await response.blob();
-          
-          // Content type'ı kontrol et
-          const contentType = blob.type || 'image/png';
-          console.log('📤 Content type:', contentType, 'Size:', blob.size);
-          
-          // Metadata ile yükle
-          const metadata = { contentType: contentType };
-          await imageRef.put(blob, metadata);
-          imageUrl = await imageRef.getDownloadURL();
-          console.log('✅ Post görseli yüklendi:', imageUrl);
-        } catch (uploadErr) {
-          console.error('❌ Post görsel yükleme hatası:', uploadErr);
-          setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel yüklenemedi: ' + uploadErr.message });
-          setPosting(false);
-          return;
-        }
-      }
-      
-      // 2. Post objesini oluştur
+      // Post objesini oluştur (Storage'ı atla - CORS sorunu var)
       const newPost = {
         id: postId,
         authorId: authUser.uid,
         authorName: user?.username || user?.displayName || 'Kullanıcı',
         authorUsername: user?.username || '',
         authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
-        image: imageUrl,
+        image: selectedImage, // Direkt data URL kullan
         caption: caption,
         askFeedback: askFeedback,
         visibility: visibility,
@@ -10549,12 +10521,12 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         createdAt: postId
       };
       
-      // 3. Firebase'e kaydet
+      // Firebase'e kaydet
       console.log('💾 Post Firebase\'e kaydediliyor...', postId);
       await db.collection('posts').doc(String(postId)).set(newPost);
       console.log('✅ Post Firebase\'e kaydedildi:', postId);
       
-      // 4. Başarılı - UI'ı temizle
+      // Başarılı - UI'ı temizle
       setSelectedImage(null);
       setCaption('');
       setAskFeedback(false);
@@ -10607,12 +10579,22 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       createdAt: Date.now()
     };
     
+    // Local state güncelle
     setPosts(prev => prev.map(p => {
       if (p.id === postId) {
         return { ...p, comments: [...p.comments, newComment] };
       }
       return p;
     }));
+    
+    // selectedPost'u da güncelle (modal açıksa)
+    if (selectedPost && selectedPost.id === postId) {
+      setSelectedPost(prev => ({
+        ...prev,
+        comments: [...prev.comments, newComment]
+      }));
+    }
+    
     setComment('');
     
     // Firebase'e kaydet
@@ -11895,8 +11877,8 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
 
       {/* Post Detail Modal */}
       {selectedPost && (
-        <div className="fixed inset-0 z-[90] bg-black/90 flex flex-col slide-up">
-          <div className="p-4 flex items-center justify-between border-b border-slate-200">
+        <div className="fixed inset-0 z-[90] bg-dark flex flex-col slide-up">
+          <div className="p-4 flex items-center justify-between border-b border-slate-200 bg-surface">
             <button onClick={() => setSelectedPost(null)} className="p-2 -ml-2">
               <Icon name="chevronLeft" size={24} />
             </button>
@@ -11904,22 +11886,46 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             <div className="w-10" />
           </div>
           
-          <div className="flex-1 overflow-y-auto custom-scroll">
-            <PostCard post={selectedPost} showActions={true} />
+          <div className="flex-1 overflow-y-auto custom-scroll bg-dark">
+            {/* Post görseli - sınırlı boyut */}
+            <div className="max-h-[50vh] overflow-hidden">
+              <img src={selectedPost.image} className="w-full object-contain max-h-[50vh]" />
+            </div>
+            
+            {/* Post bilgileri */}
+            <div className="p-4 bg-surface">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand">
+                  {selectedPost.authorAvatar ? (
+                    <img src={selectedPost.authorAvatar} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{selectedPost.authorName}</p>
+                  <p className="text-xs text-slate-500">@{selectedPost.authorUsername}</p>
+                </div>
+              </div>
+              {selectedPost.caption && (
+                <p className="text-sm text-ink mb-2">{selectedPost.caption}</p>
+              )}
+              <p className="text-xs text-slate-400">{getTimeAgo(selectedPost.createdAt)}</p>
+            </div>
             
             {/* Comments */}
-            <div className="p-4 space-y-3">
-              <h4 className="font-semibold text-sm">{t('comments')}</h4>
+            <div className="p-4 space-y-3 bg-surface mt-2">
+              <h4 className="font-semibold text-sm text-ink">{t('comments')}</h4>
               {selectedPost.comments.length === 0 ? (
                 <p className="text-sm text-slate-400">{t('noCommentsYet')}</p>
               ) : (
                 selectedPost.comments.map(c => (
                   <div key={c.id} className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-200/60 flex items-center justify-center text-xs">👤</div>
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs">👤</div>
                     <div className="flex-1">
                       <p className="text-sm">
-                        <span className="font-semibold">{c.authorName}</span>{' '}
-                        <span className="text-slate-700">{c.text}</span>
+                        <span className="font-semibold text-ink">{c.authorName}</span>{' '}
+                        <span className="text-ink">{c.text}</span>
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">{getTimeAgo(c.createdAt)}</p>
                     </div>
@@ -11930,7 +11936,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
           </div>
 
           {/* Comment Input */}
-          <div className="p-4 border-t border-slate-200 flex gap-3 safe-bottom">
+          <div className="p-4 border-t border-slate-200 flex gap-3 safe-bottom bg-surface">
             <input
               type="text"
               value={comment}
@@ -14447,34 +14453,11 @@ const App = () => {
         onAddToCart={addToCart}
         onSaveCombo={async (combo) => {
           try {
-            let imageUrl = combo.image;
-            
-            // If image is base64, upload to Firebase Storage
-            if (combo.image && combo.image.startsWith('data:image') && storage && authUser?.uid) {
-              try {
-                const comboId = Date.now();
-                const storageRef = storage.ref(`combos/${authUser.uid}/${comboId}.png`);
-                
-                // Convert base64 to blob
-                const response = await fetch(combo.image);
-                const blob = await response.blob();
-                
-                // Upload with metadata
-                const metadata = { contentType: blob.type || 'image/png' };
-                await storageRef.put(blob, metadata);
-                imageUrl = await storageRef.getDownloadURL();
-                console.log('✅ Combo image uploaded to Storage');
-              } catch (uploadErr) {
-                console.warn('⚠️ Combo image upload failed, keeping original:', uploadErr);
-                // Hata durumunda orijinal görsel kullanılsın
-                imageUrl = combo.image;
-              }
-            }
-            
+            // Storage'ı atla - direkt data URL kullan
             const newCombo = {
               id: Date.now(),
               name: `Kombin ${savedCombos.length + 1}`,
-              image: imageUrl,
+              image: combo.image, // Direkt kullan
               items: (combo.items || []).map(item => ({
                 id: item.id,
                 name: item.name,
@@ -14504,32 +14487,15 @@ const App = () => {
           
           try {
             const postId = Date.now();
-            let imageUrl = result.image;
             
-            // Storage'a yükle
-            if (result.image && result.image.startsWith('data:') && storage) {
-              try {
-                console.log('📤 Post görseli yükleniyor...');
-                const imageRef = storage.ref().child(`posts/${authUser.uid}/${postId}.png`);
-                const response = await fetch(result.image);
-                const blob = await response.blob();
-                const metadata = { contentType: blob.type || 'image/png' };
-                await imageRef.put(blob, metadata);
-                imageUrl = await imageRef.getDownloadURL();
-                console.log('✅ Post görseli yüklendi');
-              } catch (uploadErr) {
-                console.warn('⚠️ Upload failed, using original:', uploadErr);
-                imageUrl = result.image;
-              }
-            }
-            
+            // Storage'ı atla - direkt data URL kullan
             const newPost = {
               id: postId,
               authorId: authUser.uid,
               authorName: user?.username || user?.displayName || 'Kullanıcı',
               authorUsername: user?.username || '',
               authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
-              image: imageUrl,
+              image: result.image, // Direkt kullan
               items: result.items || (result.item ? [result.item] : []),
               caption: '',
               askFeedback: false,
