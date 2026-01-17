@@ -3700,22 +3700,45 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     // Simulate API check delay
     await new Promise(r => setTimeout(r, 500));
     
-    // Check Firestore for existing username
-    if (db) {
-      try {
-        const snapshot = await db.collection('usernames').doc(name.toLowerCase()).get();
-        if (snapshot.exists) {
-          setUsernameStatus({ checking: false, available: false, error: 'Bu kullanıcı adı alınmış' });
-        } else {
-          setUsernameStatus({ checking: false, available: true, error: null });
+    // Try to check Firestore, but don't block if it fails
+    try {
+      if (db) {
+        // Check usernames collection first (if exists)
+        try {
+          const usernameDoc = await db.collection('usernames').doc(name.toLowerCase()).get();
+          if (usernameDoc.exists) {
+            setUsernameStatus({ checking: false, available: false, error: 'Bu kullanıcı adı alınmış' });
+            return;
+          }
+        } catch (e) {
+          // usernames collection'a erişilemiyorsa users'dan kontrol et
+          console.log('usernames collection check failed, trying users query');
         }
-      } catch (e) {
-        console.error('Username check error:', e);
-        setUsernameStatus({ checking: false, available: false, error: 'Kontrol yapılamadı, tekrar deneyin' });
+        
+        // Also check users collection with query
+        try {
+          const usersSnapshot = await db.collection('users')
+            .where('usernameLower', '==', name.toLowerCase())
+            .limit(1)
+            .get();
+          
+          if (!usersSnapshot.empty) {
+            setUsernameStatus({ checking: false, available: false, error: 'Bu kullanıcı adı alınmış' });
+            return;
+          }
+        } catch (e) {
+          console.log('users query failed:', e.code);
+        }
       }
-    } else {
-      // db yoksa kayıt yapılamaz
-      setUsernameStatus({ checking: false, available: false, error: 'Bağlantı hatası, sayfayı yenileyin' });
+      
+      // If we get here without finding a match, username is available
+      // (or we couldn't check, so we'll let registration handle it)
+      setUsernameStatus({ checking: false, available: true, error: null });
+      
+    } catch (e) {
+      console.error('Username check error:', e);
+      // Format kontrolünden geçtiyse kabul et - kayıt sırasında zaten kontrol edilecek
+      setUsernameStatus({ checking: false, available: true, error: null });
     }
   };
 
@@ -3752,8 +3775,9 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     setEmailStatus({ checking: true, available: null, error: null });
     
     // Check with Firebase Auth - try to fetch sign-in methods
-    if (auth) {
+    if (auth && FIREBASE_OK) {
       try {
+        // fetchSignInMethodsForEmail kontrolü
         const methods = await auth.fetchSignInMethodsForEmail(emailInput);
         if (methods && methods.length > 0) {
           setEmailStatus({ checking: false, available: false, error: 'Bu e-posta adresi zaten kullanılıyor' });
@@ -3764,14 +3788,18 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
         // Invalid email format or other error
         if (e.code === 'auth/invalid-email') {
           setEmailStatus({ checking: false, available: false, error: 'Geçersiz e-posta adresi' });
+        } else if (e.code === 'auth/too-many-requests') {
+          // Rate limited - email'i geçerli kabul et, kayıt sırasında kontrol edilecek
+          setEmailStatus({ checking: false, available: true, error: null });
         } else {
-          console.error('Email check error:', e);
-          setEmailStatus({ checking: false, available: false, error: 'Kontrol yapılamadı, tekrar deneyin' });
+          console.error('Email check error:', e.code, e.message);
+          // Hata durumunda email'i kabul et, kayıt sırasında Firebase zaten kontrol edecek
+          setEmailStatus({ checking: false, available: true, error: null });
         }
       }
     } else {
-      // auth yoksa kayıt yapılamaz
-      setEmailStatus({ checking: false, available: false, error: 'Bağlantı hatası, sayfayı yenileyin' });
+      // Firebase yoksa format kontrolünden geçtiyse kabul et
+      setEmailStatus({ checking: false, available: true, error: null });
     }
   };
 
@@ -10393,9 +10421,9 @@ const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed
         </div>
       </div>
       
-      {/* Image container - fills available space */}
+      {/* Image container - limited height for better view */}
       <div 
-        className="flex-1 overflow-hidden relative flex items-center justify-center bg-slate-950"
+        className="flex-1 overflow-hidden relative flex items-center justify-center bg-slate-950 max-h-[55vh]"
         onWheel={handleWheel}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -10405,7 +10433,7 @@ const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed
         <img 
           ref={imageRef}
           src={image} 
-          className="max-w-full max-h-full object-contain rounded-lg transition-transform duration-100"
+          className="max-w-full max-h-[50vh] object-contain rounded-lg transition-transform duration-100"
           style={{ 
             transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
             cursor: zoom > 1 ? 'grab' : 'zoom-in'
@@ -11230,7 +11258,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         </div>
 
         {/* Image */}
-        <div className="aspect-[3/4] relative">
+        <div className="aspect-[4/5] relative max-h-[50vh]">
           <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
           <div className="absolute bottom-2 right-2 flex gap-2">
             <span className="text-xs bg-slate-900/50 backdrop-blur px-2 py-1 rounded-lg">
@@ -11416,7 +11444,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             <>
               {/* Preview */}
               <div className="relative">
-                <div className="aspect-[3/4] rounded-2xl overflow-hidden">
+                <div className="aspect-[4/5] max-h-[40vh] rounded-2xl overflow-hidden mx-auto">
                   <img src={selectedImage} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <button
