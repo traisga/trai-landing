@@ -3697,48 +3697,24 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     
     setUsernameStatus({ checking: true, available: null, error: null });
     
-    // Simulate API check delay
-    await new Promise(r => setTimeout(r, 500));
+    // Small delay for UX
+    await new Promise(r => setTimeout(r, 300));
     
-    // Try to check Firestore, but don't block if it fails
     try {
       if (db) {
-        // Check usernames collection first (if exists)
-        try {
-          const usernameDoc = await db.collection('usernames').doc(name.toLowerCase()).get();
-          if (usernameDoc.exists) {
-            setUsernameStatus({ checking: false, available: false, error: 'Bu kullanıcı adı alınmış' });
-            return;
-          }
-        } catch (e) {
-          // usernames collection'a erişilemiyorsa users'dan kontrol et
-          console.log('usernames collection check failed, trying users query');
+        // Check usernames collection (anonim okuma izni var)
+        const usernameDoc = await db.collection('usernames').doc(name.toLowerCase()).get();
+        if (usernameDoc.exists) {
+          setUsernameStatus({ checking: false, available: false, error: 'Bu kullanıcı adı alınmış' });
+        } else {
+          setUsernameStatus({ checking: false, available: true, error: null });
         }
-        
-        // Also check users collection with query
-        try {
-          const usersSnapshot = await db.collection('users')
-            .where('usernameLower', '==', name.toLowerCase())
-            .limit(1)
-            .get();
-          
-          if (!usersSnapshot.empty) {
-            setUsernameStatus({ checking: false, available: false, error: 'Bu kullanıcı adı alınmış' });
-            return;
-          }
-        } catch (e) {
-          console.log('users query failed:', e.code);
-        }
+      } else {
+        setUsernameStatus({ checking: false, available: null, error: 'Bağlantı hatası' });
       }
-      
-      // If we get here without finding a match, username is available
-      // (or we couldn't check, so we'll let registration handle it)
-      setUsernameStatus({ checking: false, available: true, error: null });
-      
     } catch (e) {
-      console.error('Username check error:', e);
-      // Format kontrolünden geçtiyse kabul et - kayıt sırasında zaten kontrol edilecek
-      setUsernameStatus({ checking: false, available: true, error: null });
+      console.error('Username check error:', e.code, e.message);
+      setUsernameStatus({ checking: false, available: null, error: 'Kontrol edilemedi' });
     }
   };
 
@@ -3774,32 +3750,30 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     
     setEmailStatus({ checking: true, available: null, error: null });
     
-    // Check with Firebase Auth - try to fetch sign-in methods
-    if (auth && FIREBASE_OK) {
-      try {
-        // fetchSignInMethodsForEmail kontrolü
+    // Small delay for UX
+    await new Promise(r => setTimeout(r, 300));
+    
+    try {
+      if (auth) {
+        // Firebase Auth ile email kontrolü (anonim erişim mümkün)
         const methods = await auth.fetchSignInMethodsForEmail(emailInput);
         if (methods && methods.length > 0) {
           setEmailStatus({ checking: false, available: false, error: 'Bu e-posta adresi zaten kullanılıyor' });
         } else {
           setEmailStatus({ checking: false, available: true, error: null });
         }
-      } catch (e) {
-        // Invalid email format or other error
-        if (e.code === 'auth/invalid-email') {
-          setEmailStatus({ checking: false, available: false, error: 'Geçersiz e-posta adresi' });
-        } else if (e.code === 'auth/too-many-requests') {
-          // Rate limited - email'i geçerli kabul et, kayıt sırasında kontrol edilecek
-          setEmailStatus({ checking: false, available: true, error: null });
-        } else {
-          console.error('Email check error:', e.code, e.message);
-          // Hata durumunda email'i kabul et, kayıt sırasında Firebase zaten kontrol edecek
-          setEmailStatus({ checking: false, available: true, error: null });
-        }
+      } else {
+        setEmailStatus({ checking: false, available: null, error: 'Bağlantı hatası' });
       }
-    } else {
-      // Firebase yoksa format kontrolünden geçtiyse kabul et
-      setEmailStatus({ checking: false, available: true, error: null });
+    } catch (e) {
+      if (e.code === 'auth/invalid-email') {
+        setEmailStatus({ checking: false, available: false, error: 'Geçersiz e-posta adresi' });
+      } else if (e.code === 'auth/too-many-requests') {
+        setEmailStatus({ checking: false, available: null, error: 'Çok fazla deneme, biraz bekleyin' });
+      } else {
+        console.error('Email check error:', e.code, e.message);
+        setEmailStatus({ checking: false, available: null, error: 'Kontrol edilemedi' });
+      }
     }
   };
 
@@ -4190,13 +4164,16 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
                   {!usernameStatus.checking && usernameStatus.available === false && (
                     <Icon name="x" size={18} className="text-red-400" />
                   )}
+                  {!usernameStatus.checking && usernameStatus.available === null && usernameStatus.error && (
+                    <Icon name="alertCircle" size={18} className="text-amber-400" />
+                  )}
                 </div>
               </div>
               {/* Username feedback */}
               {username.length > 0 && (
                 <div className="mt-1.5">
                   {usernameStatus.error ? (
-                    <p className="text-xs text-red-400">{usernameStatus.error}</p>
+                    <p className={`text-xs ${usernameStatus.available === null ? 'text-amber-400' : 'text-red-400'}`}>{usernameStatus.error}</p>
                   ) : usernameStatus.available ? (
                     <p className="text-xs text-green-400">@{username} kullanılabilir!</p>
                   ) : username.length < 3 ? (
@@ -4245,6 +4222,9 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
                   {!emailStatus.checking && emailStatus.available === false && (
                     <Icon name="x" size={18} className="text-red-400" />
                   )}
+                  {!emailStatus.checking && emailStatus.available === null && emailStatus.error && (
+                    <Icon name="alertCircle" size={18} className="text-amber-400" />
+                  )}
                 </div>
               )}
             </div>
@@ -4252,7 +4232,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             {mode === 'register' && email.length > 0 && (
               <div className="mt-1.5">
                 {emailStatus.error ? (
-                  <p className="text-xs text-red-400">{emailStatus.error}</p>
+                  <p className={`text-xs ${emailStatus.available === null ? 'text-amber-400' : 'text-red-400'}`}>{emailStatus.error}</p>
                 ) : emailStatus.available ? (
                   <p className="text-xs text-green-400">E-posta kullanılabilir ✓</p>
                 ) : null}
@@ -4376,7 +4356,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         )}
         
-        <button type="button" onClick={(e) => submit(e)} disabled={busy || (mode === 'register' && (!requiredConsentsOk || passErrors.length > 0 || !usernameStatus.available || emailStatus.available === false))} className="w-full btn-primary py-4 rounded-2xl font-bold disabled:opacity-50 mb-4">
+        <button type="button" onClick={(e) => submit(e)} disabled={busy || (mode === 'register' && (!requiredConsentsOk || passErrors.length > 0 || usernameStatus.available !== true || emailStatus.available !== true || usernameStatus.checking || emailStatus.checking))} className="w-full btn-primary py-4 rounded-2xl font-bold disabled:opacity-50 mb-4">
           {busy ? <span className="flex items-center justify-center gap-2"><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t('processing')}</span> : (mode === 'login' ? t('login') : t('register'))}
         </button>
         
