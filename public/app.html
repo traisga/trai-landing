@@ -3249,15 +3249,22 @@ const BRANDS = (() => {
   // Jenerik/atlanacak marka isimleri
   const genericBrands = ['trendyol collection', 'diğer', 'other', 'genel', 'general', 'bilinmeyen', 'unknown'];
   
-  // Extract unique brands from products
+  // Extract unique brands from products - use brandName as key for better matching
   ALL_PRODUCTS.forEach(p => {
-    const brandId = p.brandId || 'other';
     const brandName = p.brandName || 'Diğer';
     
     // Jenerik markaları atla
     if (genericBrands.includes(brandName.toLowerCase())) {
       return;
     }
+    
+    // Generate consistent brandId from brandName
+    const brandId = brandName.toLowerCase()
+      .replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u')
+      .replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/ı/g, 'i')
+      .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
     
     if (!brandMap.has(brandId)) {
       brandMap.set(brandId, { 
@@ -3279,8 +3286,8 @@ const BRANDS = (() => {
     return a.name.localeCompare(b.name, 'tr');
   });
   
-  // Sadece en az 2 ürünü olan markaları göster
-  const filteredBrands = brands.filter(b => b.count >= 2);
+  // Tüm markaları göster (minimum 1 ürün yeterli)
+  const filteredBrands = brands.filter(b => b.count >= 1);
   
   if (filteredBrands.length > 0) {
   }
@@ -3754,17 +3761,44 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     await new Promise(r => setTimeout(r, 300));
     
     try {
-      if (auth) {
-        // Firebase Auth ile email kontrolü (anonim erişim mümkün)
-        const methods = await auth.fetchSignInMethodsForEmail(emailInput);
-        if (methods && methods.length > 0) {
-          setEmailStatus({ checking: false, available: false, error: 'Bu e-posta adresi zaten kullanılıyor' });
-        } else {
-          setEmailStatus({ checking: false, available: true, error: null });
+      // Method 1: Check users collection in Firestore (more reliable)
+      if (db) {
+        try {
+          const usersSnapshot = await db.collection('users')
+            .where('email', '==', emailInput)
+            .limit(1)
+            .get();
+          
+          if (!usersSnapshot.empty) {
+            setEmailStatus({ checking: false, available: false, error: 'Bu e-posta adresi zaten kullanılıyor' });
+            return;
+          }
+        } catch (e) {
+          console.log('Users collection email check failed:', e.code);
+          // Continue to Firebase Auth check
         }
-      } else {
-        setEmailStatus({ checking: false, available: null, error: 'Bağlantı hatası' });
       }
+      
+      // Method 2: Firebase Auth check (backup)
+      if (auth) {
+        try {
+          const methods = await auth.fetchSignInMethodsForEmail(emailInput);
+          if (methods && methods.length > 0) {
+            setEmailStatus({ checking: false, available: false, error: 'Bu e-posta adresi zaten kullanılıyor' });
+            return;
+          }
+        } catch (e) {
+          if (e.code === 'auth/invalid-email') {
+            setEmailStatus({ checking: false, available: false, error: 'Geçersiz e-posta adresi' });
+            return;
+          }
+          console.log('Firebase Auth email check failed:', e.code);
+        }
+      }
+      
+      // If both methods pass, email is available
+      setEmailStatus({ checking: false, available: true, error: null });
+      
     } catch (e) {
       if (e.code === 'auth/invalid-email') {
         setEmailStatus({ checking: false, available: false, error: 'Geçersiz e-posta adresi' });
@@ -4974,8 +5008,8 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
         <img src={product.image} alt="" crossOrigin="anonymous" className={`w-full h-full object-cover transition-opacity ${loaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setLoaded(true)} loading="lazy" />
         <div className="absolute top-2 left-2 flex gap-1">
-          <div className={`badge px-2 py-1 rounded-lg text-[10px] font-bold ${isFeatured ? 'bg-brand' : ''}`}>{product.brandName}</div>
-          {isFeatured && <div className="bg-accent/90 px-1.5 py-1 rounded-lg text-[9px] font-bold">✨</div>}
+          <div className={`px-2 py-1 rounded-lg text-[10px] font-bold shadow-sm ${isFeatured ? 'bg-brand text-white' : 'bg-white/95 text-slate-700 backdrop-blur-sm'}`}>{product.brandName}</div>
+          {isFeatured && <div className="bg-accent/90 px-1.5 py-1 rounded-lg text-[9px] font-bold text-white">✨</div>}
         </div>
         {isInCloset && <div className="absolute top-2 right-2 bg-green-500/80 p-1.5 rounded-lg"><Icon name="check" size={10} /></div>}
         {isInCart && <div className="absolute top-2 right-2 bg-brand2/80 p-1.5 rounded-lg"><Icon name="shop" size={10} /></div>}
@@ -5078,10 +5112,16 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
       f = f.filter(p => p.gender === genderFilter || p.gender === 'unisex');
     }
     
-    // Marka filtresi (check both brandId and generated brandId from brandName)
+    // Marka filtresi - tutarlı brandId oluştur
     if (brand !== 'all') {
       f = f.filter(p => {
-        const productBrandId = p.brandId || p.brandName?.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'other';
+        const brandName = p.brandName || '';
+        const productBrandId = brandName.toLowerCase()
+          .replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u')
+          .replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/ı/g, 'i')
+          .replace(/[^a-z0-9]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_|_$/g, '') || 'other';
         return productBrandId === brand;
       });
     }
