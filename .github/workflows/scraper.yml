@@ -1,15 +1,9 @@
 name: Trendyol Scraper
 
-# Ne zaman çalışsın?
 on:
-  # 4 saatte bir otomatik çalış
   schedule:
-    - cron: '0 */4 * * *'  # Her 4 saatte bir (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC)
-  
-  # Manuel tetikleme butonu
+    - cron: '0 */8 * * *'  # Her 8 saatte bir (00:00, 08:00, 16:00 UTC)
   workflow_dispatch:
-  
-  # Sadece scraper dosyası değiştiğinde çalış
   push:
     paths:
       - 'scraper-fixed.js'
@@ -18,41 +12,37 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Yazma izni ekledik
     
     steps:
-      # 1. Repo'yu indir
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      # 2. Node.js kur
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
       
-      # 3. Bağımlılıkları yükle
       - name: Install dependencies
         run: npm install
       
-      # 4. Puppeteer için Chrome kur
       - name: Install Chrome dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser
       
-      # 5. Scraper'ı çalıştır
       - name: Run scraper
         run: node scraper-fixed.js
         env:
           CI: true
       
-      # 6. Değişiklikleri commit et
       - name: Commit and push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/trendyol_products.js public/trendyol_products.json
+          git add public/trendyol_products.js public/trendyol_products.json public/products_stats.json
           git diff --staged --quiet || git commit -m "🔄 Ürünler güncellendi - $(date +'%Y-%m-%d %H:%M')"
           git push
