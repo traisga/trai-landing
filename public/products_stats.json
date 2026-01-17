@@ -1,19 +1,23 @@
 {
-  "lastUpdate": "2026-01-17T12:25:45.244Z",
-  "totalProducts": 15394,
+  "lastUpdated": "2026-01-17T16:08:10.237Z",
+  "totalProducts": 0,
+  "previousTotal": 0,
+  "newProducts": 0,
+  "priceUpdates": 0,
+  "categoriesProcessed": 0,
   "byGender": {
-    "male": 6162,
-    "female": 9232
+    "male": 0,
+    "female": 0
   },
   "byCategory": {
-    "top": 5201,
-    "bottom": 3400,
-    "outerwear": 3880,
-    "fullbody": 2913
+    "top": 0,
+    "bottom": 0,
+    "outerwear": 0,
+    "fullbody": 0
   },
   "priceRange": {
-    "min": 41,
-    "max": 53515,
-    "avg": 1465
+    "min": null,
+    "max": null,
+    "avg": null
   }
 }
