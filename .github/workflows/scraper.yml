@@ -1,25 +1,23 @@
-name: Trendyol Scraper
+name: Scrape Trendyol Products
 
 on:
   schedule:
-    - cron: '0 */8 * * *'  # Her 8 saatte bir (00:00, 08:00, 16:00 UTC)
-  workflow_dispatch:
+    - cron: '0 */8 * * *'  # Her 8 saatte bir
+  workflow_dispatch:  # Manuel tetikleme
   push:
     paths:
       - 'scraper-fixed.js'
-      - '.github/workflows/scraper.yml'
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write  # Yazma izni ekledik
+    timeout-minutes: 120
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Tüm history'yi çek
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,22 +25,23 @@ jobs:
           node-version: '20'
       
       - name: Install dependencies
-        run: npm install
-      
-      - name: Install Chrome dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser
+        run: npm install puppeteer
       
       - name: Run scraper
         run: node scraper-fixed.js
         env:
           CI: true
       
-      - name: Commit and push changes
+      - name: Pull latest changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/trendyol_products.js public/trendyol_products.json public/products_stats.json
+          git pull --rebase origin main || true
+      
+      - name: Commit and push changes
+        run: |
+          git add public/products.json public/products_stats.json
           git diff --staged --quiet || git commit -m "🔄 Ürünler güncellendi - $(date +'%Y-%m-%d %H:%M')"
-          git push
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
