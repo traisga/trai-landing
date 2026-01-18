@@ -149,6 +149,25 @@ function mergeProducts(existing, newProducts) {
 }
 
 // ==========================================
+// EKRAN GÖRÜNTÜSÜ ALMA (YENİ FONKSİYON)
+// ==========================================
+async function takeDebugScreenshot(page, name) {
+    try {
+        const debugDir = path.join(__dirname, 'public', 'debug_screenshots');
+        if (!fs.existsSync(debugDir)) fs.mkdirSync(debugDir, { recursive: true });
+        
+        const cleanName = name.replace(/[^a-z0-9]/gi, '_');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const screenPath = path.join(debugDir, `error_${cleanName}_${timestamp}.jpg`);
+        
+        await page.screenshot({ path: screenPath, fullPage: true });
+        console.log(`   📸 Hata görüntüsü kaydedildi: ${screenPath}`);
+    } catch (e) {
+        console.log(`   ⚠️ Screenshot alınamadı: ${e.message}`);
+    }
+}
+
+// ==========================================
 // SCRAPER (GÜNCELLENMİŞ)
 // ==========================================
 async function delay(ms) {
@@ -167,7 +186,7 @@ async function autoScroll(page) {
                     clearInterval(timer);
                     resolve();
                 }
-            }, 250); // Biraz daha yavaş kaydır
+            }, 250);
         });
     });
 }
@@ -176,20 +195,18 @@ async function scrapeCategory(page, config, retryCount = 0) {
     console.log(`➡️  ${config.name}`);
     
     try {
-        // İnsan taklidi: Rastgele bekleme
-        await delay(2000 + Math.random() * 3000);
+        await delay(2000 + Math.random() * 2000);
         
-        await page.goto(config.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        // Timeout 30 saniyeye düşürüldü (Çok beklememek için)
+        await page.goto(config.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
         
-        // Hata ayıklama: Sayfa başlığını kontrol et
         const pageTitle = await page.title();
         if (pageTitle.includes("Robot") || pageTitle.includes("Security")) {
-             console.log("   ⛔ BOT TESPİT EDİLDİ (Security/Robot Page)");
+             console.log("   ⛔ BOT TESPİT EDİLDİ");
+             await takeDebugScreenshot(page, "BOT_DETECTED_" + config.name);
+             throw new Error("Bot Detected");
         }
 
-        // Wait for page to stabilize
-        await delay(2000);
-        
         const selectors = ['.p-card-wrppr', '.product-card', '[data-testid="product-card"]', '.prdct-cntnr-wrppr'];
         let found = false;
         
@@ -202,24 +219,14 @@ async function scrapeCategory(page, config, retryCount = 0) {
         }
         
         if (!found) {
-            // !!! DEBUG: Ekran Görüntüsü Al !!!
-            const debugDir = path.join(__dirname, 'public', 'debug_screenshots');
-            if (!fs.existsSync(debugDir)) fs.mkdirSync(debugDir, { recursive: true });
-            
-            const cleanName = config.name.replace(/[^a-z0-9]/gi, '_');
-            const screenPath = path.join(debugDir, `error_${cleanName}_retry${retryCount}.jpg`);
-            
-            try {
-                await page.screenshot({ path: screenPath, fullPage: true });
-                console.log(`   📸 Hata görüntüsü: ${screenPath}`);
-            } catch(err) { console.log('   📸 Screenshot alınamadı.'); }
+            console.log(`   ⚠️ Ürün bulunamadı (Selector timeout)`);
+            await takeDebugScreenshot(page, "NOT_FOUND_" + config.name);
 
-            if (retryCount < 1) { // Retry 1'e düşürüldü
+            if (retryCount < 1) {
                 console.log(`   ⏳ Tekrar deneniyor...`);
-                await delay(5000);
+                await delay(3000);
                 return await scrapeCategory(page, config, retryCount + 1);
             }
-            console.log(`   ⚠️ Ürün bulunamadı (Sayfa boş veya seçici uymadı)`);
             return [];
         }
         
@@ -285,7 +292,9 @@ async function scrapeCategory(page, config, retryCount = 0) {
         return products;
         
     } catch (e) {
-        console.log(`   ❌ Hata: ${e.message}`);
+        console.log(`   ❌ Hata (${config.name}): ${e.message}`);
+        // BURASI ÇOK ÖNEMLİ: HATA ANINDA DA FOTOĞRAF ÇEK
+        await takeDebugScreenshot(page, "CRASH_" + config.name);
         return [];
     }
 }
@@ -294,12 +303,11 @@ async function scrapeCategory(page, config, retryCount = 0) {
 // ANA FONKSİYON
 // ==========================================
 (async () => {
-    console.log('🚀 TRENDYOL SCRAPER BAŞLIYOR (STEALTH MODE)...');
+    console.log('🚀 TRENDYOL SCRAPER BAŞLIYOR (DEBUG MODE)...');
     console.log(`\n📅 Tarih: ${new Date().toLocaleString('tr-TR')}\n`);
     
     const existingProducts = loadExistingProducts();
     
-    // Stealth Plugin ve Anti-Bot Argümanları
     const browser = await puppeteer.launch({
         headless: "new",
         args: [
@@ -309,7 +317,7 @@ async function scrapeCategory(page, config, retryCount = 0) {
             '--disable-accelerated-2d-canvas',
             '--disable-gpu',
             '--window-size=1920,1080',
-            '--disable-blink-features=AutomationControlled', // ÇOK ÖNEMLİ: WebDriver bayrağını gizler
+            '--disable-blink-features=AutomationControlled',
             '--disable-features=IsolateOrigins,site-per-process'
         ],
         ignoreDefaultArgs: ['--enable-automation']
@@ -317,11 +325,9 @@ async function scrapeCategory(page, config, retryCount = 0) {
     
     const page = await browser.newPage();
     
-    // Tarayıcı İzi Gizleme
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     await page.setViewport({ width: 1920, height: 1080 });
     
-    // WebDriver özelliğini tamamen sil
     await page.evaluateOnNewDocument(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
     });
@@ -337,7 +343,7 @@ async function scrapeCategory(page, config, retryCount = 0) {
                 successCount++;
             }
         } catch (e) {
-            console.log(`   ❌ Kategori hatası: ${cat.name}`);
+            console.log(`   ❌ Kritik Kategori Hatası: ${cat.name}`);
         }
     }
     
