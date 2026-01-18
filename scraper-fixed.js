@@ -1,4 +1,7 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(StealthPlugin());
+
 const fs = require('fs');
 const path = require('path');
 
@@ -97,7 +100,7 @@ function parsePrice(p) {
 }
 
 // ==========================================
-// MEVCUT ÜRÜNLERİ YÜKLE
+// DOSYA İŞLEMLERİ
 // ==========================================
 function loadExistingProducts() {
     const filePath = path.join(__dirname, 'public', 'products.json');
@@ -113,26 +116,17 @@ function loadExistingProducts() {
     return [];
 }
 
-// ==========================================
-// ÜRÜNLERİ BİRLEŞTİR
-// ==========================================
 function mergeProducts(existing, newProducts) {
     const productMap = new Map();
     let priceUpdates = 0;
     
-    // Mevcut ürünleri ekle
-    existing.forEach(p => {
-        productMap.set(p.link, p);
-    });
+    existing.forEach(p => productMap.set(p.link, p));
     
-    // Yeni ürünleri ekle/güncelle
     newProducts.forEach(p => {
         if (productMap.has(p.link)) {
-            // Mevcut ürün - fiyat güncelle
             const old = productMap.get(p.link);
             if (old.priceNum !== p.priceNum) {
                 priceUpdates++;
-                // Fiyat geçmişi tut
                 if (!old.priceHistory) old.priceHistory = [];
                 old.priceHistory.push({ price: old.priceNum, date: old.lastSeen || old.firstSeen });
                 if (old.priceHistory.length > 10) old.priceHistory.shift();
@@ -142,14 +136,12 @@ function mergeProducts(existing, newProducts) {
             old.lastSeen = Date.now();
             productMap.set(p.link, old);
         } else {
-            // Yeni ürün
             p.firstSeen = Date.now();
             p.lastSeen = Date.now();
             productMap.set(p.link, p);
         }
     });
     
-    // Array'e çevir ve ID'leri güncelle
     const merged = Array.from(productMap.values());
     merged.forEach((p, i) => p.id = i + 1);
     
@@ -157,7 +149,7 @@ function mergeProducts(existing, newProducts) {
 }
 
 // ==========================================
-// SCRAPER
+// SCRAPER (GÜNCELLENMİŞ)
 // ==========================================
 async function delay(ms) {
     return new Promise(r => setTimeout(r, ms));
@@ -166,14 +158,16 @@ async function delay(ms) {
 async function autoScroll(page) {
     await page.evaluate(async () => {
         await new Promise((resolve) => {
-            let totalHeight = 0, distance = 400, maxHeight = 15000, stuck = 0, last = 0;
+            let totalHeight = 0, distance = 250;
             const timer = setInterval(() => {
+                const scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
                 totalHeight += distance;
-                const current = document.querySelectorAll('.p-card-wrppr, .product-card, [data-testid="product-card"]').length;
-                if (current === last) stuck++; else { stuck = 0; last = current; }
-                if (totalHeight >= maxHeight || stuck >= 15) { clearInterval(timer); resolve(); }
-            }, 150);
+                if (totalHeight >= scrollHeight || totalHeight > 15000) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 250); // Biraz daha yavaş kaydır
         });
     });
 }
@@ -182,15 +176,20 @@ async function scrapeCategory(page, config, retryCount = 0) {
     console.log(`➡️  ${config.name}`);
     
     try {
-        // Random delay to avoid detection
-        await delay(1500 + Math.random() * 2000);
+        // İnsan taklidi: Rastgele bekleme
+        await delay(2000 + Math.random() * 3000);
         
-        await page.goto(config.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+        await page.goto(config.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
         
+        // Hata ayıklama: Sayfa başlığını kontrol et
+        const pageTitle = await page.title();
+        if (pageTitle.includes("Robot") || pageTitle.includes("Security")) {
+             console.log("   ⛔ BOT TESPİT EDİLDİ (Security/Robot Page)");
+        }
+
         // Wait for page to stabilize
         await delay(2000);
         
-        // Try multiple selectors
         const selectors = ['.p-card-wrppr', '.product-card', '[data-testid="product-card"]', '.prdct-cntnr-wrppr'];
         let found = false;
         
@@ -199,48 +198,49 @@ async function scrapeCategory(page, config, retryCount = 0) {
                 await page.waitForSelector(sel, { timeout: 8000 });
                 found = true;
                 break;
-            } catch (e) {
-                continue;
-            }
+            } catch (e) { continue; }
         }
         
         if (!found) {
-            if (retryCount < 2) {
-                console.log(`   ⏳ Retry ${retryCount + 1}/2...`);
-                await delay(3000);
+            // !!! DEBUG: Ekran Görüntüsü Al !!!
+            const debugDir = path.join(__dirname, 'public', 'debug_screenshots');
+            if (!fs.existsSync(debugDir)) fs.mkdirSync(debugDir, { recursive: true });
+            
+            const cleanName = config.name.replace(/[^a-z0-9]/gi, '_');
+            const screenPath = path.join(debugDir, `error_${cleanName}_retry${retryCount}.jpg`);
+            
+            try {
+                await page.screenshot({ path: screenPath, fullPage: true });
+                console.log(`   📸 Hata görüntüsü: ${screenPath}`);
+            } catch(err) { console.log('   📸 Screenshot alınamadı.'); }
+
+            if (retryCount < 1) { // Retry 1'e düşürüldü
+                console.log(`   ⏳ Tekrar deneniyor...`);
+                await delay(5000);
                 return await scrapeCategory(page, config, retryCount + 1);
             }
-            console.log(`   ⚠️ Ürün bulunamadı`);
+            console.log(`   ⚠️ Ürün bulunamadı (Sayfa boş veya seçici uymadı)`);
             return [];
         }
         
-        // Scroll to load more products
         await autoScroll(page);
-        await delay(1000);
+        await delay(1500);
 
         const products = await page.evaluate((gender, keyword) => {
             const banned = ['saat', 'terlik', 'eldiven', 'çorap', 'boxer', 'külot', 'kemer', 'cüzdan', 'parfüm', 'gözlük', 'kolye', 'küpe', 'şapka', 'bere', 'ayakkabı', 'bot', 'çizme', 'kılıf', 'çanta', 'cüzdan'];
             const data = [];
-            
             const cards = document.querySelectorAll('.p-card-wrppr, .product-card, [data-testid="product-card"]');
             
             cards.forEach(n => {
                 try {
                     if (n.innerText.length < 5) return;
                     
-                    // Brand
                     const brand = (n.querySelector('.prdct-desc-cntnr-ttl, .brand, [data-testid="brand"]')?.innerText || '').trim();
-                    
-                    // Title
                     const title = (n.querySelector('.prdct-desc-cntnr-name, .name, [data-testid="product-name"]')?.innerText || '').trim();
                     if (!title) return;
                     
                     const lowerT = title.toLowerCase();
-                    
-                    // Skip banned items
                     if (banned.some(b => lowerT.includes(b))) return;
-                    
-                    // Gender filter
                     if (gender === 'male' && lowerT.includes('kadın')) return;
                     if (gender === 'female' && !lowerT.includes('tesettür') && lowerT.includes('erkek')) return;
 
@@ -249,27 +249,16 @@ async function scrapeCategory(page, config, retryCount = 0) {
                         finalBrand = title.split(' ')[0].length > 2 ? title.split(' ')[0] : 'Genel';
                     }
 
-                    // Link
                     let link = n.tagName === 'A' ? n.getAttribute('href') : n.querySelector('a')?.getAttribute('href');
                     if (!link) return;
                     if (!link.startsWith('http')) link = 'https://www.trendyol.com' + link;
                     
-                    // Image
                     let img = n.querySelector('img')?.src || n.querySelector('img')?.getAttribute('data-src');
                     if (!img || img.includes('placeholder') || img.includes('data:image')) return;
-                    
-                    // Ensure HTTPS
                     if (img.startsWith('//')) img = 'https:' + img;
 
-                    // Price
                     let price = '0 TL';
-                    const priceSelectors = [
-                        '.prc-box-dscntd', 
-                        '.prc-box-sllng', 
-                        '[data-testid="price-current-price"]',
-                        '.product-price'
-                    ];
-                    
+                    const priceSelectors = ['.prc-box-dscntd', '.prc-box-sllng', '[data-testid="price-current-price"]', '.product-price'];
                     for (const sel of priceSelectors) {
                         const pEl = n.querySelector(sel);
                         if (pEl && pEl.innerText.includes('TL')) {
@@ -277,13 +266,11 @@ async function scrapeCategory(page, config, retryCount = 0) {
                             break;
                         }
                     }
-                    
                     if (price === '0 TL') {
                         const all = n.querySelectorAll('span, div');
                         for (let s of all) {
                             if (s.innerText.includes('TL') && /\d/.test(s.innerText)) {
-                                price = s.innerText;
-                                break;
+                                price = s.innerText; break;
                             }
                         }
                     }
@@ -291,7 +278,6 @@ async function scrapeCategory(page, config, retryCount = 0) {
                     data.push({ brand: finalBrand, title, price, link, image: img, gender, keyword });
                 } catch (e) {}
             });
-            
             return data;
         }, config.gender, config.keyword);
         
@@ -299,12 +285,7 @@ async function scrapeCategory(page, config, retryCount = 0) {
         return products;
         
     } catch (e) {
-        if (retryCount < 2) {
-            console.log(`   ⏳ Hata, retry ${retryCount + 1}/2...`);
-            await delay(5000);
-            return await scrapeCategory(page, config, retryCount + 1);
-        }
-        console.log(`   ❌ Kategori hatası: ${config.name}`);
+        console.log(`   ❌ Hata: ${e.message}`);
         return [];
     }
 }
@@ -313,14 +294,14 @@ async function scrapeCategory(page, config, retryCount = 0) {
 // ANA FONKSİYON
 // ==========================================
 (async () => {
-    console.log('🚀 TRENDYOL SCRAPER BAŞLIYOR...');
+    console.log('🚀 TRENDYOL SCRAPER BAŞLIYOR (STEALTH MODE)...');
     console.log(`\n📅 Tarih: ${new Date().toLocaleString('tr-TR')}\n`);
     
-    // Mevcut ürünleri yükle
     const existingProducts = loadExistingProducts();
     
+    // Stealth Plugin ve Anti-Bot Argümanları
     const browser = await puppeteer.launch({
-        headless: process.env.CI ? 'new' : false,
+        headless: "new",
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -328,17 +309,19 @@ async function scrapeCategory(page, config, retryCount = 0) {
             '--disable-accelerated-2d-canvas',
             '--disable-gpu',
             '--window-size=1920,1080',
-            '--disable-blink-features=AutomationControlled'
-        ]
+            '--disable-blink-features=AutomationControlled', // ÇOK ÖNEMLİ: WebDriver bayrağını gizler
+            '--disable-features=IsolateOrigins,site-per-process'
+        ],
+        ignoreDefaultArgs: ['--enable-automation']
     });
     
     const page = await browser.newPage();
     
-    // Anti-detection measures
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+    // Tarayıcı İzi Gizleme
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     await page.setViewport({ width: 1920, height: 1080 });
     
-    // Hide webdriver
+    // WebDriver özelliğini tamamen sil
     await page.evaluateOnNewDocument(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
     });
@@ -362,11 +345,9 @@ async function scrapeCategory(page, config, retryCount = 0) {
     
     console.log(`\n✅ ${successCount}/${CATEGORY_LIST.length} kategori işlendi.`);
 
-    // Benzersiz ürünler
     const uniqueNew = Array.from(new Map(allNewProducts.map(p => [p.link, p])).values());
     console.log(`📦 ${uniqueNew.length} benzersiz yeni ürün çekildi.`);
 
-    // Ürünleri işle
     const processedNew = uniqueNew.map(p => {
         const price = parsePrice(p.price);
         return {
@@ -387,25 +368,20 @@ async function scrapeCategory(page, config, retryCount = 0) {
         };
     }).filter(p => p.priceNum > 0);
 
-    // Mevcut ürünlerle birleştir
     const { merged, priceUpdates, newCount } = mergeProducts(existingProducts, processedNew);
     
     console.log(`\n📊 Özet: ${newCount} yeni ürün, ${priceUpdates} fiyat güncellemesi`);
 
-    // Klasörü oluştur
     const publicDir = path.join(__dirname, 'public');
     if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir);
 
-    // products.json kaydet
     fs.writeFileSync(path.join(publicDir, 'products.json'), JSON.stringify(merged, null, 2));
 
-    // products.js kaydet
     const jsContent = `const TRENDYOL_PRODUCTS = ${JSON.stringify(merged, null, 2)};
 if (typeof window !== 'undefined') window.TRENDYOL_PRODUCTS = TRENDYOL_PRODUCTS;
 if (typeof module !== 'undefined' && module.exports) module.exports = TRENDYOL_PRODUCTS;`;
     fs.writeFileSync(path.join(publicDir, 'trendyol_products.js'), jsContent);
 
-    // İstatistik dosyası
     const stats = {
         lastUpdated: new Date().toISOString(),
         totalProducts: merged.length,
@@ -437,7 +413,4 @@ if (typeof module !== 'undefined' && module.exports) module.exports = TRENDYOL_P
     console.log(`   • Net artış: +${merged.length - existingProducts.length} ürün`);
 
     console.log(`\n🎉 BİTTİ! Dosyalar 'public' klasörüne kaydedildi.`);
-    console.log(`   • products.json`);
-    console.log(`   • trendyol_products.js`);
-    console.log(`   • products_stats.json`);
 })();
