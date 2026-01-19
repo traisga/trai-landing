@@ -15966,17 +15966,21 @@ const App = () => {
                     console.log(`✅ Sıkıştırıldı: ${Math.round(avatarToSave.length / 1024)}KB`);
                   }
                   
-                  await db.collection('users').doc(authUser.uid).update({
+                  // Sadece tanımlı değerleri kaydet (Firestore undefined kabul etmez)
+                  const updateData = { 
                     baseAvatar: avatarToSave,
-                    gender: avatarData.gender,
-                    skinTone: avatarData.skinTone,
-                    bodyType: avatarData.bodyType,
-                    height: avatarData.height,
-                    weight: avatarData.weight,
-                    hairStyle: avatarData.hairStyle,
-                    hairColor: avatarData.hairColor,
                     avatarCreatedAt: Date.now()
-                  });
+                  };
+                  if (avatarData.gender !== undefined) updateData.gender = avatarData.gender;
+                  if (avatarData.skinTone !== undefined) updateData.skinTone = avatarData.skinTone;
+                  if (avatarData.bodyType !== undefined) updateData.bodyType = avatarData.bodyType;
+                  if (avatarData.height !== undefined) updateData.height = avatarData.height;
+                  if (avatarData.weight !== undefined) updateData.weight = avatarData.weight;
+                  if (avatarData.hairStyle !== undefined) updateData.hairStyle = avatarData.hairStyle;
+                  if (avatarData.hairColor !== undefined) updateData.hairColor = avatarData.hairColor;
+                  if (avatarData.hijab !== undefined) updateData.hijab = avatarData.hijab;
+                  
+                  await db.collection('users').doc(authUser.uid).update(updateData);
                   console.log('✅ Avatar saved to Firebase');
                 } catch (e) {
                   console.error('❌ Avatar save error:', e);
