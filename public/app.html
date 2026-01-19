@@ -13826,13 +13826,15 @@ const App = () => {
       items = itemsParam || [];
     }
     
-    if (!image) {
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel bulunamadı' });
+    if (!authUser?.uid || !db) {
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Giriş yapılmamış' });
       return false;
     }
     
-    if (!authUser?.uid || !db) {
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Lütfen giriş yapın' });
+    // Sharing consent check
+    if (settings.sharingConsent === null && !settings.sharingConsentDismissed) {
+      window.pendingShare = { image, items };
+      setConsentPopup({ open: true, type: 'sharing' });
       return false;
     }
     
@@ -13852,7 +13854,6 @@ const App = () => {
         visibility: 'public',
         likes: [],
         comments: [],
-        reposts: [],
         createdAt: postId
       };
       
@@ -13861,144 +13862,81 @@ const App = () => {
       
       // Local state'e ekle
       setPosts(prev => [newPost, ...prev]);
-      
-      // ResultModal'ı kapat ve social tab'a git
-      setResult({ open: false });
       setTab('social');
-      
-      setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Kombinin akışta yayınlandı' });
+      setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Kombinin sosyal akışta yayınlandı' });
       return true;
     } catch (err) {
       console.error('Share to feed error:', err);
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı: ' + (err.message || 'Bilinmeyen hata') });
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı' });
       return false;
     }
   };
   
   // Global external share function - Görsel indir + platform paylaşımı
   const shareExternalGlobal = async (platform, image, caption = '') => {
-    if (!image) {
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel bulunamadı' });
-      return;
-    }
-    
     const text = caption || 'TrAi ile denedim! #TrAi #VirtualTryOn #Fashion';
     const shareUrl = 'https://trai.style';
     
-    // Base64 data URL'i blob'a çevir
-    const dataUrlToBlob = (dataUrl) => {
-      try {
-        const arr = dataUrl.split(',');
-        const mime = arr[0].match(/:(.*?);/)[1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-          u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new Blob([u8arr], { type: mime });
-      } catch (e) {
-        console.error('dataUrlToBlob error:', e);
-        return null;
-      }
+    // Download helper
+    const downloadImage = (dataUrl, filename) => {
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     };
     
-    // Download helper - base64 ve URL için
-    const downloadImage = (imageData, filename) => {
-      try {
-        const link = document.createElement('a');
-        link.href = imageData;
-        link.download = filename;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => document.body.removeChild(link), 100);
-        return true;
-      } catch (e) {
-        console.error('Download error:', e);
-        return false;
-      }
-    };
-    
-    // İndir butonu
     if (platform === 'download') {
-      const success = downloadImage(image, 'trai-kombin.png');
-      if (success) {
-        setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görsel galerine kaydedildi' });
-      }
+      downloadImage(image, 'trai-outfit.png');
+      setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görsel kaydedildi' });
       return;
     }
     
-    // Native share (mobil)
     if (platform === 'native' && navigator.share) {
       try {
-        let blob;
-        if (image.startsWith('data:')) {
-          blob = dataUrlToBlob(image);
-        } else {
-          const response = await fetch(image);
-          blob = await response.blob();
-        }
-        
-        if (blob && navigator.canShare) {
-          const file = new File([blob], 'trai-kombin.png', { type: 'image/png' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: 'TrAi - Sanal Deneme',
-              text: text,
-              files: [file]
-            });
-            return;
-          }
-        }
-        // Dosya paylaşımı desteklenmiyorsa sadece metin paylaş
-        await navigator.share({ title: 'TrAi', text: text, url: shareUrl });
-        downloadImage(image, 'trai-kombin.png');
-        setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'Görseli manuel ekleyebilirsin' });
+        const response = await fetch(image);
+        const blob = await response.blob();
+        const file = new File([blob], 'trai-outfit.png', { type: 'image/png' });
+        await navigator.share({
+          title: 'TrAi - Sanal Deneme',
+          text: text,
+          files: [file]
+        });
+        return;
       } catch (e) {
-        if (e.name !== 'AbortError') {
-          downloadImage(image, 'trai-kombin.png');
-          setToast({ open: true, type: 'info', title: 'İndirildi', message: 'Görseli paylaşabilirsin' });
-        }
+        // Fallback: download
+        downloadImage(image, 'trai-outfit.png');
+        setToast({ open: true, type: 'info', title: 'İndirildi', message: 'Görseli manuel olarak paylaşabilirsin' });
+        return;
       }
-      return;
     }
     
-    // Instagram - görsel indir ve uyarı göster
     if (platform === 'instagram') {
-      downloadImage(image, 'trai-kombin.png');
-      setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görseli Instagram\'da paylaşabilirsin' });
-      // Mobilde Instagram app'i açmaya çalış
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        setTimeout(() => {
-          window.location.href = 'instagram://camera';
-        }, 800);
-      }
+      downloadImage(image, 'trai-outfit.png');
+      setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Instagram\'a yükleyebilirsin' });
       return;
     }
     
-    // Twitter/X
     if (platform === 'twitter') {
-      downloadImage(image, 'trai-kombin.png');
-      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+      downloadImage(image, 'trai-outfit.png');
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text + ' ' + shareUrl)}`;
       window.open(twitterUrl, '_blank');
       setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'Tweet\'e görseli ekleyebilirsin' });
       return;
     }
     
-    // Facebook
     if (platform === 'facebook') {
-      downloadImage(image, 'trai-kombin.png');
-      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`;
+      downloadImage(image, 'trai-outfit.png');
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(text)}`;
       window.open(fbUrl, '_blank');
       setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'Facebook\'a görseli ekleyebilirsin' });
       return;
     }
     
-    // WhatsApp
     if (platform === 'whatsapp') {
-      downloadImage(image, 'trai-kombin.png');
-      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n\n' + shareUrl)}`;
+      downloadImage(image, 'trai-outfit.png');
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`;
       window.open(waUrl, '_blank');
       setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'WhatsApp\'a görseli ekleyebilirsin' });
       return;
@@ -16177,9 +16115,36 @@ const App = () => {
           }
         }}
         onShareToFeed={async () => {
-          const success = await shareToFeedGlobal(result.image, result.items || []);
-          if (success) {
+          if (!result.image || !authUser?.uid || !db) {
+            setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı' });
+            return;
+          }
+          try {
+            const postId = Date.now();
+            const newPost = {
+              id: postId,
+              authorId: authUser.uid,
+              authorName: user?.displayName || user?.username || 'Kullanıcı',
+              authorUsername: user?.username || '',
+              authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
+              image: result.image,
+              items: result.items || [],
+              caption: '',
+              askFeedback: false,
+              visibility: 'public',
+              likes: [],
+              comments: [],
+              reposts: [],
+              createdAt: postId
+            };
+            await db.collection('posts').doc(String(postId)).set(newPost);
+            setPosts(prev => [newPost, ...prev]);
             setResult({ open: false });
+            setTab('social');
+            setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Kombinin akışta yayınlandı' });
+          } catch (err) {
+            console.error('Share error:', err);
+            setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı' });
           }
         }}
         onShareToDM={() => {
