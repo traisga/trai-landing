@@ -2155,7 +2155,7 @@ async function uploadAndShareImage(dataUrl, authUser, storage) {
   try {
     // Upload to Firebase Storage
     const timestamp = Date.now();
-    const storageRef = storage.ref(`shared_combos/${authUser.uid}/${timestamp}.jpg`);
+    const storageRef = storage.ref(`combos/${authUser.uid}/${timestamp}.jpg`);
     const response = await fetch(dataUrl);
     const blob = await response.blob();
     await storageRef.put(blob);
@@ -11538,7 +11538,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     if (post.image && post.image.startsWith('data:image') && storage && authUser?.uid && storageAvailable) {
       try {
         const timestamp = Date.now();
-        const storageRef = storage.ref(`shared/${authUser.uid}/${timestamp}.jpg`);
+        const storageRef = storage.ref(`posts/${authUser.uid}/${timestamp}.jpg`);
         const response = await fetch(post.image);
         const blob = await response.blob();
         await storageRef.put(blob);
@@ -15782,8 +15782,8 @@ const App = () => {
             // Delete avatar
             await storage.ref(`avatars/${userId}/base-avatar.png`).delete().catch(() => {});
             
-            // Delete shared images
-            const sharedRef = storage.ref(`shared/${userId}`);
+            // Delete shared images (posts)
+            const sharedRef = storage.ref(`posts/${userId}`);
             const sharedList = await sharedRef.listAll().catch(() => ({ items: [] }));
             await Promise.all(sharedList.items.map(item => item.delete().catch(() => {})));
             
