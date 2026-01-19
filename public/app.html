@@ -7386,45 +7386,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   // Profile tab için sub-tab state (Paylaşımlar, Beğeniler, Repostlar)
   const [profileSubTab, setProfileSubTab] = useState('posts'); // posts, likes, reposts
   
-  // Kullanıcının beğendiği ve repost ettiği postları
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [repostedPosts, setRepostedPosts] = useState([]);
-  const [loadingProfilePosts, setLoadingProfilePosts] = useState(false);
-  
   // Kullanıcının kendi postları
   const myPosts = posts?.filter(p => p.authorId === authUser?.uid) || [];
-  
-  // Beğenilen ve repost edilen postları yükle
-  useEffect(() => {
-    if (!authUser?.uid || !db || tab !== 'profile') return;
-    
-    const loadUserInteractions = async () => {
-      setLoadingProfilePosts(true);
-      try {
-        // Tüm postları çek ve filtrele
-        const allPostsSnapshot = await db.collection('posts')
-          .orderBy('createdAt', 'desc')
-          .limit(100)
-          .get();
-        
-        const allPosts = allPostsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // Beğendiğim postlar
-        const liked = allPosts.filter(p => p.likes?.includes(authUser.uid));
-        setLikedPosts(liked);
-        
-        // Repost ettiklerim
-        const reposted = allPosts.filter(p => p.reposts?.includes(authUser.uid));
-        setRepostedPosts(reposted);
-      } catch (e) {
-        console.error('Load interactions error:', e);
-      } finally {
-        setLoadingProfilePosts(false);
-      }
-    };
-    
-    loadUserInteractions();
-  }, [authUser?.uid, tab]);
+  const likedPosts = posts?.filter(p => p.likes?.includes(authUser?.uid)) || [];
+  const repostedPosts = posts?.filter(p => p.reposts?.includes(authUser?.uid)) || [];
   
   // Admin kontrolü - Firestore'dan isAdmin flag'i VEYA hardcoded email listesi
   // Güvenlik: Firestore rules'da da admin kontrolü yapılmalı
@@ -8562,7 +8527,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             
             {/* Content Grid */}
             <div className="p-2">
-              {loadingProfilePosts ? (
+              {false ? (
                 <div className="text-center py-12">
                   <div className="w-8 h-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
                   <p className="text-sm text-slate-400 mt-2">Yükleniyor...</p>
@@ -12525,104 +12490,8 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     return new Date(timestamp).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
   };
 
-  // User Profile Modal Component
-  const UserProfileModal = () => {
-    if (!viewingUser) return null;
-    
-    const isFollowing = friends.some(f => f.id === viewingUser.id || f.uid === viewingUser.id);
-    const isPending = sentFollowRequests?.some(r => r.uid === viewingUser.id || r === viewingUser.id);
-    
-    return (
-      <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col slide-up">
-        {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-slate-700">
-          <button onClick={() => setViewingUser(null)} className="p-2 rounded-xl hover:bg-white/10">
-            <Icon name="chevronLeft" size={24} className="text-white" />
-          </button>
-          <h3 className="font-bold text-white">@{viewingUser.username}</h3>
-          <div className="w-10" />
-        </div>
-        
-        {/* Profile Content */}
-        <div className="flex-1 overflow-y-auto custom-scroll">
-          {/* Profile Header */}
-          <div className="p-6 text-center">
-            <div className="w-24 h-24 rounded-full mx-auto mb-3 overflow-hidden bg-slate-700">
-              {viewingUser.profilePhoto ? (
-                <img src={viewingUser.profilePhoto} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
-                  <span className="text-3xl font-bold text-white">
-                    {(viewingUser.displayName || viewingUser.username || '?')[0].toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
-            <h2 className="text-xl font-bold text-white">
-              {viewingUser.displayName || viewingUser.username}
-              {viewingUser.isStylist && <span className="ml-2 text-purple-400">✨</span>}
-            </h2>
-            <p className="text-slate-400 text-sm">@{viewingUser.username}</p>
-            {viewingUser.bio && (
-              <p className="text-slate-300 text-sm mt-2 max-w-xs mx-auto">{viewingUser.bio}</p>
-            )}
-            
-            {/* Stats */}
-            <div className="flex justify-center gap-8 mt-4">
-              <div className="text-center">
-                <div className="text-xl font-bold text-white">{viewingUserPosts.length}</div>
-                <div className="text-xs text-slate-400">Paylaşım</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-white">{viewingUser.followersCount || 0}</div>
-                <div className="text-xs text-slate-400">Takipçi</div>
-              </div>
-            </div>
-            
-            {/* Follow Button */}
-            {viewingUser.id !== authUser?.uid && (
-              <button
-                onClick={() => {
-                  if (!isFollowing && !isPending) {
-                    followUser(viewingUser);
-                  }
-                }}
-                className={`mt-4 px-8 py-2.5 rounded-xl font-semibold text-sm transition ${
-                  isFollowing ? 'bg-slate-700 text-slate-300' :
-                  isPending ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                  'btn-primary'
-                }`}
-              >
-                {isFollowing ? 'Takip Ediliyor' : isPending ? 'İstek Gönderildi' : 'Takip Et'}
-              </button>
-            )}
-          </div>
-          
-          {/* User's Posts Grid */}
-          <div className="border-t border-slate-700 p-2">
-            {loadingUserProfile ? (
-              <div className="text-center py-8">
-                <div className="w-8 h-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
-              </div>
-            ) : viewingUserPosts.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                <Icon name="camera" size={32} className="mx-auto mb-2 opacity-50" />
-                <p>Henüz paylaşım yok</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-1">
-                {viewingUserPosts.map(post => (
-                  <div key={post.id} className="aspect-square rounded-lg overflow-hidden">
-                    <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // User Profile Modal Component (temporarily simplified)
+  const UserProfileModal = () => null;
 
   return (
     <div className="h-full flex flex-col">
@@ -14710,9 +14579,9 @@ const App = () => {
 
   // Load data on mount - DON'T load user here, wait for auth
   useEffect(() => {
-    // Posts'u Firebase'den yükle (herkes için public olanları)
+    // Posts'u Firebase'den yükle (sadece login olduktan sonra)
     const loadPosts = async () => {
-      if (!db) {
+      if (!db || !authUser) {
         return;
       }
       try {
@@ -14731,15 +14600,15 @@ const App = () => {
       }
     };
     
-    // db hazır olduğunda yükle
-    if (db) {
+    // db ve authUser hazır olduğunda yükle
+    if (db && authUser) {
       loadPosts();
     }
-  }, [db]);
+  }, [db, authUser]);
   
   // Posts için realtime listener - diğer kullanıcıların paylaşımlarını anlık görmek için
   useEffect(() => {
-    if (!db) return;
+    if (!db || !authUser) return;
     
     const unsubscribe = db.collection('posts')
       .orderBy('createdAt', 'desc')
@@ -14752,7 +14621,7 @@ const App = () => {
       });
     
     return () => unsubscribe();
-  }, [db]);
+  }, [db, authUser]);
 
   // Load user-specific data AFTER auth is confirmed - onSnapshot ile CANLI dinleme
   const [dataLoaded, setDataLoaded] = useState(false);
