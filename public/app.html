@@ -8259,10 +8259,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                       {posts?.filter(p => p.authorId === authUser?.uid).map(post => (
                         <div 
                           key={post.id} 
-                          className="aspect-square relative overflow-hidden rounded-sm cursor-pointer group"
+                          className="aspect-[4/5] relative overflow-hidden rounded-sm cursor-pointer group"
                           onClick={() => setMainTab && setMainTab('social')}
                         >
-                          <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={post.image} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-4 text-white text-sm">
                             <span className="flex items-center gap-1"><Icon name="heart" size={16} /> {post.likes?.length || 0}</span>
                             <span className="flex items-center gap-1"><Icon name="messageCircle" size={16} /> {post.comments?.length || 0}</span>
@@ -8287,10 +8287,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                       {likedPosts.map(post => (
                         <div 
                           key={post.id} 
-                          className="aspect-square relative overflow-hidden rounded-sm cursor-pointer group"
+                          className="aspect-[4/5] relative overflow-hidden rounded-sm cursor-pointer group"
                           onClick={() => setMainTab && setMainTab('social')}
                         >
-                          <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={post.image} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                             <span className="text-white text-sm">@{post.authorUsername}</span>
                           </div>
@@ -8314,10 +8314,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                       {repostedPosts.map(post => (
                         <div 
                           key={post.id} 
-                          className="aspect-square relative overflow-hidden rounded-sm cursor-pointer group"
+                          className="aspect-[4/5] relative overflow-hidden rounded-sm cursor-pointer group"
                           onClick={() => setMainTab && setMainTab('social')}
                         >
-                          <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={post.image} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                           <div className="absolute top-1 left-1">
                             <Icon name="repeat" size={14} className="text-white drop-shadow" />
                           </div>
@@ -11286,6 +11286,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         visibility: visibility,
         likes: [],
         comments: [],
+        reposts: [],
         createdAt: postId
       };
       
@@ -11731,20 +11732,38 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       <div className="glass rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="p-3 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand">
+          <button 
+            onClick={() => onViewUserProfile && onViewUserProfile({
+              id: post.authorId,
+              username: post.authorUsername,
+              displayName: post.authorName,
+              profilePhoto: post.authorAvatar,
+              stylistStatus: post.authorStylistStatus
+            })}
+            className="w-10 h-10 rounded-xl overflow-hidden bg-brand flex-shrink-0"
+          >
             {post.authorAvatar ? (
               <img src={post.authorAvatar} className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-lg">👤</div>
             )}
-          </div>
-          <div className="flex-1">
+          </button>
+          <button 
+            onClick={() => onViewUserProfile && onViewUserProfile({
+              id: post.authorId,
+              username: post.authorUsername,
+              displayName: post.authorName,
+              profilePhoto: post.authorAvatar,
+              stylistStatus: post.authorStylistStatus
+            })}
+            className="flex-1 text-left"
+          >
             <div className="flex items-center gap-1.5">
-              <p className="font-semibold text-sm">{post.authorName}</p>
+              <p className="font-semibold text-sm hover:underline">{post.authorName}</p>
               <StylistBadge type={post.authorStylistStatus} size="xs" />
             </div>
             <p className="text-xs text-slate-400">{post.authorUsername ? `@${post.authorUsername}` : ''} {post.authorUsername ? '·' : ''} {timeAgo}</p>
-          </div>
+          </button>
           {post.askFeedback && (
             <span className="text-xs bg-amber-100 text-accent px-2 py-1 rounded-lg font-medium">
               💬 {t('askingFeedback')}
@@ -16886,8 +16905,8 @@ const App = () => {
               ) : (
                 <div className="grid grid-cols-3 gap-1">
                   {posts.filter(p => p.authorId === viewedUser.id).map(post => (
-                    <div key={post.id} className="aspect-square relative overflow-hidden rounded-sm">
-                      <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                    <div key={post.id} className="aspect-[4/5] relative overflow-hidden rounded-sm">
+                      <img src={post.image} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                     </div>
                   ))}
                 </div>
