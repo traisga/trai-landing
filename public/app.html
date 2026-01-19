@@ -7300,8 +7300,9 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 };
 
 // ============ PROFILE (EXPANDED) ============
-const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab }) => {
+const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab, setToast, stylistApplication, onOpenStylistApplication, isAdmin, onOpenAdminPanel, posts, likedPosts, repostedPosts, onViewUserProfile, viewedUser, setViewedUser }) => {
   const [tab, setTab] = useState('profile'); // profile, avatar, friends, notifications, settings, messages
+  const [profileSubTab, setProfileSubTab] = useState('posts'); // posts, likes, reposts
   const [showAddFriend, setShowAddFriend] = useState(false);
   const profilePhotoRef = useRef(null);
   
@@ -8095,7 +8096,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
           </div>
         </div>
         <div className="absolute bottom-3 left-0 right-0 text-center px-4">
-          <h1 className="text-lg font-bold">{user.displayName || user.username || t('user')}</h1>
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-lg font-bold">{user.displayName || user.username || t('user')}</h1>
+            <StylistBadge type={user.stylistStatus} size="sm" />
+          </div>
           {user.username && (
             <p className="text-slate-500 text-sm">@{user.username}</p>
           )}
@@ -8113,7 +8117,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               if (newBio !== null && newBio.length <= 150) {
                 onUpdateUser && onUpdateUser({ bio: newBio });
               } else if (newBio && newBio.length > 150) {
-                setToast({ open: true, type: 'warning', title: 'Çok uzun', message: 'Biyografi en fazla 150 karakter olabilir' });
+                setToast && setToast({ open: true, type: 'warning', title: 'Çok uzun', message: 'Biyografi en fazla 150 karakter olabilir' });
               }
             }}
             className="w-full text-sm text-slate-400 text-center hover:text-slate-600 transition flex items-center justify-center gap-1"
@@ -8129,7 +8133,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               if (newBio !== null && newBio.length <= 150) {
                 onUpdateUser && onUpdateUser({ bio: newBio });
               } else if (newBio && newBio.length > 150) {
-                setToast({ open: true, type: 'warning', title: 'Çok uzun', message: 'Biyografi en fazla 150 karakter olabilir' });
+                setToast && setToast({ open: true, type: 'warning', title: 'Çok uzun', message: 'Biyografi en fazla 150 karakter olabilir' });
               }
             }}
             className="text-xs text-brand2 text-center w-full mt-1 hover:underline"
@@ -8170,84 +8174,163 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto custom-scroll pb-24">
-        {/* PROFILE TAB */}
+        {/* PROFILE TAB - Instagram/Twitter Style */}
         {tab === 'profile' && (
-          <div className="p-4 space-y-4 fade-in">
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="glass rounded-2xl p-4 text-center">
-                <div className="text-2xl font-bold text-brand2">{friends.length}</div>
+          <div className="fade-in">
+            {/* Stats Row */}
+            <div className="flex justify-around py-4 border-b border-slate-200">
+              <div className="text-center">
+                <div className="text-xl font-bold">{posts?.filter(p => p.authorId === authUser?.uid).length || 0}</div>
+                <div className="text-xs text-slate-500">Gönderi</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold">{friends.length}</div>
                 <div className="text-xs text-slate-500">{t('follower')}</div>
               </div>
-              <div className="glass rounded-2xl p-4 text-center">
-                <div className="text-2xl font-bold text-accent">{user.closetCount || 0}</div>
-                <div className="text-xs text-slate-500">{t('closetLabel')}</div>
-              </div>
-              <div className="glass rounded-2xl p-4 text-center">
-                <div className="text-2xl font-bold text-green-400">{user.tryOnCount || 0}</div>
-                <div className="text-xs text-slate-500">{t('tryOnLabel')}</div>
+              <div className="text-center">
+                <div className="text-xl font-bold">{user.followingCount || friends.length}</div>
+                <div className="text-xs text-slate-500">Takip</div>
               </div>
             </div>
-
-            {/* Account Info */}
-            <div className="glass rounded-2xl p-4 space-y-3">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <Icon name="user" size={16} className="text-brand2" />
-                {t('accountInfo')}
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                  <span className="text-slate-500 text-sm">{t('displayNameLabel')}</span>
-                  <input 
-                    type="text" 
-                    value={user.displayName || ''} 
-                    onChange={(e) => onUpdateUser && onUpdateUser({ displayName: e.target.value })}
-                    placeholder={authUser?.email?.split('@')[0]}
-                    className="text-sm font-medium text-right bg-transparent border-none outline-none w-32"
-                  />
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                  <span className="text-slate-500 text-sm">E-posta</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{authUser?.email || '-'}</span>
-                    {authUser?.emailVerified ? (
-                      <span className="text-green-400"><Icon name="check" size={12} /></span>
-                    ) : (
-                      <button onClick={resendVerification} className="text-yellow-400 text-xs hover:text-yellow-300">{t('verify')}</button>
-                    )}
-                  </div>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                  <span className="text-slate-500 text-sm">Üyelik</span>
-                  <span className={`text-sm font-medium ${user.subscription?.active || (user.credits || 0) > 0 ? 'text-brand2' : 'text-slate-600'}`}>
-                    {user.subscription?.active ? 'Premium ✨' : (user.credits || 0) > 0 ? 'Kredili Üye' : t('freeMember')}
-                  </span>
-                </div>
-                
-                {/* Kalan Hak Bilgileri */}
-                <div className="py-2 border-b border-slate-200">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-500 text-sm">Kalan Haklar</span>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <div className="bg-gradient-to-r from-amber-100 to-yellow-50 rounded-xl p-3 text-center border border-amber-300 shadow-sm">
-                      <span className="text-2xl">🪙</span>
-                      <p className="text-lg font-bold text-amber-700">{(user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0)}</p>
-                      <p className="text-[10px] text-amber-600 font-medium">Toplam Kredi</p>
+            
+            {/* Edit Profile & Share Button */}
+            <div className="flex gap-2 p-4">
+              <button 
+                onClick={() => setTab('avatar')}
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 text-sm font-semibold hover:bg-slate-200 transition"
+              >
+                Profili Düzenle
+              </button>
+              <button 
+                onClick={() => {
+                  const shareUrl = `${window.location.origin}?user=${user.username}`;
+                  navigator.clipboard.writeText(shareUrl);
+                  setToast && setToast({ open: true, type: 'success', title: 'Kopyalandı', message: 'Profil linki panoya kopyalandı' });
+                }}
+                className="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 transition"
+              >
+                <Icon name="share" size={18} />
+              </button>
+            </div>
+            
+            {/* Sub Tabs - Posts / Likes / Reposts */}
+            <div className="flex border-b border-slate-200">
+              <button
+                onClick={() => setProfileSubTab('posts')}
+                className={`flex-1 py-3 flex items-center justify-center gap-2 text-sm font-semibold transition border-b-2 ${
+                  profileSubTab === 'posts' ? 'border-brand text-brand' : 'border-transparent text-slate-500'
+                }`}
+              >
+                <Icon name="grid" size={18} />
+                <span className="hidden sm:inline">Gönderiler</span>
+              </button>
+              <button
+                onClick={() => setProfileSubTab('likes')}
+                className={`flex-1 py-3 flex items-center justify-center gap-2 text-sm font-semibold transition border-b-2 ${
+                  profileSubTab === 'likes' ? 'border-brand text-brand' : 'border-transparent text-slate-500'
+                }`}
+              >
+                <Icon name="heart" size={18} />
+                <span className="hidden sm:inline">Beğeniler</span>
+              </button>
+              <button
+                onClick={() => setProfileSubTab('reposts')}
+                className={`flex-1 py-3 flex items-center justify-center gap-2 text-sm font-semibold transition border-b-2 ${
+                  profileSubTab === 'reposts' ? 'border-brand text-brand' : 'border-transparent text-slate-500'
+                }`}
+              >
+                <Icon name="repeat" size={18} />
+                <span className="hidden sm:inline">Repostlar</span>
+              </button>
+            </div>
+            
+            {/* Content Grid */}
+            <div className="p-2">
+              {profileSubTab === 'posts' && (
+                <>
+                  {posts?.filter(p => p.authorId === authUser?.uid).length === 0 ? (
+                    <div className="text-center py-12">
+                      <Icon name="camera" size={48} className="mx-auto text-slate-300 mb-3" />
+                      <p className="text-slate-500 font-medium">Henüz gönderi yok</p>
+                      <p className="text-slate-400 text-sm mt-1">İlk gönderini paylaş!</p>
                     </div>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-slate-500 text-sm">Katılım</span>
-                  <span className="text-sm font-medium">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
-                </div>
-              </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-1">
+                      {posts?.filter(p => p.authorId === authUser?.uid).map(post => (
+                        <div 
+                          key={post.id} 
+                          className="aspect-square relative overflow-hidden rounded-sm cursor-pointer group"
+                          onClick={() => setMainTab && setMainTab('social')}
+                        >
+                          <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-4 text-white text-sm">
+                            <span className="flex items-center gap-1"><Icon name="heart" size={16} /> {post.likes?.length || 0}</span>
+                            <span className="flex items-center gap-1"><Icon name="messageCircle" size={16} /> {post.comments?.length || 0}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+              
+              {profileSubTab === 'likes' && (
+                <>
+                  {(!likedPosts || likedPosts.length === 0) ? (
+                    <div className="text-center py-12">
+                      <Icon name="heart" size={48} className="mx-auto text-slate-300 mb-3" />
+                      <p className="text-slate-500 font-medium">Henüz beğeni yok</p>
+                      <p className="text-slate-400 text-sm mt-1">Beğendiğin gönderiler burada görünecek</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-1">
+                      {likedPosts.map(post => (
+                        <div 
+                          key={post.id} 
+                          className="aspect-square relative overflow-hidden rounded-sm cursor-pointer group"
+                          onClick={() => setMainTab && setMainTab('social')}
+                        >
+                          <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <span className="text-white text-sm">@{post.authorUsername}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+              
+              {profileSubTab === 'reposts' && (
+                <>
+                  {(!repostedPosts || repostedPosts.length === 0) ? (
+                    <div className="text-center py-12">
+                      <Icon name="repeat" size={48} className="mx-auto text-slate-300 mb-3" />
+                      <p className="text-slate-500 font-medium">Henüz repost yok</p>
+                      <p className="text-slate-400 text-sm mt-1">Repost ettiğin gönderiler burada görünecek</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-1">
+                      {repostedPosts.map(post => (
+                        <div 
+                          key={post.id} 
+                          className="aspect-square relative overflow-hidden rounded-sm cursor-pointer group"
+                          onClick={() => setMainTab && setMainTab('social')}
+                        >
+                          <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                          <div className="absolute top-1 left-1">
+                            <Icon name="repeat" size={14} className="text-white drop-shadow" />
+                          </div>
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <span className="text-white text-sm">@{post.authorUsername}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-
-            {/* Logout */}
-            <button onClick={onLogout} className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 py-4 rounded-xl font-semibold flex items-center justify-center gap-2">
-              <Icon name="logout" size={18} />Çıkış Yap
-            </button>
           </div>
         )}
 
@@ -8578,6 +8661,95 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         {/* SETTINGS TAB */}
         {tab === 'settings' && (
           <div className="p-4 space-y-4 fade-in">
+            {/* Account Info - Moved from profile */}
+            <div className="glass rounded-2xl p-4 space-y-3">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <Icon name="user" size={16} className="text-brand2" />
+                {t('accountInfo')}
+              </h3>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                  <span className="text-slate-500 text-sm">{t('displayNameLabel')}</span>
+                  <input 
+                    type="text" 
+                    value={user.displayName || ''} 
+                    onChange={(e) => onUpdateUser && onUpdateUser({ displayName: e.target.value })}
+                    placeholder={authUser?.email?.split('@')[0]}
+                    className="text-sm font-medium text-right bg-transparent border-none outline-none w-32"
+                  />
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                  <span className="text-slate-500 text-sm">E-posta</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{authUser?.email || '-'}</span>
+                    {authUser?.emailVerified ? (
+                      <span className="text-green-400"><Icon name="check" size={12} /></span>
+                    ) : (
+                      <button onClick={resendVerification} className="text-yellow-400 text-xs hover:text-yellow-300">{t('verify')}</button>
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                  <span className="text-slate-500 text-sm">Üyelik</span>
+                  <span className={`text-sm font-medium ${user.subscription?.active || (user.credits || 0) > 0 ? 'text-brand2' : 'text-slate-600'}`}>
+                    {user.subscription?.active ? 'Premium ✨' : (user.credits || 0) > 0 ? 'Kredili Üye' : t('freeMember')}
+                  </span>
+                </div>
+                <div className="py-2 border-b border-slate-200">
+                  <div className="flex items-center justify-center">
+                    <div className="bg-gradient-to-r from-amber-100 to-yellow-50 rounded-xl p-3 text-center border border-amber-300 shadow-sm">
+                      <span className="text-2xl">🪙</span>
+                      <p className="text-lg font-bold text-amber-700">{(user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0)}</p>
+                      <p className="text-[10px] text-amber-600 font-medium">Toplam Kredi</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-slate-500 text-sm">Katılım</span>
+                  <span className="text-sm font-medium">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Stilist Section */}
+            {!user.stylistStatus ? (
+              <button 
+                onClick={onOpenStylistApplication}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg"
+              >
+                <span>✨</span> Stilist Başvurusu
+              </button>
+            ) : (
+              <div className="glass rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <span>🏆</span> Stilist Durumu
+                  </h3>
+                  <StylistBadge type={user.stylistStatus} size="md" />
+                </div>
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Aylık Kredi</span>
+                    <span className="font-semibold text-purple-700">{user.stylistMonthlyCredits || (user.stylistStatus === 'pro_stylist' ? 150 : 90)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Kıyafet Limiti</span>
+                    <span className="font-semibold text-purple-700">Sınırsız ♾️</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Admin Panel */}
+            {isAdmin && (
+              <button 
+                onClick={onOpenAdminPanel}
+                className="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2"
+              >
+                <span>🛡️</span> Admin Panel
+              </button>
+            )}
+          
             {/* Language Settings */}
             <div className="glass rounded-2xl p-4 space-y-4">
               <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -8600,50 +8772,111 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               </div>
             </div>
 
-            {/* Privacy Settings */}
+            {/* Privacy Settings - Enhanced */}
             <div className="glass rounded-2xl p-4 space-y-4">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Icon name="shield" size={16} className="text-brand2" />
                 {t('privacySettings')}
               </h3>
 
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <div className="font-medium text-sm">{t('profileVisibility')}</div>
-                  <div className="text-xs text-slate-500">{t('profileVisibilityDesc')}</div>
+              {/* Profil Görünürlüğü */}
+              <div className="py-2 border-b border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="font-medium text-sm">{t('profileVisibility')}</div>
+                    <div className="text-xs text-slate-500">Profilini kimler görebilir</div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSettings(s => ({ ...s, profilePublic: !s.profilePublic }))}
-                  className={`w-12 h-7 rounded-full transition-all ${settings.profilePublic ? 'bg-brand' : 'bg-slate-200/60'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${settings.profilePublic ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, profileVisibility: 'everyone' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      (settings.profileVisibility || 'everyone') === 'everyone' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    🌍 Herkes
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, profileVisibility: 'followers' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      settings.profileVisibility === 'followers' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    👥 Takipçiler
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <div className="font-medium text-sm">{t('shareCombos')}</div>
-                  <div className="text-xs text-slate-500">{t('shareCombosDesc')}</div>
+              {/* Paylaşım Görünürlüğü */}
+              <div className="py-2 border-b border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="font-medium text-sm">Paylaşımlarım</div>
+                    <div className="text-xs text-slate-500">Gönderilerini kimler görebilir</div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSettings(s => ({ ...s, combosPublic: !s.combosPublic }))}
-                  className={`w-12 h-7 rounded-full transition-all ${settings.combosPublic ? 'bg-brand' : 'bg-slate-200/60'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${settings.combosPublic ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, postsVisibility: 'followers' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      (settings.postsVisibility || 'followers') === 'followers' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    👥 Takipçiler
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, postsVisibility: 'everyone' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      settings.postsVisibility === 'everyone' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    🌍 Herkes
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, postsVisibility: 'onlyMe' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      settings.postsVisibility === 'onlyMe' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    🔒 Ben
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <div className="font-medium text-sm">{t('onlineStatus')}</div>
-                  <div className="text-xs text-slate-500">{t('onlineStatusDesc')}</div>
+              {/* Çevrimiçi Durumu */}
+              <div className="py-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="font-medium text-sm">{t('onlineStatus')}</div>
+                    <div className="text-xs text-slate-500">Çevrimiçi olduğunu kimler görsün</div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSettings(s => ({ ...s, showOnline: !s.showOnline }))}
-                  className={`w-12 h-7 rounded-full transition-all ${settings.showOnline ? 'bg-brand' : 'bg-slate-200/60'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${settings.showOnline ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, onlineVisibility: 'followers' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      (settings.onlineVisibility || 'followers') === 'followers' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    👥 Takipçiler
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, onlineVisibility: 'everyone' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      settings.onlineVisibility === 'everyone' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    🌍 Herkes
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, onlineVisibility: 'nobody' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+                      settings.onlineVisibility === 'nobody' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    🔒 Kimse
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -8758,6 +8991,15 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                 </button>
               </div>
             </div>
+            
+            {/* Logout Button */}
+            <button 
+              onClick={onLogout} 
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition"
+            >
+              <Icon name="logout" size={18} />
+              Çıkış Yap
+            </button>
           </div>
         )}
       </div>
@@ -10801,7 +11043,7 @@ const AdviceModal = ({ open, item, advice, loading, onClose }) => {
 };
 
 // ============ SOCIAL FEED ============
-const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, groups, setGroups, notifications, setNotifications }) => {
+const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, groups, setGroups, notifications, setNotifications, onViewUserProfile }) => {
   const [tab, setTab] = useState('feed'); // feed, myPosts, create, friends, messages
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState('');
@@ -11037,6 +11279,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         authorName: user?.displayName || user?.username || 'Kullanıcı',
         authorUsername: user?.username || '',
         authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
+        authorStylistStatus: user?.stylistStatus || null,
         image: selectedImage, // Direkt data URL kullan
         caption: caption,
         askFeedback: askFeedback,
@@ -11089,6 +11332,58 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       }
     }
   };
+  
+  // Repost fonksiyonu
+  const repostPost = async (postId) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    // Kendi postunu repost edemezsin
+    if (post.authorId === authUser?.uid) {
+      setToast({ open: true, type: 'warning', title: 'Uyarı', message: 'Kendi gönderini repost edemezsin' });
+      return;
+    }
+    
+    const hasReposted = post.reposts?.includes(authUser?.uid);
+    const newReposts = hasReposted 
+      ? (post.reposts || []).filter(id => id !== authUser?.uid)
+      : [...(post.reposts || []), authUser?.uid];
+    
+    setPosts(prev => prev.map(p => {
+      if (p.id === postId) {
+        return { ...p, reposts: newReposts };
+      }
+      return p;
+    }));
+    
+    // Toast göster
+    if (!hasReposted) {
+      setToast({ open: true, type: 'success', title: 'Repost Edildi', message: 'Gönderi profiline eklendi' });
+    }
+    
+    // Firebase'e kaydet
+    if (db) {
+      try {
+        await db.collection('posts').doc(String(postId)).update({ reposts: newReposts });
+        
+        // Bildirim gönder (yeni repost ise)
+        if (!hasReposted && post.authorId !== authUser?.uid) {
+          await db.collection('users').doc(post.authorId).collection('notifications').add({
+            type: 'repost',
+            fromUid: authUser?.uid,
+            fromUsername: user.username,
+            fromDisplayName: user.displayName,
+            postId: postId,
+            message: `${user.displayName || user.username} gönderini repost etti`,
+            read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      } catch (e) {
+        console.error('Repost update error:', e);
+      }
+    }
+  };
 
   const addComment = async (postId) => {
     if (!comment.trim()) return;
@@ -11098,6 +11393,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       authorId: authUser?.uid,
       authorName: user.displayName || user.username || 'Kullanıcı',
       authorUsername: user.username,
+      authorStylistStatus: user?.stylistStatus || null,
       text: comment,
       createdAt: Date.now()
     };
@@ -11443,7 +11739,10 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             )}
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-sm">{post.authorName}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-semibold text-sm">{post.authorName}</p>
+              <StylistBadge type={post.authorStylistStatus} size="xs" />
+            </div>
             <p className="text-xs text-slate-400">{post.authorUsername ? `@${post.authorUsername}` : ''} {post.authorUsername ? '·' : ''} {timeAgo}</p>
           </div>
           {post.askFeedback && (
@@ -11479,6 +11778,13 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               <button onClick={() => setSelectedPost(post)} className="flex items-center gap-1.5 text-sm">
                 <Icon name="messageCircle" size={22} />
                 <span className="font-medium">{post.comments.length}</span>
+              </button>
+              <button 
+                onClick={() => repostPost(post.id)}
+                className={`flex items-center gap-1.5 text-sm ${post.reposts?.includes(authUser?.uid) ? 'text-green-500' : ''}`}
+              >
+                <Icon name="repeat" size={20} className={post.reposts?.includes(authUser?.uid) ? 'text-green-500' : ''} />
+                <span className="font-medium">{post.reposts?.length || 0}</span>
               </button>
               <button onClick={() => setShareModal({ open: true, post })} className="flex items-center gap-1.5 text-sm">
                 <Icon name="share" size={20} />
@@ -11833,7 +12139,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 const isPending = sentFollowRequests?.some(r => r.uid === u.id || r === u.id);
                 const initials = getInitials(u.displayName, u.username);
                 return (
-                  <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100">
+                  <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 cursor-pointer" onClick={() => onViewUserProfile && onViewUserProfile(u)}>
                     {u.profilePhoto ? (
                       <img 
                         src={u.profilePhoto}
@@ -11845,16 +12151,19 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="font-semibold text-sm">{u.displayName || u.username}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-semibold text-sm">{u.displayName || u.username}</p>
+                        <StylistBadge type={u.stylistStatus} size="xs" />
+                      </div>
                       <p className="text-xs text-slate-500">@{u.username}</p>
                     </div>
                     {isFollowing ? (
-                      <span className="text-xs text-green-600 font-medium">Takip Ediliyor</span>
+                      <span className="text-xs text-green-600 font-medium" onClick={(e) => e.stopPropagation()}>Takip Ediliyor</span>
                     ) : isPending ? (
-                      <span className="text-xs text-amber-600 font-medium">İstek Gönderildi</span>
+                      <span className="text-xs text-amber-600 font-medium" onClick={(e) => e.stopPropagation()}>İstek Gönderildi</span>
                     ) : (
                       <button 
-                        onClick={() => followUser(u)}
+                        onClick={(e) => { e.stopPropagation(); followUser(u); }}
                         className="btn-primary px-4 py-2 rounded-xl text-xs font-semibold"
                       >
                         Takip Et
@@ -12507,7 +12816,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                     <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs">👤</div>
                     <div className="flex-1">
                       <p className="text-sm">
-                        <span className="font-semibold text-ink">{c.authorName}</span>{' '}
+                        <span className="font-semibold text-ink">{c.authorName}</span>
+                        {c.authorStylistStatus && <StylistBadge type={c.authorStylistStatus} size="xs" />}
+                        {' '}
                         <span className="text-ink">{c.text}</span>
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">{getTimeAgo(c.createdAt)}</p>
@@ -12720,6 +13031,771 @@ const getInitials = (displayName, username) => {
   return '?';
 };
 
+// ============ STYLIST BADGE COMPONENT ============
+const StylistBadge = ({ type, size = 'sm' }) => {
+  if (!type || type === 'none') return null;
+  
+  const sizes = {
+    xs: 'text-[9px] px-1.5 py-0.5',
+    sm: 'text-[10px] px-2 py-0.5',
+    md: 'text-xs px-2.5 py-1',
+    lg: 'text-sm px-3 py-1.5'
+  };
+  
+  if (type === 'pro_stylist') {
+    return (
+      <span className={`inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-full ${sizes[size]} shadow-sm`}>
+        <span>👑</span> PRO Stilist
+      </span>
+    );
+  }
+  
+  if (type === 'stylist') {
+    return (
+      <span className={`inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full ${sizes[size]} shadow-sm`}>
+        <span>✨</span> Stilist
+      </span>
+    );
+  }
+  
+  return null;
+};
+
+// ============ STYLIST APPLICATION MODAL ============
+const StylistApplicationModal = ({ open, onClose, user, authUser, onSubmit, existingApplication }) => {
+  const [step, setStep] = useState(1);
+  const [platform, setPlatform] = useState('instagram');
+  const [username, setUsername] = useState('');
+  const [followers, setFollowers] = useState('');
+  const [screenshot, setScreenshot] = useState(null);
+  const [reason, setReason] = useState('');
+  const [portfolioUrl, setPortfolioUrl] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  
+  if (!open) return null;
+  
+  const followerCount = parseInt(followers.replace(/\D/g, '')) || 0;
+  const applicationType = followerCount >= 50000 ? 'pro_stylist' : followerCount >= 15000 ? 'stylist' : null;
+  
+  const handleScreenshotSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Dosya boyutu 5MB\'dan küçük olmalı');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => setScreenshot(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+  
+  const handleSubmit = async () => {
+    if (!applicationType) return;
+    setSubmitting(true);
+    
+    const application = {
+      status: 'pending',
+      type: applicationType,
+      platform,
+      socialUsername: username,
+      followerCount,
+      screenshot,
+      reason,
+      portfolioUrl,
+      appliedAt: Date.now(),
+      reviewedAt: null,
+      reviewedBy: null,
+      rejectedReason: null,
+      appPostCreated: false,
+      appPostShared: false,
+      appPostUrl: null
+    };
+    
+    await onSubmit(application);
+    setSubmitting(false);
+  };
+  
+  // Mevcut başvuru varsa durumu göster
+  if (existingApplication) {
+    const statusMessages = {
+      pending: { icon: '⏳', title: 'Başvurun İnceleniyor', color: 'amber', desc: 'Admin ekibimiz başvurunu en kısa sürede inceleyecek.' },
+      awaiting_post: { icon: '📸', title: 'Paylaşım Bekleniyor', color: 'blue', desc: 'Uygulamada bir kombin oluştur ve sosyal medyada paylaş.' },
+      approved: { icon: '🎉', title: 'Stilist Oldun!', color: 'green', desc: 'Tebrikler! Artık stilist avantajlarından yararlanabilirsin.' },
+      rejected: { icon: '😔', title: 'Başvuru Reddedildi', color: 'red', desc: existingApplication.rejectedReason || 'Kriterler karşılanmadı.' }
+    };
+    const status = statusMessages[existingApplication.status] || statusMessages.pending;
+    
+    return (
+      <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-surface rounded-3xl overflow-hidden fade-in">
+          <div className={`bg-${status.color}-500 p-6 text-white text-center`}>
+            <span className="text-5xl mb-3 block">{status.icon}</span>
+            <h2 className="text-xl font-bold">{status.title}</h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-slate-600 text-center">{status.desc}</p>
+            
+            {existingApplication.status === 'awaiting_post' && (
+              <div className="space-y-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p className="text-sm text-blue-800 font-medium mb-2">📋 Yapman gerekenler:</p>
+                  <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                    <li className={existingApplication.appPostCreated ? 'line-through opacity-60' : ''}>
+                      Uygulamada bir kombin oluştur
+                    </li>
+                    <li>Kombini {existingApplication.platform === 'tiktok' ? 'TikTok' : 'Instagram'}\'da paylaş</li>
+                    <li>Paylaşım linkini buraya ekle</li>
+                  </ol>
+                </div>
+                <input
+                  type="url"
+                  placeholder="Paylaşım linki (örn: instagram.com/p/...)"
+                  value={existingApplication.appPostUrl || ''}
+                  onChange={(e) => {
+                    // Bu aslında parent'a gitmeli
+                  }}
+                  className="w-full"
+                />
+              </div>
+            )}
+            
+            {existingApplication.status === 'approved' && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                <StylistBadge type={existingApplication.type} size="lg" />
+                <p className="text-sm text-green-700 mt-2">
+                  Aylık <strong>{existingApplication.type === 'pro_stylist' ? '150' : '90'}</strong> ücretsiz kredi kazanıyorsun!
+                </p>
+              </div>
+            )}
+            
+            <button onClick={onClose} className="w-full btn-primary py-3 rounded-xl font-semibold">
+              Tamam
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-surface rounded-3xl overflow-hidden fade-in max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-6 text-white text-center flex-shrink-0">
+          <span className="text-4xl mb-2 block">✨</span>
+          <h2 className="text-xl font-bold">Stilist Başvurusu</h2>
+          <p className="text-white/80 text-sm mt-1">Moda içerik üreticisi misin?</p>
+        </div>
+        
+        {/* Content */}
+        <div className="p-6 space-y-4 overflow-y-auto flex-1">
+          {step === 1 && (
+            <>
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">
+                <h3 className="font-bold text-purple-800 mb-2">🎁 Stilist Avantajları</h3>
+                <ul className="text-sm text-purple-700 space-y-1">
+                  <li>✓ Aylık 90 ücretsiz kredi (Pro: 150)</li>
+                  <li>✓ Sınırsız kıyafet yükleme</li>
+                  <li>✓ Özel stilist rozeti</li>
+                  <li>✓ Öne çıkan stilistler listesi</li>
+                </ul>
+              </div>
+              
+              <div className="bg-slate-100 rounded-xl p-4">
+                <h3 className="font-bold text-slate-800 mb-2">📋 Gereksinimler</h3>
+                <ul className="text-sm text-slate-600 space-y-1">
+                  <li>• Min. 15.000 Instagram/TikTok takipçisi</li>
+                  <li>• Uygulama içi kombin oluşturma</li>
+                  <li>• Sosyal medyada paylaşım</li>
+                </ul>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-purple-100 border-2 border-purple-300 rounded-xl p-3 text-center">
+                  <span className="text-2xl">✨</span>
+                  <p className="font-bold text-purple-800 text-sm">Stilist</p>
+                  <p className="text-xs text-purple-600">15K+ takipçi</p>
+                </div>
+                <div className="bg-amber-100 border-2 border-amber-300 rounded-xl p-3 text-center">
+                  <span className="text-2xl">👑</span>
+                  <p className="font-bold text-amber-800 text-sm">PRO Stilist</p>
+                  <p className="text-xs text-amber-600">50K+ takipçi</p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setStep(2)}
+                className="w-full btn-primary py-4 rounded-xl font-bold"
+              >
+                Başvuruya Başla
+              </button>
+            </>
+          )}
+          
+          {step === 2 && (
+            <>
+              <div>
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Platform</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setPlatform('instagram')}
+                    className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 transition ${
+                      platform === 'instagram' ? 'border-pink-500 bg-pink-50' : 'border-slate-200'
+                    }`}
+                  >
+                    <span className="text-xl">📸</span>
+                    <span className="font-semibold">Instagram</span>
+                  </button>
+                  <button
+                    onClick={() => setPlatform('tiktok')}
+                    className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 transition ${
+                      platform === 'tiktok' ? 'border-black bg-slate-100' : 'border-slate-200'
+                    }`}
+                  >
+                    <span className="text-xl">🎵</span>
+                    <span className="font-semibold">TikTok</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Kullanıcı Adı</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace('@', ''))}
+                    placeholder="kullaniciadi"
+                    className="pl-8"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Takipçi Sayısı</label>
+                <input
+                  type="text"
+                  value={followers}
+                  onChange={(e) => setFollowers(e.target.value)}
+                  placeholder="örn: 25000"
+                />
+                {followerCount > 0 && (
+                  <div className="mt-2">
+                    {followerCount >= 50000 ? (
+                      <span className="text-amber-600 text-sm font-medium">👑 PRO Stilist için uygun!</span>
+                    ) : followerCount >= 15000 ? (
+                      <span className="text-purple-600 text-sm font-medium">✨ Stilist için uygun!</span>
+                    ) : (
+                      <span className="text-red-500 text-sm">❌ Minimum 15.000 takipçi gerekli</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Profil Ekran Görüntüsü</label>
+                <p className="text-xs text-slate-500 mb-2">Takipçi sayınızın görüldüğü bir screenshot yükleyin</p>
+                {screenshot ? (
+                  <div className="relative">
+                    <img src={screenshot} className="w-full h-40 object-cover rounded-xl" />
+                    <button 
+                      onClick={() => setScreenshot(null)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                    >
+                      <Icon name="x" size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="block w-full border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-brand transition">
+                    <Icon name="upload" size={24} className="mx-auto text-slate-400 mb-2" />
+                    <span className="text-sm text-slate-500">Tıkla veya sürükle</span>
+                    <input type="file" accept="image/*" onChange={handleScreenshotSelect} className="hidden" />
+                  </label>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <button onClick={() => setStep(1)} className="flex-1 btn-ghost py-3 rounded-xl font-semibold">
+                  Geri
+                </button>
+                <button 
+                  onClick={() => setStep(3)}
+                  disabled={!username || !applicationType || !screenshot}
+                  className="flex-1 btn-primary py-3 rounded-xl font-semibold disabled:opacity-50"
+                >
+                  Devam
+                </button>
+              </div>
+            </>
+          )}
+          
+          {step === 3 && (
+            <>
+              <div>
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Neden stilist olmak istiyorsun?</label>
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Moda içerikleri üretiyorum, kombiner hazırlıyorum..."
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">Portfolyo Linki (opsiyonel)</label>
+                <input
+                  type="url"
+                  value={portfolioUrl}
+                  onChange={(e) => setPortfolioUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+              </div>
+              
+              <div className="bg-slate-100 rounded-xl p-4">
+                <h4 className="font-semibold text-sm mb-2">📝 Başvuru Özeti</h4>
+                <div className="text-sm text-slate-600 space-y-1">
+                  <p><strong>Platform:</strong> {platform === 'instagram' ? 'Instagram' : 'TikTok'}</p>
+                  <p><strong>Hesap:</strong> @{username}</p>
+                  <p><strong>Takipçi:</strong> {followerCount.toLocaleString()}</p>
+                  <p><strong>Başvuru Tipi:</strong> {applicationType === 'pro_stylist' ? '👑 PRO Stilist' : '✨ Stilist'}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                <button onClick={() => setStep(2)} className="flex-1 btn-ghost py-3 rounded-xl font-semibold">
+                  Geri
+                </button>
+                <button 
+                  onClick={handleSubmit}
+                  disabled={submitting || !reason}
+                  className="flex-1 btn-primary py-3 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {submitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Gönderiliyor...
+                    </>
+                  ) : (
+                    'Başvuru Gönder'
+                  )}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+        
+        {/* Close button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white/80 hover:text-white"
+        >
+          <Icon name="x" size={24} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ============ ADMIN PANEL COMPONENT ============
+const AdminPanel = ({ authUser, onClose, setToast }) => {
+  const [activeTab, setActiveTab] = useState('applications');
+  const [applications, setApplications] = useState([]);
+  const [stylists, setStylists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  
+  // Load data
+  useEffect(() => {
+    if (!db) return;
+    
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // Load pending applications
+        const appsSnapshot = await db.collection('stylistApplications')
+          .where('status', 'in', ['pending', 'awaiting_post'])
+          .orderBy('appliedAt', 'desc')
+          .get();
+        
+        const apps = [];
+        appsSnapshot.forEach(doc => apps.push({ id: doc.id, ...doc.data() }));
+        setApplications(apps);
+        
+        // Load approved stylists
+        const stylistsSnapshot = await db.collection('users')
+          .where('stylistStatus', 'in', ['stylist', 'pro_stylist'])
+          .get();
+        
+        const stylistList = [];
+        stylistsSnapshot.forEach(doc => stylistList.push({ id: doc.id, ...doc.data() }));
+        setStylists(stylistList);
+        
+      } catch (err) {
+        console.error('Admin data load error:', err);
+      }
+      setLoading(false);
+    };
+    
+    loadData();
+  }, []);
+  
+  // Approve application
+  const approveApplication = async (app) => {
+    if (!db) return;
+    
+    try {
+      const now = Date.now();
+      const monthlyCredits = app.type === 'pro_stylist' ? 150 : 90;
+      
+      // Update application status
+      await db.collection('stylistApplications').doc(app.id).update({
+        status: 'approved',
+        reviewedAt: now,
+        reviewedBy: authUser.uid
+      });
+      
+      // Update user's stylist status
+      await db.collection('users').doc(app.userId).update({
+        stylistStatus: app.type,
+        stylistApprovedAt: now,
+        stylistMonthlyCredits: monthlyCredits,
+        stylistCreditsLastReset: now,
+        clothingUploadLimit: 999999 // Unlimited
+      });
+      
+      // Add credits to user
+      await db.collection('users').doc(app.userId).update({
+        credits: firebase.firestore.FieldValue.increment(monthlyCredits)
+      });
+      
+      // Create notification for user
+      await db.collection('users').doc(app.userId).collection('notifications').add({
+        type: 'stylist_approved',
+        message: `🎉 Stilist başvurun onaylandı! ${monthlyCredits} kredi hesabına eklendi.`,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      setApplications(prev => prev.filter(a => a.id !== app.id));
+      setSelectedApp(null);
+      setToast({ open: true, type: 'success', title: 'Onaylandı', message: `${app.socialUsername} stilist olarak onaylandı` });
+    } catch (err) {
+      console.error('Approve error:', err);
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Onaylama başarısız' });
+    }
+  };
+  
+  // Move to awaiting_post
+  const moveToAwaitingPost = async (app) => {
+    if (!db) return;
+    
+    try {
+      await db.collection('stylistApplications').doc(app.id).update({
+        status: 'awaiting_post',
+        reviewedAt: Date.now(),
+        reviewedBy: authUser.uid
+      });
+      
+      // Notify user
+      await db.collection('users').doc(app.userId).collection('notifications').add({
+        type: 'stylist_awaiting_post',
+        message: '📸 Başvurun ön onay aldı! Şimdi bir kombin oluştur ve sosyal medyada paylaş.',
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'awaiting_post' } : a));
+      setSelectedApp(null);
+      setToast({ open: true, type: 'success', title: 'Güncellendi', message: 'Paylaşım bekleniyor durumuna alındı' });
+    } catch (err) {
+      console.error('Update error:', err);
+    }
+  };
+  
+  // Reject application
+  const rejectApplication = async (app) => {
+    if (!db || !rejectReason) return;
+    
+    try {
+      await db.collection('stylistApplications').doc(app.id).update({
+        status: 'rejected',
+        rejectedReason: rejectReason,
+        reviewedAt: Date.now(),
+        reviewedBy: authUser.uid
+      });
+      
+      // Notify user
+      await db.collection('users').doc(app.userId).collection('notifications').add({
+        type: 'stylist_rejected',
+        message: `😔 Stilist başvurun reddedildi: ${rejectReason}`,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      setApplications(prev => prev.filter(a => a.id !== app.id));
+      setSelectedApp(null);
+      setRejectReason('');
+      setToast({ open: true, type: 'info', title: 'Reddedildi', message: 'Başvuru reddedildi' });
+    } catch (err) {
+      console.error('Reject error:', err);
+    }
+  };
+  
+  // Remove stylist status
+  const removeStylistStatus = async (userId) => {
+    if (!db) return;
+    if (!confirm('Bu kullanıcının stilist yetkisini kaldırmak istediğinize emin misiniz?')) return;
+    
+    try {
+      await db.collection('users').doc(userId).update({
+        stylistStatus: null,
+        stylistApprovedAt: null,
+        stylistMonthlyCredits: null,
+        clothingUploadLimit: 5
+      });
+      
+      setStylists(prev => prev.filter(s => s.id !== userId));
+      setToast({ open: true, type: 'success', title: 'Kaldırıldı', message: 'Stilist yetkisi kaldırıldı' });
+    } catch (err) {
+      console.error('Remove stylist error:', err);
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-4 flex items-center justify-between border-b border-slate-700">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🛡️</span>
+          <div>
+            <h2 className="text-white font-bold text-lg">Admin Panel</h2>
+            <p className="text-slate-400 text-xs">Stilist yönetimi</p>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-slate-400 hover:text-white p-2">
+          <Icon name="x" size={24} />
+        </button>
+      </div>
+      
+      {/* Tabs */}
+      <div className="flex border-b border-slate-700 bg-slate-800">
+        <button
+          onClick={() => setActiveTab('applications')}
+          className={`flex-1 py-3 text-sm font-semibold transition ${
+            activeTab === 'applications' ? 'text-brand border-b-2 border-brand' : 'text-slate-400'
+          }`}
+        >
+          Başvurular ({applications.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('stylists')}
+          className={`flex-1 py-3 text-sm font-semibold transition ${
+            activeTab === 'stylists' ? 'text-brand border-b-2 border-brand' : 'text-slate-400'
+          }`}
+        >
+          Stilistler ({stylists.length})
+        </button>
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 bg-slate-900">
+        {loading ? (
+          <div className="flex items-center justify-center h-40">
+            <div className="w-8 h-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+          </div>
+        ) : activeTab === 'applications' ? (
+          <div className="space-y-3">
+            {applications.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <span className="text-4xl mb-3 block">📭</span>
+                <p>Bekleyen başvuru yok</p>
+              </div>
+            ) : (
+              applications.map(app => (
+                <div key={app.id} className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                      {app.socialUsername?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-white">@{app.socialUsername}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          app.status === 'pending' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'
+                        }`}>
+                          {app.status === 'pending' ? 'Bekliyor' : 'Paylaşım Bekleniyor'}
+                        </span>
+                        <StylistBadge type={app.type} size="xs" />
+                      </div>
+                      <p className="text-slate-400 text-sm">
+                        {app.platform === 'instagram' ? '📸' : '🎵'} {app.followerCount?.toLocaleString()} takipçi
+                      </p>
+                      <p className="text-slate-500 text-xs mt-1">{app.reason}</p>
+                    </div>
+                    <button 
+                      onClick={() => setSelectedApp(app)}
+                      className="btn-primary px-3 py-1.5 rounded-lg text-xs"
+                    >
+                      İncele
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {stylists.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <span className="text-4xl mb-3 block">👤</span>
+                <p>Henüz stilist yok</p>
+              </div>
+            ) : (
+              stylists.map(stylist => (
+                <div key={stylist.id} className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden">
+                      {stylist.profilePhoto ? (
+                        <img src={stylist.profilePhoto} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-bold">
+                          {getInitials(stylist.displayName, stylist.username)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-white">{stylist.displayName || stylist.username}</span>
+                        <StylistBadge type={stylist.stylistStatus} size="xs" />
+                      </div>
+                      <p className="text-slate-400 text-sm">@{stylist.username}</p>
+                    </div>
+                    <button 
+                      onClick={() => removeStylistStatus(stylist.id)}
+                      className="text-red-400 hover:text-red-300 text-xs"
+                    >
+                      Kaldır
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+      
+      {/* Application Detail Modal */}
+      {selectedApp && (
+        <div className="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-slate-800 rounded-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+              <h3 className="font-bold text-white">Başvuru Detayı</h3>
+              <button onClick={() => setSelectedApp(null)} className="text-slate-400 hover:text-white">
+                <Icon name="x" size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4 overflow-y-auto flex-1">
+              <div className="flex items-center gap-3">
+                <StylistBadge type={selectedApp.type} size="lg" />
+                <div>
+                  <p className="text-white font-semibold">@{selectedApp.socialUsername}</p>
+                  <p className="text-slate-400 text-sm">
+                    {selectedApp.platform === 'instagram' ? 'Instagram' : 'TikTok'} • {selectedApp.followerCount?.toLocaleString()} takipçi
+                  </p>
+                </div>
+              </div>
+              
+              {selectedApp.screenshot && (
+                <div>
+                  <p className="text-slate-400 text-xs mb-2">Profil Ekran Görüntüsü:</p>
+                  <img src={selectedApp.screenshot} className="w-full rounded-xl" />
+                </div>
+              )}
+              
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Başvuru Nedeni:</p>
+                <p className="text-white text-sm bg-slate-700 rounded-lg p-3">{selectedApp.reason}</p>
+              </div>
+              
+              {selectedApp.portfolioUrl && (
+                <div>
+                  <p className="text-slate-400 text-xs mb-1">Portfolyo:</p>
+                  <a href={selectedApp.portfolioUrl} target="_blank" className="text-brand text-sm hover:underline">
+                    {selectedApp.portfolioUrl}
+                  </a>
+                </div>
+              )}
+              
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Başvuru Tarihi:</p>
+                <p className="text-white text-sm">{new Date(selectedApp.appliedAt).toLocaleString('tr-TR')}</p>
+              </div>
+              
+              {selectedApp.status === 'pending' && (
+                <div className="space-y-2 pt-4 border-t border-slate-700">
+                  <button 
+                    onClick={() => moveToAwaitingPost(selectedApp)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold"
+                  >
+                    ✅ Ön Onayla (Paylaşım Bekle)
+                  </button>
+                  <button 
+                    onClick={() => approveApplication(selectedApp)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold"
+                  >
+                    🎉 Direkt Onayla
+                  </button>
+                </div>
+              )}
+              
+              {selectedApp.status === 'awaiting_post' && (
+                <div className="space-y-2 pt-4 border-t border-slate-700">
+                  {selectedApp.appPostUrl && (
+                    <div className="bg-slate-700 rounded-lg p-3">
+                      <p className="text-slate-400 text-xs mb-1">Paylaşım Linki:</p>
+                      <a href={selectedApp.appPostUrl} target="_blank" className="text-brand text-sm hover:underline">
+                        {selectedApp.appPostUrl}
+                      </a>
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => approveApplication(selectedApp)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold"
+                  >
+                    🎉 Onayla
+                  </button>
+                </div>
+              )}
+              
+              <div className="pt-4 border-t border-slate-700">
+                <p className="text-slate-400 text-xs mb-2">Reddet:</p>
+                <input
+                  type="text"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Red nedeni..."
+                  className="bg-slate-700 border-slate-600 text-white mb-2"
+                />
+                <button 
+                  onClick={() => rejectApplication(selectedApp)}
+                  disabled={!rejectReason}
+                  className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white py-2 rounded-xl font-semibold text-sm"
+                >
+                  Reddet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ============ MAIN APP ============
 const App = () => {
   const [toast, setToast] = useState({ open: false });
@@ -12820,6 +13896,16 @@ const App = () => {
   // Avatar prompt state - ilk deneme için avatar oluşturma ekranı
   const [showAvatarPrompt, setShowAvatarPrompt] = useState(false);
   const [showAvatarWizard, setShowAvatarWizard] = useState(false);
+  
+  // Stylist system state
+  const [showStylistApplication, setShowStylistApplication] = useState(false);
+  const [stylistApplication, setStylistApplication] = useState(null);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // User profile viewing state
+  const [viewedUser, setViewedUser] = useState(null);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   
   // Size selection modal state
   const [sizeModal, setSizeModal] = useState({ open: false, product: null, callback: null });
@@ -13733,11 +14819,48 @@ const App = () => {
               hijab: data.params?.hijab || data.hijab || false,
               // Bio
               bio: data.bio || prev?.bio || '',
+              // Stilist sistemi
+              stylistStatus: data.stylistStatus || null,
+              stylistApprovedAt: data.stylistApprovedAt || null,
+              stylistMonthlyCredits: data.stylistMonthlyCredits || 0,
+              stylistCreditsLastReset: data.stylistCreditsLastReset || null,
               // Mevcut avatar'ı koru veya yenisini ekle
               baseAvatar: baseAvatarDataUrl || prev?.baseAvatar || data.baseAvatarDataUrl || null
             };
             return newUser;
           });
+          
+          // Admin kontrolü
+          setIsAdmin(data.isAdmin === true);
+          
+          // Stilist başvurusunu yükle
+          if (data.stylistApplicationId) {
+            db.collection('stylistApplications').doc(data.stylistApplicationId).get()
+              .then(appDoc => {
+                if (appDoc.exists) {
+                  setStylistApplication({ id: appDoc.id, ...appDoc.data() });
+                }
+              })
+              .catch(() => {});
+          }
+          
+          // Stilist aylık kredi yenileme kontrolü
+          if (data.stylistStatus && data.stylistCreditsLastReset) {
+            const lastReset = data.stylistCreditsLastReset;
+            const now = Date.now();
+            const oneMonth = 30 * 24 * 60 * 60 * 1000;
+            
+            if (now - lastReset > oneMonth) {
+              // Bir ay geçmiş, kredileri yenile
+              const monthlyCredits = data.stylistStatus === 'pro_stylist' ? 150 : 90;
+              db.collection('users').doc(userId).update({
+                credits: firebase.firestore.FieldValue.increment(monthlyCredits),
+                stylistCreditsLastReset: now
+              }).then(() => {
+                setToast({ open: true, type: 'success', title: '🎉 Aylık Krediler', message: `${monthlyCredits} stilist kredisi hesabına eklendi!` });
+              }).catch(() => {});
+            }
+          }
           
           // CRITICAL FIX: Only load arrays on FIRST snapshot
           if (shouldLoadData) {
@@ -14846,6 +15969,14 @@ const App = () => {
                 setUser(prev => ({ ...prev, profilePhoto: photo }));
               }}
               changeLanguage={changeLanguage}
+              setToast={setToast}
+              stylistApplication={stylistApplication}
+              onOpenStylistApplication={() => setShowStylistApplication(true)}
+              isAdmin={isAdmin}
+              onOpenAdminPanel={() => setShowAdminPanel(true)}
+              posts={posts}
+              likedPosts={posts.filter(p => p.likes?.includes(authUser?.uid))}
+              repostedPosts={posts.filter(p => p.reposts?.includes(authUser?.uid))}
             />
           )}
           {tab === 'social' && (
@@ -14867,6 +15998,10 @@ const App = () => {
               setGroups={setGroups}
               notifications={notifications}
               setNotifications={setNotifications}
+              onViewUserProfile={(viewUser) => {
+                setViewedUser(viewUser);
+                setShowUserProfile(true);
+              }}
             />
           )}
         </div>
@@ -15018,6 +16153,14 @@ const App = () => {
                 setUser(prev => ({ ...prev, profilePhoto: photo }));
               }}
               changeLanguage={changeLanguage}
+              setToast={setToast}
+              stylistApplication={stylistApplication}
+              onOpenStylistApplication={() => setShowStylistApplication(true)}
+              isAdmin={isAdmin}
+              onOpenAdminPanel={() => setShowAdminPanel(true)}
+              posts={posts}
+              likedPosts={posts.filter(p => p.likes?.includes(authUser?.uid))}
+              repostedPosts={posts.filter(p => p.reposts?.includes(authUser?.uid))}
             />
           )}
           {tab === 'social' && (
@@ -15480,6 +16623,7 @@ const App = () => {
                   authorName: user?.displayName || user?.username || 'Kullanıcı',
                   authorUsername: user?.username,
                   authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar,
+                  authorStylistStatus: user?.stylistStatus || null,
                   image: image,
                   items: items || [],
                   caption: '',
@@ -15579,6 +16723,175 @@ const App = () => {
               >
                 Daha Sonra
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Stylist Application Modal */}
+      <StylistApplicationModal
+        open={showStylistApplication}
+        onClose={() => setShowStylistApplication(false)}
+        user={user}
+        authUser={authUser}
+        existingApplication={stylistApplication}
+        onSubmit={async (application) => {
+          if (!db || !authUser?.uid) return;
+          
+          try {
+            // Save application to Firestore
+            const appRef = await db.collection('stylistApplications').add({
+              ...application,
+              userId: authUser.uid,
+              userEmail: authUser.email,
+              username: user?.username,
+              displayName: user?.displayName
+            });
+            
+            // Update user with application reference
+            await db.collection('users').doc(authUser.uid).update({
+              stylistApplicationId: appRef.id
+            });
+            
+            // Update local state
+            setStylistApplication({ id: appRef.id, ...application });
+            setShowStylistApplication(false);
+            setToast({ open: true, type: 'success', title: 'Başvuru Gönderildi', message: 'Admin ekibimiz en kısa sürede inceleyecek' });
+          } catch (err) {
+            console.error('Application submit error:', err);
+            setToast({ open: true, type: 'error', title: 'Hata', message: 'Başvuru gönderilemedi' });
+          }
+        }}
+      />
+      
+      {/* Admin Panel */}
+      {showAdminPanel && (
+        <AdminPanel
+          authUser={authUser}
+          onClose={() => setShowAdminPanel(false)}
+          setToast={setToast}
+        />
+      )}
+      
+      {/* User Profile Modal - Başka kullanıcı profili görüntüleme */}
+      {showUserProfile && viewedUser && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col">
+          {/* Header */}
+          <div className="p-4 flex items-center gap-4 border-b border-slate-700">
+            <button 
+              onClick={() => { setShowUserProfile(false); setViewedUser(null); }}
+              className="p-2 rounded-xl hover:bg-slate-800 text-white"
+            >
+              <Icon name="arrowLeft" size={24} />
+            </button>
+            <div>
+              <h2 className="font-bold text-white">{viewedUser.displayName || viewedUser.username}</h2>
+              <p className="text-slate-400 text-sm">@{viewedUser.username}</p>
+            </div>
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto bg-dark">
+            {/* Profile Header */}
+            <div className="bg-gradient-to-b from-brand/30 to-transparent p-6 text-center">
+              <div className="w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-white/20 mb-4">
+                {viewedUser.profilePhoto ? (
+                  <img src={viewedUser.profilePhoto} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-brand to-purple-500 flex items-center justify-center">
+                    <span className="text-white text-3xl font-bold">{getInitials(viewedUser.displayName, viewedUser.username)}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <h3 className="text-xl font-bold">{viewedUser.displayName || viewedUser.username}</h3>
+                <StylistBadge type={viewedUser.stylistStatus} size="sm" />
+              </div>
+              <p className="text-slate-500">@{viewedUser.username}</p>
+              {viewedUser.bio && (
+                <p className="text-slate-600 text-sm mt-2 max-w-xs mx-auto">{viewedUser.bio}</p>
+              )}
+              
+              {/* Stats */}
+              <div className="flex justify-center gap-8 mt-4">
+                <div className="text-center">
+                  <p className="font-bold">{posts.filter(p => p.authorId === viewedUser.id).length}</p>
+                  <p className="text-xs text-slate-500">Gönderi</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-bold">{viewedUser.followersCount || 0}</p>
+                  <p className="text-xs text-slate-500">Takipçi</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-bold">{viewedUser.followingCount || 0}</p>
+                  <p className="text-xs text-slate-500">Takip</p>
+                </div>
+              </div>
+              
+              {/* Follow Button */}
+              {viewedUser.id !== authUser?.uid && (
+                <div className="mt-4">
+                  {friends.some(f => f.id === viewedUser.id || f.uid === viewedUser.id) ? (
+                    <button className="px-8 py-2 rounded-xl bg-slate-200 text-slate-700 font-semibold text-sm">
+                      Takip Ediliyor
+                    </button>
+                  ) : sentFollowRequests?.some(r => r.uid === viewedUser.id) ? (
+                    <button className="px-8 py-2 rounded-xl bg-amber-100 text-amber-700 font-semibold text-sm">
+                      İstek Gönderildi
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={async () => {
+                        // Follow işlemi
+                        if (!db || !authUser?.uid) return;
+                        try {
+                          const requestData = {
+                            fromUid: authUser.uid,
+                            fromUsername: user?.username,
+                            fromDisplayName: user?.displayName,
+                            fromPhoto: user?.profilePhoto || null,
+                            toUid: viewedUser.id,
+                            toUsername: viewedUser.username,
+                            status: 'pending',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                          };
+                          await db.collection('users').doc(viewedUser.id).collection('followRequests').doc(authUser.uid).set(requestData);
+                          await db.collection('users').doc(authUser.uid).collection('sentFollowRequests').doc(viewedUser.id).set({
+                            ...requestData,
+                            toPhoto: viewedUser.profilePhoto || null
+                          });
+                          setSentFollowRequests(prev => [...prev, { uid: viewedUser.id }]);
+                          setToast({ open: true, type: 'success', title: 'İstek Gönderildi', message: `@${viewedUser.username}'e takip isteği gönderildi` });
+                        } catch (err) {
+                          console.error('Follow error:', err);
+                        }
+                      }}
+                      className="px-8 py-2 rounded-xl bg-brand text-white font-semibold text-sm"
+                    >
+                      Takip Et
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* User's Posts Grid */}
+            <div className="p-2">
+              <p className="text-xs text-slate-500 font-semibold px-2 mb-2">GÖNDERİLER</p>
+              {posts.filter(p => p.authorId === viewedUser.id).length === 0 ? (
+                <div className="text-center py-12">
+                  <Icon name="camera" size={48} className="mx-auto text-slate-300 mb-3" />
+                  <p className="text-slate-500">Henüz gönderi yok</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-1">
+                  {posts.filter(p => p.authorId === viewedUser.id).map(post => (
+                    <div key={post.id} className="aspect-square relative overflow-hidden rounded-sm">
+                      <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
