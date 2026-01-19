@@ -1737,7 +1737,8 @@ const Icons = {
   arrowLeft:<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>,
   creditCard:<><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></>,
   externalLink:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
-  info:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>
+  info:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>,
+  repeat:<><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></>
 };
 
 // ============ LOGO ============
@@ -14180,35 +14181,39 @@ const App = () => {
       stylistMonthlyCredits: { type: 'info', title: '✨ Stilist kredisi kullanıldı' },
       credits: { type: 'info', title: t('creditUsed') }
     };
-    const toast = toastMessages[fieldToUse];
-    setToast({ open: true, ...toast, message: `Kalan: ${newValue}` });
+    const toastMsg = toastMessages[fieldToUse];
+    setToast({ open: true, ...toastMsg, message: `Kalan: ${newValue}` });
     
-    // Background'da Cloud Function çağır
+    // Background'da Cloud Function dene, başarısız olursa direkt Firestore'a yaz
     const useCreditFn = firebase.functions().httpsCallable('useCredit');
     useCreditFn({ type: source }).then(result => {
       if (result.data.success) {
-        console.log('✅ Credit used via Cloud Function:', result.data);
+        console.log('✅ Credit used via Cloud Function');
       }
     }).catch(error => {
-      console.error('❌ useCredit Cloud Function error:', error);
-      // Cloud Function başarısız - local state'i geri al
-      setUser(prev => ({ ...prev, [fieldToUse]: currentValue }));
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Kredi kullanılamadı, geri alındı' });
+      console.warn('⚠️ Cloud Function failed, falling back to Firestore:', error.message);
+      // Direkt Firestore'a yaz (fallback)
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ [fieldToUse]: newValue })
+          .then(() => console.log('✅ Credit saved via Firestore fallback'))
+          .catch(e => console.error('❌ Firestore fallback also failed:', e));
+      }
     });
     
     return true;
   };
   
-  // Kredi iade et (hata durumunda) - Cloud Function ile senkronize
+  // Kredi iade et (hata durumunda) - Cloud Function + Firestore fallback
   const refundCredit = (source = 'shop') => {
-    if (!user) return;
+    if (!user || !authUser?.uid) return;
     
     const actualType = lastUsedCreditTypeRef.current;
     if (!actualType) return;
     
     // Local state'i geri al
     const currentValue = user[actualType] || 0;
-    setUser(prev => ({ ...prev, [actualType]: currentValue + 1 }));
+    const newValue = currentValue + 1;
+    setUser(prev => ({ ...prev, [actualType]: newValue }));
     
     const toastMessages = {
       freeAvatarTry: 'Ücretsiz avatar hakkınız geri verildi',
@@ -14220,9 +14225,15 @@ const App = () => {
     
     setToast({ open: true, type: 'info', title: '💰 Kredi İade Edildi', message: toastMessages[actualType] });
     
-    // Cloud Function ile server'a sync et
+    // Cloud Function dene, başarısız olursa Firestore fallback
     const refundCreditFn = firebase.functions().httpsCallable('refundCredit');
-    refundCreditFn({ type: actualType }).catch(e => console.error('Refund sync failed:', e));
+    refundCreditFn({ type: actualType }).catch(error => {
+      console.warn('⚠️ refundCredit Cloud Function failed, using Firestore:', error.message);
+      if (db) {
+        db.collection('users').doc(authUser.uid).update({ [actualType]: newValue })
+          .catch(e => console.error('❌ Refund Firestore fallback failed:', e));
+      }
+    });
     
     lastUsedCreditTypeRef.current = null;
   };
