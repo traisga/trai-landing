@@ -991,7 +991,40 @@ const TRANSLATIONS = {
     applePayment: "Apple Pay",
     googlePayment: "Google Pay",
     operatorPayment: "Operatör Ödemesi",
-    continueToPayment: "Ödemeye Geç"
+    continueToPayment: "Ödemeye Geç",
+    
+    // Stylist Program
+    stylistProgram: "Stilist Programı",
+    stylistApplication: "Stilist Başvurusu",
+    stylistBadge: "Stilist",
+    stylistBenefits: "Stilist Avantajları",
+    stylistBenefit1: "Aylık 90 ücretsiz kredi",
+    stylistBenefit2: "Sınırsız kıyafet yükleme",
+    stylistBenefit3: "Özel stilist rozeti",
+    stylistBenefit4: "Öncelikli destek",
+    stylistRequirements: "Başvuru Şartları",
+    stylistReq1: "Instagram veya TikTok'ta en az 15.000 takipçi",
+    stylistReq2: "TrAi'de kombin oluşturup sosyal medyada paylaşmak",
+    stylistSocialPlatform: "Sosyal Medya Platformu",
+    stylistSocialUsername: "Kullanıcı Adı",
+    stylistFollowerCount: "Takipçi Sayısı",
+    stylistApplicationNote: "Neden stilist olmak istiyorsunuz?",
+    stylistSubmitApplication: "Başvuru Gönder",
+    stylistPending: "Başvurunuz İnceleniyor",
+    stylistPendingDesc: "Başvurunuz değerlendirme aşamasında. Sonuç email ile bildirilecek.",
+    stylistApproved: "Stilist Hesabı Aktif",
+    stylistRejected: "Başvuru Reddedildi",
+    stylistProofRequired: "Paylaşım Kanıtı Gerekli",
+    stylistProofDesc: "TrAi'de oluşturduğunuz kombini sosyal medyada paylaşın ve linkini buraya yapıştırın.",
+    stylistProofUrl: "Paylaşım Linki",
+    stylistProofSubmit: "Kanıt Gönder",
+    stylistMonthlyCredits: "Aylık Stilist Kredisi",
+    stylistCreditsReset: "Her ayın 1'inde yenilenir",
+    adminPanel: "Admin Panel",
+    adminPendingApplications: "Bekleyen Başvurular",
+    adminApprove: "Onayla",
+    adminReject: "Reddet",
+    adminNoApplications: "Bekleyen başvuru yok"
   },
   en: {
     // Slogan & Branding
@@ -1558,7 +1591,40 @@ const TRANSLATIONS = {
     applePayment: "Apple Pay",
     googlePayment: "Google Pay",
     operatorPayment: "Carrier Billing",
-    continueToPayment: "Continue to Payment"
+    continueToPayment: "Continue to Payment",
+    
+    // Stylist Program
+    stylistProgram: "Stylist Program",
+    stylistApplication: "Stylist Application",
+    stylistBadge: "Stylist",
+    stylistBenefits: "Stylist Benefits",
+    stylistBenefit1: "90 free credits monthly",
+    stylistBenefit2: "Unlimited clothing uploads",
+    stylistBenefit3: "Exclusive stylist badge",
+    stylistBenefit4: "Priority support",
+    stylistRequirements: "Requirements",
+    stylistReq1: "At least 15,000 followers on Instagram or TikTok",
+    stylistReq2: "Create outfit on TrAi and share on your social media",
+    stylistSocialPlatform: "Social Media Platform",
+    stylistSocialUsername: "Username",
+    stylistFollowerCount: "Follower Count",
+    stylistApplicationNote: "Why do you want to become a stylist?",
+    stylistSubmitApplication: "Submit Application",
+    stylistPending: "Application Under Review",
+    stylistPendingDesc: "Your application is being reviewed. You will be notified via email.",
+    stylistApproved: "Stylist Account Active",
+    stylistRejected: "Application Rejected",
+    stylistProofRequired: "Proof of Share Required",
+    stylistProofDesc: "Share your TrAi outfit on social media and paste the link here.",
+    stylistProofUrl: "Share Link",
+    stylistProofSubmit: "Submit Proof",
+    stylistMonthlyCredits: "Monthly Stylist Credits",
+    stylistCreditsReset: "Resets on the 1st of each month",
+    adminPanel: "Admin Panel",
+    adminPendingApplications: "Pending Applications",
+    adminApprove: "Approve",
+    adminReject: "Reject",
+    adminNoApplications: "No pending applications"
   }
 };
 
@@ -1703,6 +1769,7 @@ const Icons = {
   chevronLeft:<path d="M15 18l-6-6 6-6"/>,
   chevronRight:<path d="M9 18l6-6-6-6"/>,
   refresh:<path d="M23 4v6h-6 M1 20v-6h6 M3.51 9a9 9 0 0 1 14.85-3.36L23 10 M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>,
+  repeat:<path d="M17 1l4 4-4 4 M3 11V9a4 4 0 0 1 4-4h14 M7 23l-4-4 4-4 M21 13v2a4 4 0 0 1-4 4H3"/>,
   share:<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8 M16 6l-4-4-4 4 M12 2v13"/>,
   logout:<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9"/>,
   shield:<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>,
@@ -5463,7 +5530,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
   const customClothesCount = closet.filter(item => item.isCustom).length;
   const freeClothingSlots = 10;
   const maxCustomClothes = 100;
-  const hasExtendedClothingAccess = user?.clothingUploadPurchased || user?.subscription === 'premium';
+  const hasExtendedClothingAccess = user?.clothingUploadPurchased || user?.subscription === 'premium' || user?.isStylist || user?.unlimitedClothingUpload;
   const canAddMoreClothes = customClothesCount < freeClothingSlots || hasExtendedClothingAccess;
   
   // Filter closet items for items tab
@@ -6634,9 +6701,11 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                     {combo.image && (
                       <>
                         <button 
-                          onClick={() => {
-                            if (onShareToFeed) {
-                              onShareToFeed({ image: combo.image, items: combo.items });
+                          onClick={async () => {
+                            if (window.shareToFeedGlobal) {
+                              await window.shareToFeedGlobal(combo.image, combo.items);
+                            } else if (onShareToFeed) {
+                              onShareToFeed(combo.image, combo.items);
                             }
                           }}
                           className="flex-1 glass py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-slate-200/60"
@@ -6645,8 +6714,9 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                         </button>
                         <button 
                           onClick={async () => {
-                            // External share with Firebase upload
-                            if (combo.image && window.uploadAndShareImage) {
+                            if (window.shareExternalGlobal) {
+                              await window.shareExternalGlobal('native', combo.image);
+                            } else if (combo.image && window.uploadAndShareImage) {
                               const result = await window.uploadAndShareImage(combo.image, authUser, window.storage);
                               if (result?.copied) {
                                 setToast({ open: true, type: 'success', title: 'Link Kopyalandı!', message: 'Paylaşım linki panoya kopyalandı' });
@@ -6762,8 +6832,10 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                   </div>
                   <div className="p-3 flex gap-2">
                     <button 
-                      onClick={() => {
-                        if (onShareToFeed) {
+                      onClick={async () => {
+                        if (window.shareToFeedGlobal) {
+                          await window.shareToFeedGlobal(item.image, item.items || []);
+                        } else if (onShareToFeed) {
                           onShareToFeed(item.image, item.items || []);
                         }
                       }}
@@ -6772,7 +6844,13 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
                       <Icon name="users" size={12} />TrAi'de
                     </button>
                     <button 
-                      onClick={() => shareImage(item.image)}
+                      onClick={() => {
+                        if (window.shareExternalGlobal) {
+                          window.shareExternalGlobal('native', item.image);
+                        } else {
+                          shareImage(item.image);
+                        }
+                      }}
                       className="flex-1 btn-secondary py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1"
                     >
                       <Icon name="share" size={12} />Harici
@@ -7299,10 +7377,230 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 };
 
 // ============ PROFILE (EXPANDED) ============
-const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab }) => {
-  const [tab, setTab] = useState('profile'); // profile, avatar, friends, notifications, settings, messages
+const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, messages, setMessages, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab, posts, setPosts }) => {
+  const [tab, setTab] = useState('profile'); // profile, avatar, friends, notifications, settings, messages, stylist, admin
   const [showAddFriend, setShowAddFriend] = useState(false);
   const profilePhotoRef = useRef(null);
+  
+  // Profile tab için sub-tab state (Paylaşımlar, Beğeniler, Repostlar)
+  const [profileSubTab, setProfileSubTab] = useState('posts'); // posts, likes, reposts
+  
+  // Kullanıcının kendi postları
+  const myPosts = posts?.filter(p => p.authorId === authUser?.uid) || [];
+  const likedPosts = posts?.filter(p => p.likes?.includes(authUser?.uid)) || [];
+  const repostedPosts = posts?.filter(p => p.reposts?.includes(authUser?.uid)) || [];
+  
+  // Admin kontrolü - Firestore'dan isAdmin flag'i VEYA hardcoded email listesi
+  // Güvenlik: Firestore rules'da da admin kontrolü yapılmalı
+  const ADMIN_EMAILS = ['admin@trai.style']; // Production'da sadece gerçek admin emailleri
+  const isAdmin = user?.isAdmin === true || ADMIN_EMAILS.includes(authUser?.email?.toLowerCase());
+  
+  // Stilist başvuru state
+  const [stylistForm, setStylistForm] = useState({
+    platform: 'instagram',
+    username: '',
+    followers: '',
+    note: '',
+    proofUrl: ''
+  });
+  const [stylistSubmitting, setStylistSubmitting] = useState(false);
+  
+  // Admin panel state
+  const [pendingApplications, setPendingApplications] = useState([]);
+  const [loadingApplications, setLoadingApplications] = useState(false);
+  
+  // Load pending applications for admin
+  useEffect(() => {
+    if (isAdmin && tab === 'admin' && db) {
+      setLoadingApplications(true);
+      db.collection('stylistApplications')
+        .where('status', '==', 'pending')
+        .orderBy('applicationDate', 'desc')
+        .get()
+        .then(snapshot => {
+          const apps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setPendingApplications(apps);
+        })
+        .catch(console.error)
+        .finally(() => setLoadingApplications(false));
+    }
+  }, [isAdmin, tab]);
+  
+  // Submit stylist application
+  const submitStylistApplication = async () => {
+    if (!authUser?.uid || !db) return;
+    if (!stylistForm.username || !stylistForm.followers || !stylistForm.note) {
+      alert('Lütfen tüm alanları doldurun');
+      return;
+    }
+    
+    const followerCount = parseInt(stylistForm.followers);
+    if (isNaN(followerCount) || followerCount < 15000) {
+      alert('En az 15.000 takipçi gerekli');
+      return;
+    }
+    
+    setStylistSubmitting(true);
+    try {
+      const applicationData = {
+        odette: authUser.uid,
+        userEmail: authUser.email,
+        userName: user?.displayName || user?.username,
+        platform: stylistForm.platform,
+        socialUsername: stylistForm.username,
+        followerCount: followerCount,
+        applicationNote: stylistForm.note,
+        applicationDate: Date.now(),
+        status: 'pending', // pending, proof_required, approved, rejected
+        proofUrl: null,
+        reviewedBy: null,
+        reviewedAt: null
+      };
+      
+      // Save to stylistApplications collection
+      await db.collection('stylistApplications').doc(authUser.uid).set(applicationData);
+      
+      // Update user document
+      await db.collection('users').doc(authUser.uid).update({
+        stylistStatus: 'pending',
+        stylistApplication: applicationData
+      });
+      
+      // Update local state
+      if (onUpdateUser) {
+        onUpdateUser({ 
+          stylistStatus: 'pending',
+          stylistApplication: applicationData
+        });
+      }
+      
+      alert('Başvurunuz alındı! İncelendikten sonra email ile bilgilendirileceksiniz.');
+    } catch (err) {
+      console.error('Stylist application error:', err);
+      alert('Başvuru gönderilemedi: ' + err.message);
+    } finally {
+      setStylistSubmitting(false);
+    }
+  };
+  
+  // Submit proof URL
+  const submitProofUrl = async () => {
+    if (!authUser?.uid || !db || !stylistForm.proofUrl) return;
+    
+    if (!stylistForm.proofUrl.includes('instagram.com') && !stylistForm.proofUrl.includes('tiktok.com')) {
+      alert('Lütfen geçerli bir Instagram veya TikTok linki girin');
+      return;
+    }
+    
+    setStylistSubmitting(true);
+    try {
+      await db.collection('stylistApplications').doc(authUser.uid).update({
+        proofUrl: stylistForm.proofUrl,
+        proofSubmittedAt: Date.now(),
+        status: 'pending'
+      });
+      
+      await db.collection('users').doc(authUser.uid).update({
+        'stylistApplication.proofUrl': stylistForm.proofUrl,
+        stylistStatus: 'pending'
+      });
+      
+      if (onUpdateUser) {
+        onUpdateUser({ 
+          stylistStatus: 'pending',
+          stylistApplication: { ...user.stylistApplication, proofUrl: stylistForm.proofUrl }
+        });
+      }
+      
+      alert('Kanıt gönderildi! İncelendikten sonra bilgilendirileceksiniz.');
+    } catch (err) {
+      console.error('Proof submit error:', err);
+      alert('Kanıt gönderilemedi');
+    } finally {
+      setStylistSubmitting(false);
+    }
+  };
+  
+  // Admin: Approve application
+  const approveApplication = async (app) => {
+    if (!db) return;
+    try {
+      const now = Date.now();
+      
+      // Update stylistApplications
+      await db.collection('stylistApplications').doc(app.userId).update({
+        status: 'approved',
+        reviewedBy: authUser.email,
+        reviewedAt: now
+      });
+      
+      // Update user document with stylist benefits
+      await db.collection('users').doc(app.userId).update({
+        stylistStatus: 'approved',
+        isStylist: true,
+        stylistBadge: true,
+        stylistApprovedAt: now,
+        stylistMonthlyCredits: 90,
+        stylistCreditsResetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime(),
+        unlimitedClothingUpload: true
+      });
+      
+      // Remove from pending list
+      setPendingApplications(prev => prev.filter(a => a.userId !== app.userId));
+      alert('Başvuru onaylandı!');
+    } catch (err) {
+      console.error('Approve error:', err);
+      alert('Onaylama hatası');
+    }
+  };
+  
+  // Admin: Reject application
+  const rejectApplication = async (app, reason = 'Yetersiz takipçi sayısı veya içerik kalitesi') => {
+    if (!db) return;
+    const rejectionReason = prompt('Red sebebi:', reason);
+    if (!rejectionReason) return;
+    
+    try {
+      await db.collection('stylistApplications').doc(app.userId).update({
+        status: 'rejected',
+        rejectionReason: rejectionReason,
+        reviewedBy: authUser.email,
+        reviewedAt: Date.now()
+      });
+      
+      await db.collection('users').doc(app.userId).update({
+        stylistStatus: 'rejected',
+        'stylistApplication.rejectionReason': rejectionReason
+      });
+      
+      setPendingApplications(prev => prev.filter(a => a.userId !== app.userId));
+      alert('Başvuru reddedildi');
+    } catch (err) {
+      console.error('Reject error:', err);
+      alert('Reddetme hatası');
+    }
+  };
+  
+  // Admin: Request proof
+  const requestProof = async (app) => {
+    if (!db) return;
+    try {
+      await db.collection('stylistApplications').doc(app.userId).update({
+        status: 'proof_required'
+      });
+      
+      await db.collection('users').doc(app.userId).update({
+        stylistStatus: 'proof_required'
+      });
+      
+      setPendingApplications(prev => prev.map(a => 
+        a.userId === app.userId ? { ...a, status: 'proof_required' } : a
+      ));
+      alert('Kullanıcıdan kanıt istendi');
+    } catch (err) {
+      console.error('Request proof error:', err);
+    }
+  };
   
   // Okunmamış bildirim sayısı
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
@@ -8034,8 +8332,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const tabs = [
     { id: 'profile', icon: 'user', label: t('profile') },
     { id: 'avatar', icon: 'sparkles', label: t('myTwin') },
+    { id: 'stylist', icon: 'award', label: user.isStylist ? '✨ Stilist' : 'Stilist' },
     { id: 'notifications', icon: 'bell', label: t('notifications'), badge: unreadNotificationsCount },
-    { id: 'settings', icon: 'settings', label: t('settings') }
+    { id: 'settings', icon: 'settings', label: t('settings') },
+    ...(isAdmin ? [{ id: 'admin', icon: 'shield', label: 'Admin', badge: pendingApplications.length }] : [])
   ];
 
   // Physical attributes labels
@@ -8064,24 +8364,33 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       />
       
       {/* Profile Header */}
-      <div className="relative h-44 flex-shrink-0 overflow-hidden">
+      <div className="relative h-52 flex-shrink-0 overflow-hidden">
         <div className="absolute inset-0 bg-brand/20" />
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pt-2">
           <div className="relative">
             {/* Profile Photo */}
             <button 
               onClick={() => profilePhotoRef.current?.click()}
-              className="w-24 h-24 rounded-full overflow-hidden border-4 border-brand2/50 shadow-lg relative group"
+              className="w-24 h-24 rounded-full overflow-hidden border-4 border-brand2/50 shadow-lg relative group bg-slate-200"
             >
               {user.profilePhoto ? (
                 <img src={user.profilePhoto} className="w-full h-full object-cover" loading="lazy" />
               ) : (
-                <img src={user.baseAvatar || user.avatar} className="w-full h-full object-cover object-top scale-150" loading="lazy" />
+                <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                  <Icon name="camera" size={24} className="text-slate-400 mb-1" />
+                  <span className="text-[9px] text-slate-400 font-medium">Fotoğraf Ekle</span>
+                </div>
               )}
               <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                <Icon name="camera" size={20} />
+                <Icon name="camera" size={20} className="text-white" />
               </div>
             </button>
+            {/* Stylist Badge */}
+            {user.isStylist && (
+              <div className="absolute -bottom-1 -left-1 bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-0.5 rounded-full border-2 border-dark text-[9px] font-bold text-white flex items-center gap-1">
+                <Icon name="sparkles" size={10} />STİLİST
+              </div>
+            )}
             {/* Online/Public indicator */}
             {settings?.profilePublic && (
               <div className="absolute -bottom-1 -right-1 bg-green-500 p-1.5 rounded-full border-2 border-dark">
@@ -8090,10 +8399,24 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             )}
           </div>
         </div>
-        <div className="absolute bottom-3 left-0 right-0 text-center">
-          <h1 className="text-lg font-bold">{user.displayName || user.username || t('user')}</h1>
+        <div className="absolute bottom-2 left-0 right-0 text-center px-4">
+          <h1 className="text-lg font-bold flex items-center justify-center gap-2">
+            {user.displayName || user.username || t('user')}
+            {user.isStylist && <span className="text-purple-400">✨</span>}
+          </h1>
           {user.username && (
             <p className="text-slate-500 text-sm">@{user.username}</p>
+          )}
+          {/* Bio */}
+          {user.bio ? (
+            <p className="text-slate-600 text-xs mt-1 line-clamp-2">{user.bio}</p>
+          ) : (
+            <button 
+              onClick={() => setTab('profile')}
+              className="text-slate-400 text-xs mt-1 hover:text-brand2"
+            >
+              + Bio ekle
+            </button>
           )}
         </div>
       </div>
@@ -8129,84 +8452,552 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto custom-scroll pb-24">
-        {/* PROFILE TAB */}
+        {/* PROFILE TAB - Instagram/Twitter Style */}
         {tab === 'profile' && (
-          <div className="p-4 space-y-4 fade-in">
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="glass rounded-2xl p-4 text-center">
-                <div className="text-2xl font-bold text-brand2">{friends.length}</div>
-                <div className="text-xs text-slate-500">{t('follower')}</div>
+          <div className="fade-in">
+            {/* Profile Stats Bar */}
+            <div className="px-4 py-3 flex items-center justify-around border-b border-slate-200">
+              <div className="text-center">
+                <div className="text-xl font-bold">{myPosts.length}</div>
+                <div className="text-xs text-slate-500">Paylaşım</div>
               </div>
-              <div className="glass rounded-2xl p-4 text-center">
-                <div className="text-2xl font-bold text-accent">{user.closetCount || 0}</div>
-                <div className="text-xs text-slate-500">{t('closetLabel')}</div>
+              <div className="text-center">
+                <div className="text-xl font-bold">{friends.length}</div>
+                <div className="text-xs text-slate-500">Takipçi</div>
               </div>
-              <div className="glass rounded-2xl p-4 text-center">
-                <div className="text-2xl font-bold text-green-400">{user.tryOnCount || 0}</div>
-                <div className="text-xs text-slate-500">{t('tryOnLabel')}</div>
+              <div className="text-center">
+                <div className="text-xl font-bold">{likedPosts.length}</div>
+                <div className="text-xs text-slate-500">Beğeni</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold">
+                  {(user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0) + (user?.stylistMonthlyCredits || 0)}
+                </div>
+                <div className="text-xs text-slate-500">🪙 Kredi</div>
               </div>
             </div>
-
-            {/* Account Info */}
-            <div className="glass rounded-2xl p-4 space-y-3">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <Icon name="user" size={16} className="text-brand2" />
-                {t('accountInfo')}
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                  <span className="text-slate-500 text-sm">{t('displayNameLabel')}</span>
-                  <input 
-                    type="text" 
-                    value={user.displayName || ''} 
-                    onChange={(e) => onUpdateUser && onUpdateUser({ displayName: e.target.value })}
-                    placeholder={authUser?.email?.split('@')[0]}
-                    className="text-sm font-medium text-right bg-transparent border-none outline-none w-32"
-                  />
+            
+            {/* Edit Profile Button */}
+            <div className="px-4 py-3 flex gap-2">
+              <button 
+                onClick={() => setTab('avatar')}
+                className="flex-1 py-2 rounded-xl bg-slate-100 font-semibold text-sm hover:bg-slate-200 transition flex items-center justify-center gap-2"
+              >
+                <Icon name="edit" size={14} />Profili Düzenle
+              </button>
+              <button 
+                onClick={() => setTab('settings')}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition"
+              >
+                <Icon name="settings" size={18} />
+              </button>
+            </div>
+            
+            {/* Sub-tabs: Paylaşımlar, Beğeniler, Repostlar */}
+            <div className="flex border-b border-slate-200">
+              <button 
+                onClick={() => setProfileSubTab('posts')}
+                className={`flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-2 border-b-2 transition ${
+                  profileSubTab === 'posts' ? 'border-brand2 text-brand2' : 'border-transparent text-slate-400'
+                }`}
+              >
+                <Icon name="grid" size={18} />
+                <span className="hidden sm:inline">Paylaşımlar</span>
+              </button>
+              <button 
+                onClick={() => setProfileSubTab('likes')}
+                className={`flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-2 border-b-2 transition ${
+                  profileSubTab === 'likes' ? 'border-red-400 text-red-400' : 'border-transparent text-slate-400'
+                }`}
+              >
+                <Icon name="heart" size={18} />
+                <span className="hidden sm:inline">Beğeniler</span>
+              </button>
+              <button 
+                onClick={() => setProfileSubTab('reposts')}
+                className={`flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-2 border-b-2 transition ${
+                  profileSubTab === 'reposts' ? 'border-green-500 text-green-500' : 'border-transparent text-slate-400'
+                }`}
+              >
+                <Icon name="repeat" size={18} />
+                <span className="hidden sm:inline">Repostlar</span>
+              </button>
+            </div>
+            
+            {/* Content Grid */}
+            <div className="p-2">
+              {false ? (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
+                  <p className="text-sm text-slate-400 mt-2">Yükleniyor...</p>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                  <span className="text-slate-500 text-sm">E-posta</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{authUser?.email || '-'}</span>
-                    {authUser?.emailVerified ? (
-                      <span className="text-green-400"><Icon name="check" size={12} /></span>
+              ) : (
+                <>
+                  {/* My Posts */}
+                  {profileSubTab === 'posts' && (
+                    myPosts.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Icon name="camera" size={48} className="mx-auto text-slate-300 mb-3" />
+                        <p className="text-slate-500 font-medium">Henüz paylaşım yok</p>
+                        <p className="text-xs text-slate-400 mt-1">İlk kombinini paylaş!</p>
+                      </div>
                     ) : (
-                      <button onClick={resendVerification} className="text-yellow-400 text-xs hover:text-yellow-300">{t('verify')}</button>
-                    )}
+                      <div className="grid grid-cols-3 gap-1">
+                        {myPosts.map(post => (
+                          <div key={post.id} className="aspect-square rounded-lg overflow-hidden relative group cursor-pointer">
+                            <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 text-white text-sm">
+                              <span className="flex items-center gap-1"><Icon name="heart" size={16} />{post.likes?.length || 0}</span>
+                              <span className="flex items-center gap-1"><Icon name="messageCircle" size={16} />{post.comments?.length || 0}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+                  
+                  {/* Liked Posts */}
+                  {profileSubTab === 'likes' && (
+                    likedPosts.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Icon name="heart" size={48} className="mx-auto text-slate-300 mb-3" />
+                        <p className="text-slate-500 font-medium">Beğenilen paylaşım yok</p>
+                        <p className="text-xs text-slate-400 mt-1">Beğendiğin kombinler burada görünür</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-1">
+                        {likedPosts.map(post => (
+                          <div key={post.id} className="aspect-square rounded-lg overflow-hidden relative group cursor-pointer">
+                            <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 text-white text-sm">
+                              <span className="flex items-center gap-1"><Icon name="heart" size={16} className="text-red-400" />{post.likes?.length || 0}</span>
+                            </div>
+                            <div className="absolute bottom-1 left-1 text-[10px] text-white bg-black/60 px-1.5 py-0.5 rounded">
+                              @{post.authorUsername || 'kullanıcı'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+                  
+                  {/* Reposted Posts */}
+                  {profileSubTab === 'reposts' && (
+                    repostedPosts.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Icon name="repeat" size={48} className="mx-auto text-slate-300 mb-3" />
+                        <p className="text-slate-500 font-medium">Repost yok</p>
+                        <p className="text-xs text-slate-400 mt-1">Repost ettiğin kombinler burada görünür</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-1">
+                        {repostedPosts.map(post => (
+                          <div key={post.id} className="aspect-square rounded-lg overflow-hidden relative group cursor-pointer">
+                            <img src={post.image} className="w-full h-full object-cover" loading="lazy" />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 text-white text-sm">
+                              <span className="flex items-center gap-1"><Icon name="repeat" size={16} className="text-green-400" />{post.reposts?.length || 0}</span>
+                            </div>
+                            <div className="absolute bottom-1 left-1 text-[10px] text-white bg-black/60 px-1.5 py-0.5 rounded flex items-center gap-1">
+                              <Icon name="repeat" size={10} />@{post.authorUsername || 'kullanıcı'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* STYLIST TAB */}
+        {tab === 'stylist' && (
+          <div className="p-4 space-y-4 fade-in">
+            {/* Already a Stylist */}
+            {user.isStylist ? (
+              <div className="space-y-4">
+                {/* Stylist Status Card */}
+                <div className="glass rounded-2xl p-6 text-center border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Icon name="award" size={32} className="text-white" />
                   </div>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                  <span className="text-slate-500 text-sm">Üyelik</span>
-                  <span className={`text-sm font-medium ${user.subscription?.active || (user.credits || 0) > 0 ? 'text-brand2' : 'text-slate-600'}`}>
-                    {user.subscription?.active ? 'Premium ✨' : (user.credits || 0) > 0 ? 'Kredili Üye' : t('freeMember')}
-                  </span>
+                  <h3 className="text-xl font-bold text-purple-400 mb-1">{t('stylistApproved')} ✨</h3>
+                  <p className="text-sm text-slate-400">Stilist avantajlarından yararlanıyorsunuz</p>
                 </div>
                 
-                {/* Kalan Hak Bilgileri */}
-                <div className="py-2 border-b border-slate-200">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-500 text-sm">Kalan Haklar</span>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <div className="bg-gradient-to-r from-amber-100 to-yellow-50 rounded-xl p-3 text-center border border-amber-300 shadow-sm">
-                      <span className="text-2xl">🪙</span>
-                      <p className="text-lg font-bold text-amber-700">{(user?.freeAvatarTry || 0) + (user?.freeShopTry || 0) + (user?.freeComboTry || 0) + (user?.credits || 0)}</p>
-                      <p className="text-[10px] text-amber-600 font-medium">Toplam Kredi</p>
+                {/* Monthly Credits */}
+                <div className="glass rounded-2xl p-4">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <span className="text-2xl">🪙</span> {t('stylistMonthlyCredits')}
+                  </h4>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-3xl font-bold text-amber-500">{user.stylistMonthlyCredits || 90}</div>
+                      <div className="text-xs text-slate-400">{t('stylistCreditsReset')}</div>
+                    </div>
+                    <div className="text-right text-sm text-slate-400">
+                      Yenileme: {user.stylistCreditsResetDate ? new Date(user.stylistCreditsResetDate).toLocaleDateString('tr-TR') : 'Her ayın 1\'i'}
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-slate-500 text-sm">Katılım</span>
-                  <span className="text-sm font-medium">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
+                
+                {/* Benefits List */}
+                <div className="glass rounded-2xl p-4">
+                  <h4 className="font-semibold mb-3">{t('stylistBenefits')}</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-2 bg-green-500/10 rounded-xl">
+                      <Icon name="check" size={16} className="text-green-400" />
+                      <span className="text-sm">{t('stylistBenefit1')}</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-green-500/10 rounded-xl">
+                      <Icon name="check" size={16} className="text-green-400" />
+                      <span className="text-sm">{t('stylistBenefit2')}</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-green-500/10 rounded-xl">
+                      <Icon name="check" size={16} className="text-green-400" />
+                      <span className="text-sm">{t('stylistBenefit3')}</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-green-500/10 rounded-xl">
+                      <Icon name="check" size={16} className="text-green-400" />
+                      <span className="text-sm">{t('stylistBenefit4')}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : user.stylistStatus === 'pending' ? (
+              /* Application Pending */
+              <div className="space-y-4">
+                <div className="glass rounded-2xl p-6 text-center border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/10">
+                  <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Icon name="clock" size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-amber-400 mb-1">{t('stylistPending')}</h3>
+                  <p className="text-sm text-slate-400">{t('stylistPendingDesc')}</p>
+                </div>
+                
+                {user.stylistApplication && (
+                  <div className="glass rounded-2xl p-4 text-sm space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Platform:</span>
+                      <span className="font-medium capitalize">{user.stylistApplication.platform}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Hesap:</span>
+                      <span className="font-medium">@{user.stylistApplication.socialUsername}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Takipçi:</span>
+                      <span className="font-medium">{user.stylistApplication.followerCount?.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Başvuru:</span>
+                      <span className="font-medium">{new Date(user.stylistApplication.applicationDate).toLocaleDateString('tr-TR')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : user.stylistStatus === 'proof_required' ? (
+              /* Proof Required */
+              <div className="space-y-4">
+                <div className="glass rounded-2xl p-6 text-center border border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
+                  <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Icon name="link" size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-blue-400 mb-1">{t('stylistProofRequired')}</h3>
+                  <p className="text-sm text-slate-400">{t('stylistProofDesc')}</p>
+                </div>
+                
+                <div className="glass rounded-2xl p-4 space-y-3">
+                  <label className="text-sm font-medium">{t('stylistProofUrl')}</label>
+                  <input
+                    type="url"
+                    value={stylistForm.proofUrl}
+                    onChange={(e) => setStylistForm(prev => ({ ...prev, proofUrl: e.target.value }))}
+                    placeholder="https://instagram.com/p/..."
+                    className="w-full px-4 py-3 rounded-xl bg-slate-100 border-none text-sm"
+                  />
+                  <button
+                    onClick={submitProofUrl}
+                    disabled={stylistSubmitting || !stylistForm.proofUrl}
+                    className="w-full btn-primary py-3 rounded-xl font-bold disabled:opacity-50"
+                  >
+                    {stylistSubmitting ? 'Gönderiliyor...' : t('stylistProofSubmit')}
+                  </button>
+                </div>
+              </div>
+            ) : user.stylistStatus === 'rejected' ? (
+              /* Rejected */
+              <div className="space-y-4">
+                <div className="glass rounded-2xl p-6 text-center border border-red-500/30 bg-gradient-to-br from-red-500/10 to-pink-500/10">
+                  <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Icon name="x" size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-red-400 mb-1">{t('stylistRejected')}</h3>
+                  <p className="text-sm text-slate-400">{user.stylistApplication?.rejectionReason || 'Başvurunuz uygun bulunmadı.'}</p>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    // Reset and allow re-application
+                    if (onUpdateUser) onUpdateUser({ stylistStatus: null, stylistApplication: null });
+                  }}
+                  className="w-full glass py-3 rounded-xl font-semibold"
+                >
+                  Tekrar Başvur
+                </button>
+              </div>
+            ) : (
+              /* New Application */
+              <div className="space-y-4">
+                {/* Benefits Preview */}
+                <div className="glass rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-pink-500/5">
+                  <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                    <Icon name="award" size={20} className="text-purple-400" />
+                    {t('stylistProgram')}
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-4">
+                    Moda içerik üreticileri için özel avantajlar!
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-white/50 p-3 rounded-xl text-center">
+                      <div className="text-2xl mb-1">🪙</div>
+                      <div className="text-xs font-medium">90 Kredi/Ay</div>
+                    </div>
+                    <div className="bg-white/50 p-3 rounded-xl text-center">
+                      <div className="text-2xl mb-1">👗</div>
+                      <div className="text-xs font-medium">Sınırsız Yükleme</div>
+                    </div>
+                    <div className="bg-white/50 p-3 rounded-xl text-center">
+                      <div className="text-2xl mb-1">✨</div>
+                      <div className="text-xs font-medium">Stilist Rozeti</div>
+                    </div>
+                    <div className="bg-white/50 p-3 rounded-xl text-center">
+                      <div className="text-2xl mb-1">🎯</div>
+                      <div className="text-xs font-medium">Öncelikli Destek</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Requirements */}
+                <div className="glass rounded-2xl p-4">
+                  <h4 className="font-semibold mb-3">{t('stylistRequirements')}</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">1.</span>
+                      <span className="text-slate-600">{t('stylistReq1')}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">2.</span>
+                      <span className="text-slate-600">{t('stylistReq2')}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Application Form */}
+                <div className="glass rounded-2xl p-4 space-y-4">
+                  <h4 className="font-semibold">{t('stylistApplication')}</h4>
+                  
+                  {/* Platform Selection */}
+                  <div>
+                    <label className="text-xs text-slate-500 mb-1.5 block">{t('stylistSocialPlatform')}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setStylistForm(prev => ({ ...prev, platform: 'instagram' }))}
+                        className={`py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition ${
+                          stylistForm.platform === 'instagram' 
+                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
+                            : 'glass text-slate-600'
+                        }`}
+                      >
+                        <Icon name="instagram" size={18} />Instagram
+                      </button>
+                      <button
+                        onClick={() => setStylistForm(prev => ({ ...prev, platform: 'tiktok' }))}
+                        className={`py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition ${
+                          stylistForm.platform === 'tiktok' 
+                            ? 'bg-black text-white' 
+                            : 'glass text-slate-600'
+                        }`}
+                      >
+                        <span className="text-lg">📱</span>TikTok
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Username */}
+                  <div>
+                    <label className="text-xs text-slate-500 mb-1.5 block">{t('stylistSocialUsername')}</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+                      <input
+                        type="text"
+                        value={stylistForm.username}
+                        onChange={(e) => setStylistForm(prev => ({ ...prev, username: e.target.value.replace('@', '') }))}
+                        placeholder="kullanici_adi"
+                        className="w-full pl-8 pr-4 py-3 rounded-xl bg-slate-100 border-none text-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Follower Count */}
+                  <div>
+                    <label className="text-xs text-slate-500 mb-1.5 block">{t('stylistFollowerCount')}</label>
+                    <input
+                      type="number"
+                      value={stylistForm.followers}
+                      onChange={(e) => setStylistForm(prev => ({ ...prev, followers: e.target.value }))}
+                      placeholder="15000"
+                      min="15000"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-100 border-none text-sm"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">Minimum: 15.000 takipçi</p>
+                  </div>
+                  
+                  {/* Application Note */}
+                  <div>
+                    <label className="text-xs text-slate-500 mb-1.5 block">{t('stylistApplicationNote')}</label>
+                    <textarea
+                      value={stylistForm.note}
+                      onChange={(e) => setStylistForm(prev => ({ ...prev, note: e.target.value }))}
+                      placeholder="Moda içerikleri oluşturuyorum, TrAi ile kombinlerimi paylaşmak istiyorum..."
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-100 border-none text-sm resize-none"
+                    />
+                  </div>
+                  
+                  {/* Submit Button */}
+                  <button
+                    onClick={submitStylistApplication}
+                    disabled={stylistSubmitting || !stylistForm.username || !stylistForm.followers || !stylistForm.note}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {stylistSubmitting ? (
+                      <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Gönderiliyor...</>
+                    ) : (
+                      <><Icon name="send" size={18} />{t('stylistSubmitApplication')}</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-            {/* Logout */}
-            <button onClick={onLogout} className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 py-4 rounded-xl font-semibold flex items-center justify-center gap-2">
-              <Icon name="logout" size={18} />Çıkış Yap
-            </button>
+        {/* ADMIN TAB */}
+        {tab === 'admin' && isAdmin && (
+          <div className="p-4 space-y-4 fade-in">
+            <div className="glass rounded-2xl p-4 border border-red-500/20">
+              <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
+                <Icon name="shield" size={20} className="text-red-400" />
+                {t('adminPanel')}
+              </h3>
+              
+              <div className="text-sm text-slate-400 mb-4">
+                Bekleyen başvuru sayısı: <span className="font-bold text-white">{pendingApplications.length}</span>
+              </div>
+              
+              {loadingApplications ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin mx-auto" />
+                  <p className="text-sm text-slate-400 mt-2">Yükleniyor...</p>
+                </div>
+              ) : pendingApplications.length === 0 ? (
+                <div className="text-center py-8 text-slate-400">
+                  <Icon name="check" size={32} className="mx-auto mb-2 text-green-400" />
+                  <p>{t('adminNoApplications')}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pendingApplications.map(app => (
+                    <div key={app.id} className="bg-slate-800 rounded-xl p-4 space-y-3">
+                      {/* User Info */}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-semibold">{app.userName || 'Kullanıcı'}</div>
+                          <div className="text-xs text-slate-400">{app.userEmail}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-slate-400">{new Date(app.applicationDate).toLocaleDateString('tr-TR')}</div>
+                          <div className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${
+                            app.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
+                            app.status === 'proof_required' ? 'bg-blue-500/20 text-blue-400' :
+                            'bg-slate-500/20 text-slate-400'
+                          }`}>
+                            {app.status === 'pending' ? 'Bekliyor' : app.status === 'proof_required' ? 'Kanıt Bekleniyor' : app.status}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Social Media Info */}
+                      <div className="bg-slate-700/50 rounded-lg p-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Platform:</span>
+                          <span className="capitalize">{app.platform}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Hesap:</span>
+                          <a 
+                            href={`https://${app.platform === 'instagram' ? 'instagram.com' : 'tiktok.com'}/@${app.socialUsername}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-brand2 hover:underline"
+                          >
+                            @{app.socialUsername}
+                          </a>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Takipçi:</span>
+                          <span className="font-semibold">{app.followerCount?.toLocaleString()}</span>
+                        </div>
+                        {app.proofUrl && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Kanıt:</span>
+                            <a 
+                              href={app.proofUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-brand2 hover:underline truncate max-w-[150px]"
+                            >
+                              {app.proofUrl.slice(0, 30)}...
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Application Note */}
+                      <div className="text-sm text-slate-300 bg-slate-700/30 rounded-lg p-2 italic">
+                        "{app.applicationNote}"
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => approveApplication(app)}
+                          className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-1"
+                        >
+                          <Icon name="check" size={16} />{t('adminApprove')}
+                        </button>
+                        {!app.proofUrl && (
+                          <button
+                            onClick={() => requestProof(app)}
+                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-1"
+                          >
+                            <Icon name="link" size={16} />Kanıt İste
+                          </button>
+                        )}
+                        <button
+                          onClick={() => rejectApplication(app)}
+                          className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-1"
+                        >
+                          <Icon name="x" size={16} />{t('adminReject')}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -8537,6 +9328,55 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         {/* SETTINGS TAB */}
         {tab === 'settings' && (
           <div className="p-4 space-y-4 fade-in">
+            {/* Account Section */}
+            <div className="glass rounded-2xl p-4 space-y-4">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <Icon name="user" size={16} className="text-brand2" />
+                Hesap Bilgileri
+              </h3>
+              
+              <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                <span className="text-slate-500 text-sm">{t('displayNameLabel')}</span>
+                <input 
+                  type="text" 
+                  value={user.displayName || ''} 
+                  onChange={(e) => onUpdateUser && onUpdateUser({ displayName: e.target.value })}
+                  placeholder="İsim Soyisim"
+                  className="text-sm font-medium text-right bg-transparent border-none outline-none w-32"
+                />
+              </div>
+              
+              <div className="py-2 border-b border-slate-200">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-slate-500 text-sm">Bio</span>
+                  <span className="text-[10px] text-slate-400">{(user.bio || '').length}/150</span>
+                </div>
+                <textarea
+                  value={user.bio || ''}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 150) {
+                      onUpdateUser && onUpdateUser({ bio: e.target.value });
+                    }
+                  }}
+                  placeholder="Kendini kısaca tanıt... ✨"
+                  rows={2}
+                  className="w-full text-sm bg-slate-50 rounded-xl px-3 py-2 border-none outline-none resize-none"
+                />
+              </div>
+              
+              <div className="flex justify-between items-center py-2">
+                <span className="text-slate-500 text-sm">E-posta</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{authUser?.email || '-'}</span>
+                  {authUser?.emailVerified ? (
+                    <span className="text-green-400"><Icon name="check" size={12} /></span>
+                  ) : (
+                    <button onClick={resendVerification} className="text-yellow-400 text-xs hover:text-yellow-300">{t('verify')}</button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Language Settings */}
             <div className="glass rounded-2xl p-4 space-y-4">
               <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -8559,50 +9399,111 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               </div>
             </div>
 
-            {/* Privacy Settings */}
+            {/* Privacy Settings - Detailed */}
             <div className="glass rounded-2xl p-4 space-y-4">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Icon name="shield" size={16} className="text-brand2" />
                 {t('privacySettings')}
               </h3>
 
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <div className="font-medium text-sm">{t('profileVisibility')}</div>
-                  <div className="text-xs text-slate-500">{t('profileVisibilityDesc')}</div>
+              {/* Profile Visibility */}
+              <div className="py-2 border-b border-slate-200">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <div className="font-medium text-sm">{t('profileVisibility')}</div>
+                    <div className="text-xs text-slate-500">Profilini kimler görebilir?</div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSettings(s => ({ ...s, profilePublic: !s.profilePublic }))}
-                  className={`w-12 h-7 rounded-full transition-all ${settings.profilePublic ? 'bg-brand' : 'bg-slate-200/60'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${settings.profilePublic ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, profileVisibility: 'everyone' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      (settings.profileVisibility || 'everyone') === 'everyone' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Herkes
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, profileVisibility: 'followers' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      settings.profileVisibility === 'followers' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Sadece Takipçiler
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <div className="font-medium text-sm">{t('shareCombos')}</div>
-                  <div className="text-xs text-slate-500">{t('shareCombosDesc')}</div>
+              {/* Posts Visibility */}
+              <div className="py-2 border-b border-slate-200">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <div className="font-medium text-sm">Paylaşımlarım</div>
+                    <div className="text-xs text-slate-500">Paylaşımlarını kimler görebilir?</div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSettings(s => ({ ...s, combosPublic: !s.combosPublic }))}
-                  className={`w-12 h-7 rounded-full transition-all ${settings.combosPublic ? 'bg-brand' : 'bg-slate-200/60'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${settings.combosPublic ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, postsVisibility: 'followers' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      (settings.postsVisibility || 'followers') === 'followers' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Takipçiler
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, postsVisibility: 'everyone' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      settings.postsVisibility === 'everyone' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Herkes
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, postsVisibility: 'onlyMe' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      settings.postsVisibility === 'onlyMe' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Sadece Ben
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <div className="font-medium text-sm">{t('onlineStatus')}</div>
-                  <div className="text-xs text-slate-500">{t('onlineStatusDesc')}</div>
+              {/* Online Status */}
+              <div className="py-2">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <div className="font-medium text-sm">{t('onlineStatus')}</div>
+                    <div className="text-xs text-slate-500">Çevrimiçi durumunu kimler görsün?</div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSettings(s => ({ ...s, showOnline: !s.showOnline }))}
-                  className={`w-12 h-7 rounded-full transition-all ${settings.showOnline ? 'bg-brand' : 'bg-slate-200/60'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${settings.showOnline ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, onlineVisibility: 'followers' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      (settings.onlineVisibility || 'followers') === 'followers' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Takipçiler
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, onlineVisibility: 'everyone' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      settings.onlineVisibility === 'everyone' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Herkes
+                  </button>
+                  <button
+                    onClick={() => setSettings(s => ({ ...s, onlineVisibility: 'nobody' }))}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
+                      settings.onlineVisibility === 'nobody' ? 'bg-brand text-white' : 'bg-slate-100'
+                    }`}
+                  >
+                    Kimse
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -8662,11 +9563,16 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                 <span className="text-slate-500 text-sm">{t('version')}</span>
                 <span className="text-sm font-medium">1.0.0</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-200">
+              <div className="flex justify-between items-center py-2">
                 <span className="text-slate-500 text-sm">{t('developer')}</span>
-                <span className="text-sm font-medium">TrAi Style Moda Ve Yapay Zeka Teknolojileri</span>
+                <span className="text-sm font-medium">TrAi Style</span>
               </div>
             </div>
+
+            {/* Logout */}
+            <button onClick={onLogout} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition">
+              <Icon name="logout" size={18} />Çıkış Yap
+            </button>
 
             {/* Danger Zone */}
             <div className="glass rounded-2xl p-4 border border-red-500/20">
@@ -10544,35 +11450,107 @@ const ResultModal = ({ open, image, item, items, onClose, onShare, onShareToFeed
         
         {/* Share Options */}
         {showShareOptions ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
+            {/* Primary share options */}
             <div className="flex gap-2">
               <button 
-                onClick={() => { onShareToFeed(); setShowShareOptions(false); }}
+                onClick={async () => { 
+                  setShowShareOptions(false);
+                  if (onShareToFeed) {
+                    await onShareToFeed();
+                  } else if (window.shareToFeedGlobal) {
+                    await window.shareToFeedGlobal(image, items);
+                  }
+                }}
                 className="flex-1 btn-primary py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"
               >
                 <Icon name="users" size={14} />Akışta Paylaş
               </button>
               <button 
-                onClick={() => { onShareToDM && onShareToDM(); setShowShareOptions(false); }}
+                onClick={() => { 
+                  setShowShareOptions(false);
+                  if (onShareToDM) {
+                    onShareToDM();
+                  } else if (window.openDMShareModal) {
+                    window.openDMShareModal(image, items);
+                  }
+                }}
                 className="flex-1 bg-brand py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm text-white"
               >
                 <Icon name="mail" size={14} />DM Gönder
               </button>
             </div>
-            <div className="flex gap-2">
+            
+            {/* External share platforms */}
+            <div className="grid grid-cols-5 gap-2">
               <button 
-                onClick={() => { onShare(); setShowShareOptions(false); }}
-                className="flex-1 bg-white/10 py-2 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm text-white"
+                onClick={() => { 
+                  window.shareExternalGlobal && window.shareExternalGlobal('instagram', image);
+                  setShowShareOptions(false); 
+                }}
+                className="py-2 rounded-xl bg-white/10 hover:bg-white/20 flex flex-col items-center gap-1"
               >
-                <Icon name="share" size={14} />Dışa Aktar
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
+                  <Icon name="instagram" size={14} className="text-white" />
+                </div>
+                <span className="text-[9px] text-white/70">Instagram</span>
               </button>
               <button 
-                onClick={() => setShowShareOptions(false)}
-                className="px-6 py-2 rounded-xl text-white/50 bg-white/5"
+                onClick={() => { 
+                  window.shareExternalGlobal && window.shareExternalGlobal('facebook', image);
+                  setShowShareOptions(false); 
+                }}
+                className="py-2 rounded-xl bg-white/10 hover:bg-white/20 flex flex-col items-center gap-1"
               >
-                İptal
+                <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
+                  <Icon name="facebook" size={14} className="text-white" />
+                </div>
+                <span className="text-[9px] text-white/70">Facebook</span>
+              </button>
+              <button 
+                onClick={() => { 
+                  window.shareExternalGlobal && window.shareExternalGlobal('twitter', image);
+                  setShowShareOptions(false); 
+                }}
+                className="py-2 rounded-xl bg-white/10 hover:bg-white/20 flex flex-col items-center gap-1"
+              >
+                <div className="w-7 h-7 rounded-lg bg-black flex items-center justify-center">
+                  <Icon name="twitter" size={14} className="text-white" />
+                </div>
+                <span className="text-[9px] text-white/70">X</span>
+              </button>
+              <button 
+                onClick={() => { 
+                  window.shareExternalGlobal && window.shareExternalGlobal('whatsapp', image);
+                  setShowShareOptions(false); 
+                }}
+                className="py-2 rounded-xl bg-white/10 hover:bg-white/20 flex flex-col items-center gap-1"
+              >
+                <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center">
+                  <Icon name="whatsapp" size={14} className="text-white" />
+                </div>
+                <span className="text-[9px] text-white/70">WhatsApp</span>
+              </button>
+              <button 
+                onClick={() => { 
+                  window.shareExternalGlobal && window.shareExternalGlobal('download', image);
+                  setShowShareOptions(false); 
+                }}
+                className="py-2 rounded-xl bg-white/10 hover:bg-white/20 flex flex-col items-center gap-1"
+              >
+                <div className="w-7 h-7 rounded-lg bg-slate-600 flex items-center justify-center">
+                  <Icon name="download" size={14} className="text-white" />
+                </div>
+                <span className="text-[9px] text-white/70">İndir</span>
               </button>
             </div>
+            
+            <button 
+              onClick={() => setShowShareOptions(false)}
+              className="w-full py-2 rounded-xl text-white/50 bg-white/5 text-sm"
+            >
+              İptal
+            </button>
           </div>
         ) : (
           <button 
@@ -10644,6 +11622,98 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   const [selectedGroupMembers, setSelectedGroupMembers] = useState([]);
   const [showEditGroup, setShowEditGroup] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
+  
+  // Helper: Get initials from name
+  const getInitials = (displayName, username) => {
+    if (displayName && displayName.trim()) {
+      const parts = displayName.trim().split(' ').filter(p => p);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return parts[0][0].toUpperCase();
+    }
+    if (username) {
+      return username[0].toUpperCase();
+    }
+    return '?';
+  };
+  
+  // Helper: Random pastel color based on string
+  const getAvatarColor = (str) => {
+    const colors = [
+      'from-pink-400 to-rose-400',
+      'from-purple-400 to-violet-400',
+      'from-blue-400 to-cyan-400',
+      'from-green-400 to-emerald-400',
+      'from-yellow-400 to-amber-400',
+      'from-orange-400 to-red-400',
+      'from-teal-400 to-cyan-400',
+      'from-indigo-400 to-purple-400'
+    ];
+    const hash = (str || '').split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+  
+  // UserAvatar component - profil fotoğrafı yoksa initials gösterir
+  const UserAvatar = ({ profilePhoto, displayName, username, id, size = 'md' }) => {
+    const sizeClasses = {
+      sm: 'w-8 h-8 text-xs',
+      md: 'w-12 h-12 text-sm',
+      lg: 'w-16 h-16 text-lg'
+    };
+    
+    if (profilePhoto) {
+      return (
+        <img 
+          src={profilePhoto}
+          className={`${sizeClasses[size]} rounded-xl object-cover`}
+          loading="lazy"
+        />
+      );
+    }
+    
+    const initials = getInitials(displayName, username);
+    const colorClass = getAvatarColor(id || username || displayName);
+    
+    return (
+      <div className={`${sizeClasses[size]} rounded-xl bg-gradient-to-br ${colorClass} flex items-center justify-center font-bold text-white shadow-sm`}>
+        {initials}
+      </div>
+    );
+  };
+  
+  // Kullanıcı profili görüntüleme state
+  const [viewingUser, setViewingUser] = useState(null);
+  const [viewingUserPosts, setViewingUserPosts] = useState([]);
+  const [loadingUserProfile, setLoadingUserProfile] = useState(false);
+  
+  // Kullanıcı profilini yükle
+  const loadUserProfile = async (userId) => {
+    if (!db) return;
+    setLoadingUserProfile(true);
+    
+    try {
+      // Kullanıcı bilgilerini yükle
+      const userDoc = await db.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        setViewingUser({ id: userId, ...userDoc.data() });
+        
+        // Kullanıcının postlarını yükle
+        const postsSnapshot = await db.collection('posts')
+          .where('authorId', '==', userId)
+          .orderBy('createdAt', 'desc')
+          .limit(20)
+          .get();
+        
+        const userPosts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setViewingUserPosts(userPosts);
+      }
+    } catch (e) {
+      console.error('Load user profile error:', e);
+    } finally {
+      setLoadingUserProfile(false);
+    }
+  };
   
   // Grup oluşturma fonksiyonu
   const createGroup = async () => {
@@ -10903,8 +11973,71 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     if (db) {
       try {
         await db.collection('posts').doc(String(postId)).update({ likes: newLikes });
+        
+        // Beğeni bildirimi gönder (kendi postunu beğenmiyorsa)
+        if (!hasLiked && post.authorId !== authUser?.uid) {
+          await db.collection('users').doc(post.authorId).collection('notifications').add({
+            type: 'like',
+            fromUid: authUser.uid,
+            fromName: user.displayName || user.username,
+            postId: postId,
+            message: `${user.displayName || user.username} paylaşımını beğendi`,
+            read: false,
+            createdAt: Date.now()
+          });
+        }
       } catch (e) {
         console.error('Like update error:', e);
+      }
+    }
+  };
+
+  // Repost fonksiyonu
+  const repostPost = async (post) => {
+    if (!authUser?.uid || !db) return;
+    
+    // Kendi postunu repost edemez
+    if (post.authorId === authUser.uid) {
+      setToast({ open: true, type: 'warning', title: 'Uyarı', message: 'Kendi paylaşımını repost edemezsin' });
+      return;
+    }
+    
+    // Zaten repost edilmiş mi kontrol et
+    const hasReposted = post.reposts?.includes(authUser.uid);
+    
+    if (hasReposted) {
+      // Repost'u kaldır
+      const newReposts = post.reposts.filter(id => id !== authUser.uid);
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, reposts: newReposts } : p));
+      
+      try {
+        await db.collection('posts').doc(String(post.id)).update({ reposts: newReposts });
+        setToast({ open: true, type: 'info', title: 'Kaldırıldı', message: 'Repost kaldırıldı' });
+      } catch (e) {
+        console.error('Remove repost error:', e);
+      }
+    } else {
+      // Yeni repost
+      const newReposts = [...(post.reposts || []), authUser.uid];
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, reposts: newReposts } : p));
+      
+      try {
+        await db.collection('posts').doc(String(post.id)).update({ reposts: newReposts });
+        
+        // Repost bildirimi gönder
+        await db.collection('users').doc(post.authorId).collection('notifications').add({
+          type: 'repost',
+          fromUid: authUser.uid,
+          fromName: user.displayName || user.username,
+          postId: post.id,
+          message: `${user.displayName || user.username} paylaşımını repost etti`,
+          read: false,
+          createdAt: Date.now()
+        });
+        
+        setToast({ open: true, type: 'success', title: 'Repost Edildi!', message: 'Paylaşım profilinde görünecek' });
+      } catch (e) {
+        console.error('Repost error:', e);
       }
     }
   };
@@ -11299,6 +12432,13 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 <Icon name="messageCircle" size={22} />
                 <span className="font-medium">{post.comments.length}</span>
               </button>
+              <button 
+                onClick={() => repostPost(post)} 
+                className={`flex items-center gap-1.5 text-sm ${post.reposts?.includes(authUser?.uid) ? 'text-green-500' : ''}`}
+              >
+                <Icon name="repeat" size={20} className={post.reposts?.includes(authUser?.uid) ? 'text-green-500' : ''} />
+                <span className="font-medium">{post.reposts?.length || 0}</span>
+              </button>
               <button onClick={() => setShareModal({ open: true, post })} className="flex items-center gap-1.5 text-sm">
                 <Icon name="share" size={20} />
               </button>
@@ -11310,6 +12450,14 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 <Icon name="bookmark" size={20} />
               </button>
             </div>
+
+            {/* Repost indicator */}
+            {post.isRepost && (
+              <div className="flex items-center gap-1.5 text-xs text-green-600">
+                <Icon name="repeat" size={12} />
+                <span>{post.repostedByName || 'Birisi'} tarafından repost edildi</span>
+              </div>
+            )}
 
             {post.caption && (
               <p className="text-sm">
@@ -11341,8 +12489,14 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     return new Date(timestamp).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
   };
 
+  // User Profile Modal Component (temporarily simplified)
+  const UserProfileModal = () => null;
+
   return (
     <div className="h-full flex flex-col">
+      {/* User Profile Modal */}
+      <UserProfileModal />
+      
       {/* Tab Navigation */}
       <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200">
         <div className="flex gap-1 bg-slate-100 rounded-2xl p-1">
@@ -11547,14 +12701,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 <div className="grid grid-cols-5 gap-2">
                   <button
                     onClick={() => {
-                      // Instagram için görseli indir
-                      const link = document.createElement('a');
-                      link.href = selectedImage;
-                      link.download = 'trai-outfit.png';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Instagram\'da paylaşabilirsin' });
+                      if (window.shareExternalGlobal) {
+                        window.shareExternalGlobal('instagram', selectedImage, caption);
+                      }
                     }}
                     className="py-3 rounded-xl glass hover:bg-slate-200/60 flex flex-col items-center gap-1"
                   >
@@ -11565,9 +12714,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   </button>
                   <button
                     onClick={() => {
-                      const text = `${caption || 'TrAi ile denedim!'} #TrAi #Fashion`;
-                      const fbUrl = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(text)}`;
-                      window.open(fbUrl, '_blank');
+                      if (window.shareExternalGlobal) {
+                        window.shareExternalGlobal('facebook', selectedImage, caption);
+                      }
                     }}
                     className="py-3 rounded-xl glass hover:bg-slate-200/60 flex flex-col items-center gap-1"
                   >
@@ -11578,9 +12727,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   </button>
                   <button
                     onClick={() => {
-                      const text = `${caption || 'TrAi ile denedim!'} #TrAi #Fashion`;
-                      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-                      window.open(twitterUrl, '_blank');
+                      if (window.shareExternalGlobal) {
+                        window.shareExternalGlobal('twitter', selectedImage, caption);
+                      }
                     }}
                     className="py-3 rounded-xl glass hover:bg-slate-200/60 flex flex-col items-center gap-1"
                   >
@@ -11591,9 +12740,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   </button>
                   <button
                     onClick={() => {
-                      const text = `${caption || 'TrAi ile denedim!'} #TrAi #Fashion`;
-                      const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                      window.open(waUrl, '_blank');
+                      if (window.shareExternalGlobal) {
+                        window.shareExternalGlobal('whatsapp', selectedImage, caption);
+                      }
                     }}
                     className="py-3 rounded-xl glass hover:bg-slate-200/60 flex flex-col items-center gap-1"
                   >
@@ -11604,13 +12753,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   </button>
                   <button
                     onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = selectedImage;
-                      link.download = 'trai-outfit.png';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görsel kaydedildi' });
+                      if (window.shareExternalGlobal) {
+                        window.shareExternalGlobal('download', selectedImage);
+                      }
                     }}
                     className="py-3 rounded-xl glass hover:bg-slate-200/60 flex flex-col items-center gap-1"
                   >
@@ -11651,27 +12796,34 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 const isFollowing = friends.some(f => f.id === u.id || f.uid === u.id);
                 const isPending = sentFollowRequests?.some(r => r.uid === u.id || r === u.id);
                 return (
-                  <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100">
-                    <img 
-                      src={u.profilePhoto || u.baseAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.id}`}
-                      className="w-12 h-12 rounded-xl object-cover"
+                  <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 cursor-pointer"
+                    onClick={() => loadUserProfile(u.id)}
+                  >
+                    <UserAvatar 
+                      profilePhoto={u.profilePhoto}
+                      displayName={u.displayName}
+                      username={u.username}
+                      id={u.id}
+                      size="md"
                     />
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">{u.displayName || u.username}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">{u.displayName || u.username}</p>
                       <p className="text-xs text-slate-500">@{u.username}</p>
+                      {u.bio && <p className="text-xs text-slate-400 truncate">{u.bio}</p>}
                     </div>
-                    {isFollowing ? (
-                      <span className="text-xs text-green-600 font-medium">Takip Ediliyor</span>
-                    ) : isPending ? (
-                      <span className="text-xs text-amber-600 font-medium">İstek Gönderildi</span>
-                    ) : (
-                      <button 
-                        onClick={() => followUser(u)}
-                        className="btn-primary px-4 py-2 rounded-xl text-xs font-semibold"
-                      >
-                        Takip Et
-                      </button>
-                    )}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isFollowing && !isPending) followUser(u);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                        isFollowing ? 'bg-slate-100 text-slate-500' :
+                        isPending ? 'bg-amber-100 text-amber-600' :
+                        'btn-primary'
+                      }`}
+                    >
+                      {isFollowing ? 'Takip' : isPending ? 'Bekliyor' : 'Takip Et'}
+                    </button>
                   </div>
                 );
               })}
@@ -11684,9 +12836,12 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               <p className="text-xs text-slate-500 font-semibold">TAKİP İSTEKLERİ</p>
               {followRequests.map(req => (
                 <div key={req.id || req.fromUid} className="flex items-center gap-3 p-2 rounded-xl bg-amber-50">
-                  <img 
-                    src={req.fromPhoto || req.fromAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.fromUid || req.fromUserId}`}
-                    className="w-12 h-12 rounded-xl object-cover"
+                  <UserAvatar 
+                    profilePhoto={req.fromPhoto || req.fromAvatar}
+                    displayName={req.fromDisplayName}
+                    username={req.fromUsername}
+                    id={req.fromUid || req.fromUserId}
+                    size="md"
                   />
                   <div className="flex-1">
                     <p className="font-semibold text-sm">{req.fromDisplayName || req.fromUsername}</p>
@@ -12659,19 +13814,214 @@ const App = () => {
     return () => { delete window.addMultipleToCart; };
   }, []);
   
+  // Global share to feed function - Firebase'e kaydeder
+  const shareToFeedGlobal = async (imageOrObj, itemsParam) => {
+    // Support both (image, items) and ({ image, items }) formats
+    let image, items;
+    if (typeof imageOrObj === 'object' && imageOrObj.image) {
+      image = imageOrObj.image;
+      items = imageOrObj.items || [];
+    } else {
+      image = imageOrObj;
+      items = itemsParam || [];
+    }
+    
+    if (!image) {
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel bulunamadı' });
+      return false;
+    }
+    
+    if (!authUser?.uid || !db) {
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Lütfen giriş yapın' });
+      return false;
+    }
+    
+    try {
+      const postId = Date.now();
+      
+      const newPost = {
+        id: postId,
+        authorId: authUser.uid,
+        authorName: user?.displayName || user?.username || 'Kullanıcı',
+        authorUsername: user?.username || '',
+        authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
+        image: image,
+        items: items,
+        caption: '',
+        askFeedback: false,
+        visibility: 'public',
+        likes: [],
+        comments: [],
+        reposts: [],
+        createdAt: postId
+      };
+      
+      // Firebase'e kaydet
+      await db.collection('posts').doc(String(postId)).set(newPost);
+      
+      // Local state'e ekle
+      setPosts(prev => [newPost, ...prev]);
+      
+      // ResultModal'ı kapat ve social tab'a git
+      setResult({ open: false });
+      setTab('social');
+      
+      setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Kombinin akışta yayınlandı' });
+      return true;
+    } catch (err) {
+      console.error('Share to feed error:', err);
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı: ' + (err.message || 'Bilinmeyen hata') });
+      return false;
+    }
+  };
+  
+  // Global external share function - Görsel indir + platform paylaşımı
+  const shareExternalGlobal = async (platform, image, caption = '') => {
+    if (!image) {
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Görsel bulunamadı' });
+      return;
+    }
+    
+    const text = caption || 'TrAi ile denedim! #TrAi #VirtualTryOn #Fashion';
+    const shareUrl = 'https://trai.style';
+    
+    // Base64 data URL'i blob'a çevir
+    const dataUrlToBlob = (dataUrl) => {
+      try {
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+      } catch (e) {
+        console.error('dataUrlToBlob error:', e);
+        return null;
+      }
+    };
+    
+    // Download helper - base64 ve URL için
+    const downloadImage = (imageData, filename) => {
+      try {
+        const link = document.createElement('a');
+        link.href = imageData;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => document.body.removeChild(link), 100);
+        return true;
+      } catch (e) {
+        console.error('Download error:', e);
+        return false;
+      }
+    };
+    
+    // İndir butonu
+    if (platform === 'download') {
+      const success = downloadImage(image, 'trai-kombin.png');
+      if (success) {
+        setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görsel galerine kaydedildi' });
+      }
+      return;
+    }
+    
+    // Native share (mobil)
+    if (platform === 'native' && navigator.share) {
+      try {
+        let blob;
+        if (image.startsWith('data:')) {
+          blob = dataUrlToBlob(image);
+        } else {
+          const response = await fetch(image);
+          blob = await response.blob();
+        }
+        
+        if (blob && navigator.canShare) {
+          const file = new File([blob], 'trai-kombin.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: 'TrAi - Sanal Deneme',
+              text: text,
+              files: [file]
+            });
+            return;
+          }
+        }
+        // Dosya paylaşımı desteklenmiyorsa sadece metin paylaş
+        await navigator.share({ title: 'TrAi', text: text, url: shareUrl });
+        downloadImage(image, 'trai-kombin.png');
+        setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'Görseli manuel ekleyebilirsin' });
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          downloadImage(image, 'trai-kombin.png');
+          setToast({ open: true, type: 'info', title: 'İndirildi', message: 'Görseli paylaşabilirsin' });
+        }
+      }
+      return;
+    }
+    
+    // Instagram - görsel indir ve uyarı göster
+    if (platform === 'instagram') {
+      downloadImage(image, 'trai-kombin.png');
+      setToast({ open: true, type: 'success', title: 'İndirildi!', message: 'Görseli Instagram\'da paylaşabilirsin' });
+      // Mobilde Instagram app'i açmaya çalış
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        setTimeout(() => {
+          window.location.href = 'instagram://camera';
+        }, 800);
+      }
+      return;
+    }
+    
+    // Twitter/X
+    if (platform === 'twitter') {
+      downloadImage(image, 'trai-kombin.png');
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+      window.open(twitterUrl, '_blank');
+      setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'Tweet\'e görseli ekleyebilirsin' });
+      return;
+    }
+    
+    // Facebook
+    if (platform === 'facebook') {
+      downloadImage(image, 'trai-kombin.png');
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`;
+      window.open(fbUrl, '_blank');
+      setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'Facebook\'a görseli ekleyebilirsin' });
+      return;
+    }
+    
+    // WhatsApp
+    if (platform === 'whatsapp') {
+      downloadImage(image, 'trai-kombin.png');
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n\n' + shareUrl)}`;
+      window.open(waUrl, '_blank');
+      setToast({ open: true, type: 'info', title: 'Görsel indirildi', message: 'WhatsApp\'a görseli ekleyebilirsin' });
+      return;
+    }
+  };
+  
   // Expose DM share modal and upload function globally
   useEffect(() => {
     window.openDMShareModal = (image, items) => {
       setDmShareModal({ open: true, image, items: items || [] });
     };
     window.uploadAndShareImage = uploadAndShareImage;
+    window.shareToFeedGlobal = shareToFeedGlobal;
+    window.shareExternalGlobal = shareExternalGlobal;
     window.storage = storage;
     return () => { 
       delete window.openDMShareModal; 
       delete window.uploadAndShareImage;
+      delete window.shareToFeedGlobal;
+      delete window.shareExternalGlobal;
       delete window.storage;
     };
-  }, [storage]);
+  }, [storage, authUser, user, settings, db]);
   
   const removeFromCart = (productId) => {
     setCart(prev => prev.filter(p => p.id !== productId));
@@ -12694,6 +14044,36 @@ const App = () => {
   // Universal kredi sistemi - hem keşfet hem kombin için
   const useCredit = (source = 'shop') => {
     if (!user) return false;
+    
+    // Stilist aylık kredilerini kontrol et
+    if (user.isStylist && (user.stylistMonthlyCredits || 0) > 0) {
+      // Kredi resetleme kontrolü (her ayın 1'i)
+      const now = new Date();
+      const resetDate = user.stylistCreditsResetDate || 0;
+      if (now.getTime() > resetDate) {
+        // Yeni ay, kredileri resetle
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+        const newCredits = 90;
+        setUser(prev => ({ ...prev, stylistMonthlyCredits: newCredits, stylistCreditsResetDate: nextMonth }));
+        if (db && authUser?.uid) {
+          db.collection('users').doc(authUser.uid).update({ 
+            stylistMonthlyCredits: newCredits, 
+            stylistCreditsResetDate: nextMonth 
+          }).catch(e => console.error('❌ stylist credits reset error:', e));
+        }
+      }
+      
+      // Stilist kredisi kullan
+      const newStylistCredits = (user.stylistMonthlyCredits || 90) - 1;
+      setUser(prev => ({ ...prev, stylistMonthlyCredits: newStylistCredits }));
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ stylistMonthlyCredits: newStylistCredits })
+          .catch(e => console.error('❌ stylistMonthlyCredits save error:', e));
+      }
+      lastUsedCreditTypeRef.current = 'stylistCredit';
+      setToast({ open: true, type: 'success', title: '✨ Stilist kredisi kullanıldı', message: `Kalan: ${newStylistCredits}` });
+      return true;
+    }
     
     // Ücretsiz hakları kontrol et (tek seferlik, yenilenmez)
     if (source === 'avatar' && (user.freeAvatarTry || 0) > 0) {
@@ -12765,7 +14145,12 @@ const App = () => {
     }
     
     // Kullanılan tipe göre iade et
-    if (actualType === 'freeAvatar') {
+    if (actualType === 'stylistCredit') {
+      const newVal = (user.stylistMonthlyCredits || 0) + 1;
+      setUser(prev => ({ ...prev, stylistMonthlyCredits: newVal }));
+      db.collection('users').doc(authUser.uid).update({ stylistMonthlyCredits: newVal }).catch(() => {});
+      setToast({ open: true, type: 'info', title: '💰 Kredi İade Edildi', message: 'Stilist krediniz geri verildi' });
+    } else if (actualType === 'freeAvatar') {
       const newVal = (user.freeAvatarTry || 0) + 1;
       setUser(prev => ({ ...prev, freeAvatarTry: newVal }));
       db.collection('users').doc(authUser.uid).update({ freeAvatarTry: newVal }).catch(() => {});
@@ -13255,9 +14640,9 @@ const App = () => {
 
   // Load data on mount - DON'T load user here, wait for auth
   useEffect(() => {
-    // Posts'u Firebase'den yükle (herkes için public olanları)
+    // Posts'u Firebase'den yükle (sadece login olduktan sonra)
     const loadPosts = async () => {
-      if (!db) {
+      if (!db || !authUser) {
         return;
       }
       try {
@@ -13276,15 +14661,15 @@ const App = () => {
       }
     };
     
-    // db hazır olduğunda yükle
-    if (db) {
+    // db ve authUser hazır olduğunda yükle
+    if (db && authUser) {
       loadPosts();
     }
-  }, [db]);
+  }, [db, authUser]);
   
   // Posts için realtime listener - diğer kullanıcıların paylaşımlarını anlık görmek için
   useEffect(() => {
-    if (!db) return;
+    if (!db || !authUser) return;
     
     const unsubscribe = db.collection('posts')
       .orderBy('createdAt', 'desc')
@@ -13297,7 +14682,7 @@ const App = () => {
       });
     
     return () => unsubscribe();
-  }, [db]);
+  }, [db, authUser]);
 
   // Load user-specific data AFTER auth is confirmed - onSnapshot ile CANLI dinleme
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -14577,6 +15962,8 @@ const App = () => {
               groups={groups}
               setGroups={setGroups}
               setMainTab={setTab}
+              posts={posts}
+              setPosts={setPosts}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -14739,6 +16126,8 @@ const App = () => {
               groups={groups}
               setGroups={setGroups}
               setMainTab={setTab}
+              posts={posts}
+              setPosts={setPosts}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -14786,6 +16175,16 @@ const App = () => {
           if (shareResult?.copied) {
             setToast({ open: true, type: 'success', title: 'Link Kopyalandı!', message: 'Paylaşım linki panoya kopyalandı' });
           }
+        }}
+        onShareToFeed={async () => {
+          const success = await shareToFeedGlobal(result.image, result.items || []);
+          if (success) {
+            setResult({ open: false });
+          }
+        }}
+        onShareToDM={() => {
+          setDmShareModal({ open: true, image: result.image, items: result.items || [] });
+          setResult({ open: false });
         }}
         onAddToCart={addToCart}
         onSaveCombo={async (combo) => {
