@@ -14277,6 +14277,20 @@ const App = () => {
     return true;
   };
   
+  // Video token ekleme
+  const addVideoTokens = (amount) => {
+    if (!user || !authUser?.uid) return false;
+    const newTokens = (user.videoTokens || 0) + amount;
+    setUser(prev => ({ ...prev, videoTokens: newTokens }));
+    // Firebase'e kaydet
+    if (db) {
+      db.collection('users').doc(authUser.uid).update({ videoTokens: newTokens })
+        .then(() => console.log('✅ Video tokens saved'))
+        .catch(e => console.error('❌ Video tokens save error:', e));
+    }
+    return true;
+  };
+  
   // Referral kredi kazanma (güvenlik kontrollü)
   const earnReferralCredit = async (referredUserId, reason = 'avatar_created') => {
     if (!user || !db || !authUser?.uid) return;
@@ -15674,6 +15688,12 @@ const App = () => {
       setTryOnCache(prev => ({ ...prev, [cacheKey]: img }));
       addToCloset(item);
       setUser(prev => ({ ...prev, tryOnCount: (prev.tryOnCount || 0) + 1 }));
+      // tryOnCount Firebase sync
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ 
+          tryOnCount: firebase.firestore.FieldValue.increment(1) 
+        }).catch(e => console.error('tryOnCount sync error:', e));
+      }
       setResult({ open: true, image: img, item });
       setToast({ open: true, type: 'success', title: t('success'), message: 'Deneme görseli hazır!' });
     } catch (e) {
@@ -15702,6 +15722,12 @@ const App = () => {
       
       debugLog('Result', 'User güncelleniyor...', 'info');
       setUser(prev => ({ ...prev, tryOnCount: (prev.tryOnCount || 0) + 1 }));
+      // tryOnCount Firebase sync
+      if (db && authUser?.uid) {
+        db.collection('users').doc(authUser.uid).update({ 
+          tryOnCount: firebase.firestore.FieldValue.increment(1) 
+        }).catch(e => console.error('tryOnCount sync error:', e));
+      }
       
       debugLog('Result', 'Modal state hazırlanıyor...', 'info');
       const modalData = { 
@@ -15867,9 +15893,30 @@ const App = () => {
         <div className="h-screen w-full max-w-lg lg:max-w-6xl mx-auto bg-dark">
           <AvatarWizard 
             onComplete={async (avatarData) => {
+              // Local state güncelle
               setUser(prev => ({ ...prev, ...avatarData }));
               setShowAvatarWizard(false);
               setShowAvatarPrompt(false);
+              
+              // Firebase'e kaydet
+              if (db && authUser?.uid) {
+                try {
+                  await db.collection('users').doc(authUser.uid).update({
+                    baseAvatar: avatarData.baseAvatar,
+                    gender: avatarData.gender,
+                    skinTone: avatarData.skinTone,
+                    bodyType: avatarData.bodyType,
+                    height: avatarData.height,
+                    weight: avatarData.weight,
+                    hairStyle: avatarData.hairStyle,
+                    hairColor: avatarData.hairColor,
+                    avatarCreatedAt: Date.now()
+                  });
+                  console.log('✅ Avatar saved to Firebase');
+                } catch (e) {
+                  console.error('❌ Avatar save error:', e);
+                }
+              }
               
               // Referral ödülünü tetikle (ilk avatar oluşturma)
               if (user?.referredBy && !user?.referralActivated) {
@@ -16094,9 +16141,21 @@ const App = () => {
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
+                // Firebase'e kaydet
+                if (db && authUser?.uid) {
+                  db.collection('users').doc(authUser.uid).update(newParams)
+                    .then(() => console.log('✅ User params saved'))
+                    .catch(e => console.error('❌ User params save error:', e));
+                }
               }}
               onUpdateProfilePhoto={(photo) => {
                 setUser(prev => ({ ...prev, profilePhoto: photo }));
+                // Firebase'e kaydet
+                if (db && authUser?.uid) {
+                  db.collection('users').doc(authUser.uid).update({ profilePhoto: photo })
+                    .then(() => console.log('✅ Profile photo saved'))
+                    .catch(e => console.error('❌ Profile photo save error:', e));
+                }
               }}
               changeLanguage={changeLanguage}
               setToast={setToast}
@@ -16281,9 +16340,21 @@ const App = () => {
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
+                // Firebase'e kaydet
+                if (db && authUser?.uid) {
+                  db.collection('users').doc(authUser.uid).update(newParams)
+                    .then(() => console.log('✅ User params saved'))
+                    .catch(e => console.error('❌ User params save error:', e));
+                }
               }}
               onUpdateProfilePhoto={(photo) => {
                 setUser(prev => ({ ...prev, profilePhoto: photo }));
+                // Firebase'e kaydet
+                if (db && authUser?.uid) {
+                  db.collection('users').doc(authUser.uid).update({ profilePhoto: photo })
+                    .then(() => console.log('✅ Profile photo saved'))
+                    .catch(e => console.error('❌ Profile photo save error:', e));
+                }
               }}
               changeLanguage={changeLanguage}
               setToast={setToast}
