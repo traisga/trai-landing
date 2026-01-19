@@ -8077,7 +8077,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
               {user.profilePhoto ? (
                 <img src={user.profilePhoto} className="w-full h-full object-cover" loading="lazy" />
               ) : (
-                <img src={user.baseAvatar || user.avatar} className="w-full h-full object-cover object-top scale-150" loading="lazy" />
+                <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex flex-col items-center justify-center">
+                  <Icon name="camera" size={24} className="text-slate-500 mb-1" />
+                  <span className="text-[10px] font-medium text-slate-600 text-center px-1">Fotoğraf Ekle</span>
+                </div>
               )}
               <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                 <Icon name="camera" size={20} />
@@ -8091,12 +8094,49 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             )}
           </div>
         </div>
-        <div className="absolute bottom-3 left-0 right-0 text-center">
+        <div className="absolute bottom-3 left-0 right-0 text-center px-4">
           <h1 className="text-lg font-bold">{user.displayName || user.username || t('user')}</h1>
           {user.username && (
             <p className="text-slate-500 text-sm">@{user.username}</p>
           )}
         </div>
+      </div>
+      
+      {/* Bio Section */}
+      <div className="px-4 py-3 border-b border-slate-200">
+        {user.bio ? (
+          <p className="text-sm text-slate-600 text-center">{user.bio}</p>
+        ) : (
+          <button 
+            onClick={() => {
+              const newBio = prompt('Biyografini yaz (max 150 karakter):', user.bio || '');
+              if (newBio !== null && newBio.length <= 150) {
+                onUpdateUser && onUpdateUser({ bio: newBio });
+              } else if (newBio && newBio.length > 150) {
+                setToast({ open: true, type: 'warning', title: 'Çok uzun', message: 'Biyografi en fazla 150 karakter olabilir' });
+              }
+            }}
+            className="w-full text-sm text-slate-400 text-center hover:text-slate-600 transition flex items-center justify-center gap-1"
+          >
+            <Icon name="edit" size={14} />
+            Biyografi ekle...
+          </button>
+        )}
+        {user.bio && (
+          <button 
+            onClick={() => {
+              const newBio = prompt('Biyografini düzenle (max 150 karakter):', user.bio || '');
+              if (newBio !== null && newBio.length <= 150) {
+                onUpdateUser && onUpdateUser({ bio: newBio });
+              } else if (newBio && newBio.length > 150) {
+                setToast({ open: true, type: 'warning', title: 'Çok uzun', message: 'Biyografi en fazla 150 karakter olabilir' });
+              }
+            }}
+            className="text-xs text-brand2 text-center w-full mt-1 hover:underline"
+          >
+            Düzenle
+          </button>
+        )}
       </div>
 
       {/* Tab Navigation */}
@@ -11791,12 +11831,19 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               {searchResults.map(u => {
                 const isFollowing = friends.some(f => f.id === u.id || f.uid === u.id);
                 const isPending = sentFollowRequests?.some(r => r.uid === u.id || r === u.id);
+                const initials = getInitials(u.displayName, u.username);
                 return (
                   <div key={u.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100">
-                    <img 
-                      src={u.profilePhoto || u.baseAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.id}`}
-                      className="w-12 h-12 rounded-xl object-cover"
-                    />
+                    {u.profilePhoto ? (
+                      <img 
+                        src={u.profilePhoto}
+                        className="w-12 h-12 rounded-xl object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand/80 to-purple-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">{initials}</span>
+                      </div>
+                    )}
                     <div className="flex-1">
                       <p className="font-semibold text-sm">{u.displayName || u.username}</p>
                       <p className="text-xs text-slate-500">@{u.username}</p>
@@ -11823,43 +11870,52 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
           {followRequests && followRequests.length > 0 && (
             <div className="glass rounded-2xl p-3 space-y-2">
               <p className="text-xs text-slate-500 font-semibold">TAKİP İSTEKLERİ</p>
-              {followRequests.map(req => (
-                <div key={req.id || req.fromUid} className="flex items-center gap-3 p-2 rounded-xl bg-amber-50">
-                  <img 
-                    src={req.fromPhoto || req.fromAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.fromUid || req.fromUserId}`}
-                    className="w-12 h-12 rounded-xl object-cover"
-                  />
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm">{req.fromDisplayName || req.fromUsername}</p>
-                    <p className="text-xs text-slate-500">Seni takip etmek istiyor</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => acceptRequest(req)}
-                      className="btn-primary px-3 py-1.5 rounded-lg text-xs font-semibold"
-                    >
-                      Kabul
-                    </button>
-                    <button 
-                      onClick={async () => {
-                        // Reject and delete request
-                        if (db && authUser?.uid) {
-                          const fromUid = req.fromUid || req.fromUserId;
-                          await db.collection('users').doc(authUser.uid).collection('followRequests').doc(fromUid).delete().catch(() => {});
-                          if (req.id && req.id !== fromUid) {
-                            await db.collection('users').doc(authUser.uid).collection('followRequests').doc(req.id).delete().catch(() => {});
+              {followRequests.map(req => {
+                const reqInitials = getInitials(req.fromDisplayName, req.fromUsername);
+                return (
+                  <div key={req.id || req.fromUid} className="flex items-center gap-3 p-2 rounded-xl bg-amber-50">
+                    {req.fromPhoto ? (
+                      <img 
+                        src={req.fromPhoto}
+                        className="w-12 h-12 rounded-xl object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">{reqInitials}</span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{req.fromDisplayName || req.fromUsername}</p>
+                      <p className="text-xs text-slate-500">Seni takip etmek istiyor</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => acceptRequest(req)}
+                        className="btn-primary px-3 py-1.5 rounded-lg text-xs font-semibold"
+                      >
+                        Kabul
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          // Reject and delete request
+                          if (db && authUser?.uid) {
+                            const fromUid = req.fromUid || req.fromUserId;
+                            await db.collection('users').doc(authUser.uid).collection('followRequests').doc(fromUid).delete().catch(() => {});
+                            if (req.id && req.id !== fromUid) {
+                              await db.collection('users').doc(authUser.uid).collection('followRequests').doc(req.id).delete().catch(() => {});
+                            }
+                            await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(authUser.uid).delete().catch(() => {});
                           }
-                          await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(authUser.uid).delete().catch(() => {});
-                        }
-                        setFollowRequests(prev => prev.filter(r => r.id !== req.id && r.fromUid !== req.fromUid));
-                      }}
-                      className="btn-ghost px-3 py-1.5 rounded-lg text-xs"
-                    >
-                      Reddet
-                    </button>
+                          setFollowRequests(prev => prev.filter(r => r.id !== req.id && r.fromUid !== req.fromUid));
+                        }}
+                        className="btn-ghost px-3 py-1.5 rounded-lg text-xs"
+                      >
+                        Reddet
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           
@@ -11873,41 +11929,50 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 <p className="text-slate-400 text-xs">Yukarıdan kullanıcı ara</p>
               </div>
             ) : (
-              friends.map(friend => (
-                <div key={friend.id} className="flex items-center gap-3 p-3 glass rounded-xl">
-                  <img 
-                    src={friend.profilePhoto || friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.id}`}
-                    className="w-12 h-12 rounded-xl object-cover"
-                  />
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm">{friend.displayName || friend.username}</p>
-                    {friend.username && <p className="text-xs text-slate-500">@{friend.username}</p>}
+              friends.map(friend => {
+                const friendInitials = getInitials(friend.displayName, friend.username);
+                return (
+                  <div key={friend.id} className="flex items-center gap-3 p-3 glass rounded-xl">
+                    {friend.profilePhoto ? (
+                      <img 
+                        src={friend.profilePhoto}
+                        className="w-12 h-12 rounded-xl object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">{friendInitials}</span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{friend.displayName || friend.username}</p>
+                      {friend.username && <p className="text-xs text-slate-500">@{friend.username}</p>}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        // Start chat with this friend
+                        const chatId = [authUser?.uid, friend.id].sort().join('_');
+                        const existingChat = dmChats?.find(c => c.id === chatId);
+                        if (existingChat) {
+                          setSelectedChat(existingChat);
+                        } else {
+                          setSelectedChat({ 
+                            id: chatId, 
+                            type: 'dm', 
+                            recipientId: friend.id, 
+                            name: friend.displayName || friend.username,
+                            avatar: friend.profilePhoto,
+                            messages: [] 
+                          });
+                        }
+                        setTab('messages');
+                      }}
+                      className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200"
+                    >
+                      <Icon name="mail" size={18} className="text-slate-600" />
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => {
-                      // Start chat with this friend
-                      const chatId = [authUser?.uid, friend.id].sort().join('_');
-                      const existingChat = dmChats?.find(c => c.id === chatId);
-                      if (existingChat) {
-                        setSelectedChat(existingChat);
-                      } else {
-                        setSelectedChat({ 
-                          id: chatId, 
-                          type: 'dm', 
-                          recipientId: friend.id, 
-                          name: friend.displayName || friend.username,
-                          avatar: friend.profilePhoto || friend.avatar,
-                          messages: [] 
-                        });
-                      }
-                      setTab('messages');
-                    }}
-                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200"
-                  >
-                    <Icon name="mail" size={18} className="text-slate-600" />
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -12639,6 +12704,21 @@ const BottomNav = ({ tab, setTab, hasNotifications }) => (
     </div>
   </div>
 );
+
+// Helper: Get initials from name or username
+const getInitials = (displayName, username) => {
+  if (displayName && displayName.trim()) {
+    const parts = displayName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
+  if (username && username.trim()) {
+    return username[0].toUpperCase();
+  }
+  return '?';
+};
 
 // ============ MAIN APP ============
 const App = () => {
@@ -13651,6 +13731,8 @@ const App = () => {
               hairLength: data.params?.hairLength || data.hairLength,
               hairType: data.params?.hairType || data.hairType,
               hijab: data.params?.hijab || data.hijab || false,
+              // Bio
+              bio: data.bio || prev?.bio || '',
               // Mevcut avatar'ı koru veya yenisini ekle
               baseAvatar: baseAvatarDataUrl || prev?.baseAvatar || data.baseAvatarDataUrl || null
             };
@@ -14047,6 +14129,7 @@ const App = () => {
           usernameLower: user.username ? user.username.toLowerCase() : null,
           displayName: user.displayName || null,
           profilePhoto: user.profilePhoto || null,
+          bio: user.bio || null,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         
