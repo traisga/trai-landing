@@ -14908,16 +14908,24 @@ const App = () => {
           // Avatar'ı sadece bir kez indir (her snapshot'ta değil)
           let baseAvatarDataUrl = null;
           
+          // Önce Storage'dan indirmeyi dene
           if (!avatarDownloadedRef.current && data.baseAvatarStorageUrl) {
             try {
               baseAvatarDataUrl = await downloadAvatarFromStorage(userId);
               if (baseAvatarDataUrl) {
                 avatarDownloadedRef.current = true;
-              } else {
+                console.log('✅ Avatar Storage\'dan indirildi');
               }
             } catch (e) {
               console.error('❌ Avatar indirme hatası:', e.message);
             }
+          }
+          
+          // Storage'dan indiremediyse, Firestore'daki baseAvatar'ı kullan
+          if (!baseAvatarDataUrl && data.baseAvatar && data.baseAvatar.startsWith('data:image')) {
+            baseAvatarDataUrl = data.baseAvatar;
+            avatarDownloadedRef.current = true;
+            console.log('✅ Avatar Firestore\'dan yüklendi');
           }
           
           // Ücretsiz haklar artık yenilenmiyor - tek seferlik
@@ -14969,7 +14977,8 @@ const App = () => {
               stylistMonthlyCredits: data.stylistMonthlyCredits || 0,
               stylistCreditsLastReset: data.stylistCreditsLastReset || null,
               // Mevcut avatar'ı koru veya yenisini ekle
-              baseAvatar: baseAvatarDataUrl || data.baseAvatar || prev?.baseAvatar || data.baseAvatarDataUrl || null
+              // Öncelik: 1) Storage'dan indirilen, 2) Firestore'daki tam avatar, 3) Önceki state, 4) Backup (sadece geçerliyse)
+              baseAvatar: baseAvatarDataUrl || data.baseAvatar || prev?.baseAvatar || (data.baseAvatarDataUrl?.startsWith('data:image') && data.baseAvatarDataUrl?.includes('base64,') ? data.baseAvatarDataUrl : null) || null
             };
             return newUser;
           });
@@ -15407,12 +15416,42 @@ const App = () => {
         
         if (avatarData && avatarData.startsWith('data:image')) {
           pendingSaveRef.current = true;
-          uploadAvatarToStorage(userId, avatarData).then(storageUrl => {
-            // Save to Firestore with storage URL reference AND backup base64
+          
+          // Avatar'ı sıkıştır (Firestore limiti için)
+          const compressAvatar = async (dataUrl) => {
+            const sizeKB = dataUrl.length / 1024;
+            if (sizeKB <= 900) return dataUrl; // 900KB altında sıkıştırma gerekmez
+            
+            try {
+              const img = new Image();
+              await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = dataUrl;
+              });
+              const canvas = document.createElement('canvas');
+              const maxDim = 512;
+              let w = img.width, h = img.height;
+              if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+              else { w = Math.round(w * maxDim / h); h = maxDim; }
+              canvas.width = w;
+              canvas.height = h;
+              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+              return canvas.toDataURL('image/jpeg', 0.75);
+            } catch {
+              return dataUrl.substring(0, 900000); // Fallback - yine de kes
+            }
+          };
+          
+          uploadAvatarToStorage(userId, avatarData).then(async (storageUrl) => {
+            // Firestore için sıkıştırılmış backup oluştur
+            const compressedAvatar = await compressAvatar(avatarData);
+            
+            // Save to Firestore with storage URL reference AND compressed backup
             db.collection('users').doc(userId).set({
               ...userData,
               baseAvatarStorageUrl: storageUrl || null,
-              baseAvatarDataUrl: avatarData.substring(0, 500000) // Store truncated backup (500KB max)
+              baseAvatar: compressedAvatar // Tam ve geçerli sıkıştırılmış avatar kaydet
             }, { merge: true })
               .then(() => {
                 pendingSaveRef.current = false;
