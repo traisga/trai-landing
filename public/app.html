@@ -1595,9 +1595,12 @@ try {
   // Firebase initialization failed - app will work in offline mode
 }
 
+// Track if storage is available (to avoid repeated failed attempts)
+let storageAvailable = true;
+
 // Helper: Upload avatar to Firebase Storage
 async function uploadAvatarToStorage(userId, avatarDataUrl) {
-  if (!FIREBASE_OK || !storage || !avatarDataUrl) {
+  if (!FIREBASE_OK || !storage || !avatarDataUrl || !storageAvailable) {
     return null;
   }
   try {
@@ -1611,14 +1614,20 @@ async function uploadAvatarToStorage(userId, avatarDataUrl) {
     const url = await ref.getDownloadURL();
     return url;
   } catch (e) {
-    console.error('❌ Avatar upload error:', e.code, e.message);
+    // If CORS error or 404, disable storage attempts for this session
+    if (e.code === 'storage/unauthorized' || e.message?.includes('404') || e.message?.includes('access control')) {
+      console.warn('⚠️ Firebase Storage not configured, disabling for this session');
+      storageAvailable = false;
+    } else {
+      console.error('❌ Avatar upload error:', e.code, e.message);
+    }
     return null;
   }
 }
 
 // Helper: Download avatar from Firebase Storage as data URL
 async function downloadAvatarFromStorage(userId) {
-  if (!FIREBASE_OK || !storage) return null;
+  if (!FIREBASE_OK || !storage || !storageAvailable) return null;
   
   // 10 saniye timeout
   const timeoutPromise = new Promise((_, reject) => 
@@ -1641,6 +1650,12 @@ async function downloadAvatarFromStorage(userId) {
     } catch (e) {
       // storage/object-not-found hatası normal - avatar yok demek
       if (e.code === 'storage/object-not-found') {
+        return null;
+      }
+      // If CORS error or 404, disable storage attempts
+      if (e.code === 'storage/unauthorized' || e.message?.includes('404') || e.message?.includes('access control')) {
+        console.warn('⚠️ Firebase Storage not configured, disabling for this session');
+        storageAvailable = false;
         return null;
       }
       throw e;
@@ -2133,7 +2148,7 @@ async function shareImage(dataUrl, options = {}) {
 
 // Upload image to Firebase and get shareable URL
 async function uploadAndShareImage(dataUrl, authUser, storage) {
-  if (!dataUrl || !dataUrl.startsWith('data:image') || !storage || !authUser?.uid) {
+  if (!dataUrl || !dataUrl.startsWith('data:image') || !storage || !authUser?.uid || !storageAvailable) {
     return shareImage(dataUrl);
   }
   
@@ -2191,12 +2206,65 @@ async function uploadAndShareImage(dataUrl, authUser, storage) {
     
   } catch (err) {
     console.error('Upload and share error:', err);
+    // Disable storage if CORS/404 error
+    if (err.code === 'storage/unauthorized' || err.message?.includes('404') || err.message?.includes('access control')) {
+      storageAvailable = false;
+    }
     return shareImage(dataUrl);
   }
 }
 
 function safeJsonParse(x, fallback) {
   try { return JSON.parse(x); } catch { return fallback; }
+}
+
+// Safe localStorage operations with quota handling
+function safeSetLocalStorage(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    // QuotaExceededError - try to clear some space
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      console.warn('⚠️ localStorage quota exceeded, clearing old data...');
+      // Clear non-essential data
+      const keysToTry = ['trai_posts_v1', 'trai_tryoncache_', 'trai_history_'];
+      keysToTry.forEach(prefix => {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith(prefix)) {
+            localStorage.removeItem(k);
+          }
+        });
+      });
+      // Try again
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch {
+        console.error('❌ localStorage still full after cleanup');
+        return false;
+      }
+    }
+    console.error('❌ localStorage error:', e);
+    return false;
+  }
+}
+
+function safeGetLocalStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    console.error('❌ localStorage read error:', e);
+    return null;
+  }
+}
+
+function safeRemoveLocalStorage(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.error('❌ localStorage remove error:', e);
+  }
 }
 
 // ============ ULTRA-POWERFUL AI SERVICE ============
@@ -3843,7 +3911,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
 
   const acceptTerms = () => { 
     setTermsOk(true); 
-    localStorage.setItem('trai_consents_v2', JSON.stringify(consents)); 
+    safeSetLocalStorage('trai_consents_v2', JSON.stringify(consents)); 
     setShowTerms(false); 
   };
   
@@ -8957,8 +9025,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                   onClick={() => {
                     if (confirm(t('clearCacheConfirm'))) {
                       if (authUser) {
-                        localStorage.removeItem(`trai_tryoncache_${authUser.uid}`);
-                        localStorage.removeItem(`trai_history_${authUser.uid}`);
+                        safeRemoveLocalStorage(`trai_tryoncache_${authUser.uid}`);
+                        safeRemoveLocalStorage(`trai_history_${authUser.uid}`);
                       }
                       window.location.reload();
                     }
@@ -11467,7 +11535,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     let uploadedImageUrl = null;
     
     // Upload image to Firebase Storage for shareable link
-    if (post.image && post.image.startsWith('data:image') && storage && authUser?.uid) {
+    if (post.image && post.image.startsWith('data:image') && storage && authUser?.uid && storageAvailable) {
       try {
         const timestamp = Date.now();
         const storageRef = storage.ref(`shared/${authUser.uid}/${timestamp}.jpg`);
@@ -11477,6 +11545,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         uploadedImageUrl = await storageRef.getDownloadURL();
         shareUrl = uploadedImageUrl;
       } catch (e) {
+        if (e.code === 'storage/unauthorized' || e.message?.includes('404') || e.message?.includes('access control')) {
+          storageAvailable = false;
+        }
       }
     }
     
@@ -15261,7 +15332,7 @@ const App = () => {
   useEffect(() => {
     if (user && authUser && initialLoadComplete) {
       const userId = authUser.uid;
-      localStorage.setItem(`trai_user_${userId}`, JSON.stringify(user));
+      safeSetLocalStorage(`trai_user_${userId}`, JSON.stringify(user));
       // Sync to Firestore if logged in
       if (db) {
         // Upload baseAvatar to Storage first (async, don't block)
@@ -15472,7 +15543,7 @@ const App = () => {
 
   // Save posts to localStorage (shared across users)
   useEffect(() => {
-    localStorage.setItem('trai_posts_v1', JSON.stringify(posts));
+    safeSetLocalStorage('trai_posts_v1', JSON.stringify(posts));
   }, [posts]);
 
   const addToCloset = item => setCloset(prev => prev.some(x => x.id === item.id) ? prev : [...prev, { ...item, subType: item.subType || item.type || null, addedAt: Date.now() }]);
@@ -15637,8 +15708,8 @@ const App = () => {
       setUser(null);
       setTryOnCache({}); // Clear try-on cache when avatar changes
       if (authUser) {
-        localStorage.removeItem(`trai_user_${authUser.uid}`);
-        localStorage.removeItem(`trai_tryoncache_${authUser.uid}`);
+        safeRemoveLocalStorage(`trai_user_${authUser.uid}`);
+        safeRemoveLocalStorage(`trai_tryoncache_${authUser.uid}`);
       }
     }
   };
@@ -15706,7 +15777,7 @@ const App = () => {
         }
         
         // Delete from Storage
-        if (storage) {
+        if (storage && storageAvailable) {
           try {
             // Delete avatar
             await storage.ref(`avatars/${userId}/base-avatar.png`).delete().catch(() => {});
@@ -15726,15 +15797,15 @@ const App = () => {
         }
         
         // Clear all localStorage
-        localStorage.removeItem(`trai_user_${userId}`);
-        localStorage.removeItem(`trai_closet_${userId}`);
-        localStorage.removeItem(`trai_friends_${userId}`);
-        localStorage.removeItem(`trai_messages_${userId}`);
-        localStorage.removeItem(`trai_settings_${userId}`);
-        localStorage.removeItem(`trai_combos_${userId}`);
-        localStorage.removeItem(`trai_favorites_${userId}`);
-        localStorage.removeItem(`trai_history_${userId}`);
-        localStorage.removeItem(`trai_tryoncache_${userId}`);
+        safeRemoveLocalStorage(`trai_user_${userId}`);
+        safeRemoveLocalStorage(`trai_closet_${userId}`);
+        safeRemoveLocalStorage(`trai_friends_${userId}`);
+        safeRemoveLocalStorage(`trai_messages_${userId}`);
+        safeRemoveLocalStorage(`trai_settings_${userId}`);
+        safeRemoveLocalStorage(`trai_combos_${userId}`);
+        safeRemoveLocalStorage(`trai_favorites_${userId}`);
+        safeRemoveLocalStorage(`trai_history_${userId}`);
+        safeRemoveLocalStorage(`trai_tryoncache_${userId}`);
         
         // Delete Firebase auth account
         if (auth?.currentUser) {
