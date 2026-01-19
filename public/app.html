@@ -14969,7 +14969,7 @@ const App = () => {
               stylistMonthlyCredits: data.stylistMonthlyCredits || 0,
               stylistCreditsLastReset: data.stylistCreditsLastReset || null,
               // Mevcut avatar'ı koru veya yenisini ekle
-              baseAvatar: baseAvatarDataUrl || prev?.baseAvatar || data.baseAvatarDataUrl || null
+              baseAvatar: baseAvatarDataUrl || data.baseAvatar || prev?.baseAvatar || data.baseAvatarDataUrl || null
             };
             return newUser;
           });
@@ -15899,10 +15899,36 @@ const App = () => {
               setShowAvatarPrompt(false);
               
               // Firebase'e kaydet
-              if (db && authUser?.uid) {
+              if (db && authUser?.uid && avatarData.baseAvatar) {
                 try {
+                  // Avatar boyutunu kontrol et (Firestore limiti ~1MB)
+                  let avatarToSave = avatarData.baseAvatar;
+                  const avatarSizeKB = Math.round(avatarToSave.length / 1024);
+                  console.log(`📏 Avatar boyutu: ${avatarSizeKB}KB`);
+                  
+                  // 800KB'dan büyükse sıkıştır
+                  if (avatarSizeKB > 800) {
+                    console.log('🗜️ Avatar sıkıştırılıyor...');
+                    const img = new Image();
+                    await new Promise((resolve, reject) => {
+                      img.onload = resolve;
+                      img.onerror = reject;
+                      img.src = avatarToSave;
+                    });
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 600; // Daha küçük boyut
+                    let w = img.width, h = img.height;
+                    if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+                    else { w = Math.round(w * maxDim / h); h = maxDim; }
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    avatarToSave = canvas.toDataURL('image/jpeg', 0.7);
+                    console.log(`✅ Sıkıştırıldı: ${Math.round(avatarToSave.length / 1024)}KB`);
+                  }
+                  
                   await db.collection('users').doc(authUser.uid).update({
-                    baseAvatar: avatarData.baseAvatar,
+                    baseAvatar: avatarToSave,
                     gender: avatarData.gender,
                     skinTone: avatarData.skinTone,
                     bodyType: avatarData.bodyType,
@@ -15915,6 +15941,7 @@ const App = () => {
                   console.log('✅ Avatar saved to Firebase');
                 } catch (e) {
                   console.error('❌ Avatar save error:', e);
+                  setToast({ open: true, type: 'error', title: 'Avatar Kaydetme Hatası', message: 'Avatar kaydedilemedi. Tekrar deneyin.' });
                 }
               }
               
