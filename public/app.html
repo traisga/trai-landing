@@ -8146,6 +8146,22 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         // Add message to subcollection
         await chatRef.collection('messages').add(msg);
         
+        // Mesaj bildirimi gönder (karşı tarafa)
+        if (recipientUid && recipientUid !== myUid) {
+          console.log('Profile: Creating message notification for:', recipientUid);
+          await db.collection('users').doc(recipientUid).collection('notifications').add({
+            type: 'new_message',
+            fromUid: myUid,
+            fromUsername: user?.username || '',
+            fromDisplayName: user?.displayName || user?.username || 'Birisi',
+            fromPhoto: user?.profilePhoto || user?.baseAvatar || '',
+            chatId: chatId,
+            message: `${user?.displayName || user?.username || 'Birisi'}: ${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}`,
+            read: false,
+            createdAt: Date.now()
+          });
+          console.log('Profile: Message notification created successfully');
+        }
       }
       
     } catch (e) {
@@ -8926,9 +8942,9 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                       className={`w-full glass rounded-2xl p-3 flex items-start gap-3 text-left transition hover:bg-slate-100 ${!notification.read ? 'ring-2 ring-brand/30 bg-brand/5' : ''}`}
                     >
                       {/* Avatar or Icon */}
-                      {notification.senderAvatar ? (
+                      {notification.fromPhoto ? (
                         <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                          <img src={notification.senderAvatar} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={notification.fromPhoto} className="w-full h-full object-cover" loading="lazy" />
                         </div>
                       ) : (
                         <div className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center flex-shrink-0`}>
@@ -8939,8 +8955,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm">
-                          {notification.senderName && (
-                            <span className="font-semibold">{notification.senderName} </span>
+                          {(notification.fromDisplayName || notification.fromUsername) && (
+                            <span className="font-semibold">{notification.fromDisplayName || notification.fromUsername} </span>
                           )}
                           <span className="text-slate-600">{actionText}</span>
                         </p>
@@ -12256,6 +12272,24 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         updatedAt: Date.now()
       }, { merge: true });
       
+      // Mesaj bildirimi gönder (karşı tarafa)
+      const recipientId = selectedChat.recipientId;
+      if (recipientId && recipientId !== authUser.uid) {
+        console.log('Creating message notification for:', recipientId);
+        await db.collection('users').doc(recipientId).collection('notifications').add({
+          type: 'new_message',
+          fromUid: authUser.uid,
+          fromUsername: user?.username || '',
+          fromDisplayName: user?.displayName || user?.username || 'Birisi',
+          fromPhoto: user?.profilePhoto || user?.baseAvatar || '',
+          chatId: chatId,
+          message: `${user?.displayName || user?.username || 'Birisi'}: ${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}`,
+          read: false,
+          createdAt: Date.now()
+        });
+        console.log('Message notification created successfully');
+      }
+      
     } catch (err) {
       console.error('Send message error:', err);
       setNewMessage(messageText); // Hata olursa geri koy
@@ -13041,7 +13075,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               </div>
               
               {/* Group Messages */}
-              <div className="flex-1 min-h-0 overflow-y-auto custom-scroll p-4 space-y-3">
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scroll p-4 space-y-3" style={{WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
                 {(selectedChat.messages || []).length === 0 ? (
                   <div className="text-center py-8 text-slate-400 text-sm">
                     Grup henüz oluşturuldu. İlk mesajı sen gönder!
@@ -13112,7 +13146,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
               </div>
               
               {/* Messages */}
-              <div className="flex-1 min-h-0 overflow-y-auto custom-scroll p-4 space-y-3">
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scroll p-4 space-y-3" style={{WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
                 {selectedChat.loading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="w-6 h-6 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
@@ -16790,7 +16824,7 @@ const App = () => {
                   items: items || [],
                   caption: '',
                   askFeedback: false,
-                  visibility: 'public',
+                  visibility: settings?.profilePublic ? 'public' : 'followers',
                   likes: [],
                   comments: [],
                   createdAt: postId
@@ -16998,7 +17032,7 @@ const App = () => {
                   items: items || [],
                   caption: '',
                   askFeedback: false,
-                  visibility: 'public',
+                  visibility: settings?.profilePublic ? 'public' : 'followers',
                   likes: [],
                   comments: [],
                   createdAt: postId
@@ -17208,7 +17242,7 @@ const App = () => {
               items: itemsToShare,
               caption: '',
               askFeedback: false,
-              visibility: 'public',
+              visibility: settings?.profilePublic ? 'public' : 'followers',
               likes: [],
               comments: [],
               createdAt: postId
@@ -17548,7 +17582,7 @@ const App = () => {
                   items: items || [],
                   caption: '',
                   askFeedback: false,
-                  visibility: 'public',
+                  visibility: settings?.profilePublic ? 'public' : 'followers',
                   likes: [],
                   comments: [],
                   createdAt: Date.now()
