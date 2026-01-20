@@ -431,6 +431,12 @@ const TRANSLATIONS = {
     dressLabel: "Elbise",
     allBrands: "Tüm Markalar",
     clearFilters: "Filtreleri Temizle",
+    sortBy: "Sırala",
+    recommended: "Önerilen",
+    priceLowToHigh: "Fiyat: Düşükten Yükseğe",
+    priceHighToLow: "Fiyat: Yüksekten Düşüğe",
+    nameAZ: "İsim: A-Z",
+    nameZA: "İsim: Z-A",
     products: "ürün",
     tryOn: "Dene",
     addToCloset: "Dolaba Ekle",
@@ -1073,6 +1079,12 @@ const TRANSLATIONS = {
     dressLabel: "Dress",
     allBrands: "All Brands",
     clearFilters: "Clear Filters",
+    sortBy: "Sort",
+    recommended: "Recommended",
+    priceLowToHigh: "Price: Low to High",
+    priceHighToLow: "Price: High to Low",
+    nameAZ: "Name: A-Z",
+    nameZA: "Name: Z-A",
     products: "products",
     tryOn: "Try On",
     addToCloset: "Add",
@@ -1699,6 +1711,8 @@ const Icons = {
   pants:<path d="M4 2h16v6l-3 14H7L4 8V2z M4 8h16"/>,
   globe:<><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>,
   world:<><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M12 2v20"/><path d="M4.93 4.93l14.14 14.14"/><path d="M19.07 4.93L4.93 19.07"/></>,
+  feed:<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="17.5" r="1.5" fill="currentColor"/></>,
+  shareAlt:<><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98"/><path d="M15.41 6.51l-6.82 3.98"/></>,
   image:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>,
   plusCircle:<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></>,
   moreHorizontal:<><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>,
@@ -1983,32 +1997,35 @@ async function addWatermark(dataUrl, text = 'TrAi Style', options = {}) {
         // Draw original image
         ctx.drawImage(img, 0, 0);
         
-        // === WATERMARK: Sol alt köşe - TrAi Logo ===
+        // === WATERMARK: Sol alt köşe - TrAi Logo (Büyütülmüş) ===
         const logoImg = new Image();
         logoImg.onload = () => {
           try {
-            const logoSize = Math.max(45, Math.min(canvas.width * 0.1, 80));
-            const logoPadding = logoSize * 0.25;
+            // Logo boyutu artırıldı: min 60, max 120
+            const logoSize = Math.max(60, Math.min(canvas.width * 0.12, 120));
+            const logoPadding = logoSize * 0.3;
             const logoX = logoPadding;
             const logoY = canvas.height - logoPadding - logoSize;
             
             // Draw logo with slight shadow
             ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-            ctx.shadowBlur = 8;
+            ctx.shadowBlur = 10;
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
             ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
             ctx.shadowBlur = 0;
             
-            // Add trai.style text next to logo
-            const fontSize = Math.max(12, logoSize * 0.25);
+            // === trai.style yazısı SAĞ ALT köşeye ===
+            const fontSize = Math.max(14, logoSize * 0.28);
             ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
-            ctx.textBaseline = 'middle';
-            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.textAlign = 'right';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 3;
-            ctx.fillText('trai.style', logoX + logoSize + 8, logoY + logoSize / 2);
+            ctx.shadowBlur = 4;
+            // Sağ alt köşe padding
+            const textPadding = logoPadding;
+            ctx.fillText('trai.style', canvas.width - textPadding, canvas.height - textPadding);
             ctx.shadowBlur = 0;
             
             const result = canvas.toDataURL('image/jpeg', 0.92);
@@ -2022,11 +2039,11 @@ async function addWatermark(dataUrl, text = 'TrAi Style', options = {}) {
           const fontSize = Math.max(14, canvas.width * 0.03);
           ctx.font = `bold ${fontSize}px -apple-system, sans-serif`;
           ctx.textBaseline = 'bottom';
-          ctx.textAlign = 'left';
+          ctx.textAlign = 'right';
           ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
           ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
           ctx.shadowBlur = 3;
-          ctx.fillText('trai.style', fontSize, canvas.height - fontSize);
+          ctx.fillText('trai.style', canvas.width - fontSize, canvas.height - fontSize);
           resolve(canvas.toDataURL('image/jpeg', 0.92));
         };
         logoImg.src = LOGO_BASE64;
@@ -5119,6 +5136,7 @@ const ProductCard = ({ product, onTryOn, onAddToCloset, onAdvice, isInCloset, on
 const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, cart, onShowCart, onShowSubscription, setTab }) => {
   const [search, setSearch] = useState('');
   const [brand, setBrand] = useState('all');
+  const [sortBy, setSortBy] = useState('default'); // default, priceAsc, priceDesc, nameAsc, nameDesc
   
   // Pagination
   const [visibleCount, setVisibleCount] = useState(20);
@@ -5220,8 +5238,19 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
       );
     }
     
+    // Sıralama
+    if (sortBy === 'priceAsc') {
+      f.sort((a, b) => (a.price || 0) - (b.price || 0));
+    } else if (sortBy === 'priceDesc') {
+      f.sort((a, b) => (b.price || 0) - (a.price || 0));
+    } else if (sortBy === 'nameAsc') {
+      f.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    } else if (sortBy === 'nameDesc') {
+      f.sort((a, b) => b.name.localeCompare(a.name, 'tr'));
+    }
+    
     return f;
-  }, [genderFilter, brand, categoryFilter, typeFilter, search]);
+  }, [genderFilter, brand, categoryFilter, typeFilter, search, sortBy]);
 
   // Paginated products (only show visibleCount)
   const visibleProducts = useMemo(() => products.slice(0, visibleCount), [products, visibleCount]);
@@ -5229,7 +5258,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
   // Reset pagination when filters change
   useEffect(() => {
     setVisibleCount(20);
-  }, [genderFilter, brand, categoryFilter, typeFilter, search]);
+  }, [genderFilter, brand, categoryFilter, typeFilter, search, sortBy]);
 
   // Kategori listesi (erkek için elbise gösterme)
   const categories = useMemo(() => {
@@ -5253,7 +5282,8 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
     genderFilter !== 'all',
     categoryFilter !== 'all',
     typeFilter !== 'all',
-    brand !== 'all'
+    brand !== 'all',
+    sortBy !== 'default'
   ].filter(Boolean).length;
 
   // Filtreleri temizle
@@ -5262,6 +5292,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
     setCategoryFilter('all');
     setTypeFilter('all');
     setBrand('all');
+    setSortBy('default');
     setSearch('');
   };
 
@@ -5321,25 +5352,46 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
         </div>
       </div>
       
-      {/* Featured Banner - DeFacto */}
+      {/* Featured Collections - 2x2 Grid */}
       {!search && genderFilter === 'all' && categoryFilter === 'all' && (
         <div className="px-4 pb-2">
-          <div className="glass rounded-xl p-2.5 bg-brand/10 border border-brand/30">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-xs">✨</span>
-                  <span className="text-[9px] font-bold text-brand2 uppercase tracking-wide">{t('featuredCollection')}</span>
-                </div>
-                <h3 className="text-base font-black">DeFacto</h3>
-              </div>
-              <button 
-                onClick={() => setBrand('defacto')} 
-                className="btn-primary px-3 py-1.5 rounded-lg text-xs font-bold"
-              >
-                {t('explore')}
-              </button>
-            </div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-xs">✨</span>
+            <span className="text-[10px] font-bold text-brand2 uppercase tracking-wide">{t('featuredCollection')}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {/* DeFacto */}
+            <button 
+              onClick={() => setBrand('defacto')}
+              className="glass rounded-xl p-3 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/50 hover:shadow-md transition-all text-left"
+            >
+              <h4 className="text-sm font-black text-slate-800">DeFacto</h4>
+              <p className="text-[9px] text-slate-500 mt-0.5">Günlük Şıklık</p>
+            </button>
+            {/* Mavi */}
+            <button 
+              onClick={() => setBrand('mavi')}
+              className="glass rounded-xl p-3 bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200/50 hover:shadow-md transition-all text-left"
+            >
+              <h4 className="text-sm font-black text-slate-800">Mavi</h4>
+              <p className="text-[9px] text-slate-500 mt-0.5">Jean Tutkunları</p>
+            </button>
+            {/* Koton */}
+            <button 
+              onClick={() => setBrand('koton')}
+              className="glass rounded-xl p-3 bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200/50 hover:shadow-md transition-all text-left"
+            >
+              <h4 className="text-sm font-black text-slate-800">Koton</h4>
+              <p className="text-[9px] text-slate-500 mt-0.5">Trend Koleksiyon</p>
+            </button>
+            {/* LC Waikiki */}
+            <button 
+              onClick={() => setBrand('lc_waikiki')}
+              className="glass rounded-xl p-3 bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200/50 hover:shadow-md transition-all text-left"
+            >
+              <h4 className="text-sm font-black text-slate-800">LC Waikiki</h4>
+              <p className="text-[9px] text-slate-500 mt-0.5">Aile Modası</p>
+            </button>
           </div>
         </div>
       )}
@@ -5416,27 +5468,43 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
           </div>
         )}
 
-        {/* Marka Filtresi - Ayrı satırda, daha kompakt */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+        {/* Marka Filtresi - Tüm markalar, en çok üründen en aza sıralı */}
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
           <button 
             onClick={() => setBrand('all')} 
-            className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap ${
-              brand === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'
+            className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap flex-shrink-0 ${
+              brand === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
             }`}
           >
             {t('allBrands')}
           </button>
-          {BRANDS.slice(0, 10).map(b => (
+          {BRANDS.map(b => (
             <button 
               key={b.id} 
               onClick={() => setBrand(b.id)} 
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap ${
-                brand === b.id ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'
+              className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap flex-shrink-0 ${
+                brand === b.id ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               }`}
             >
-              {b.name}
+              {b.name} <span className="opacity-60">({b.count})</span>
             </button>
           ))}
+        </div>
+
+        {/* Sıralama Filtresi */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-slate-500 font-medium">{t('sortBy') || 'Sırala'}:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="text-[11px] py-1 px-2 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-brand"
+          >
+            <option value="default">{t('recommended') || 'Önerilen'}</option>
+            <option value="priceAsc">{t('priceLowToHigh') || 'Fiyat: Düşükten Yükseğe'}</option>
+            <option value="priceDesc">{t('priceHighToLow') || 'Fiyat: Yüksekten Düşüğe'}</option>
+            <option value="nameAsc">{t('nameAZ') || 'İsim: A-Z'}</option>
+            <option value="nameDesc">{t('nameZA') || 'İsim: Z-A'}</option>
+          </select>
         </div>
       </div>
 
@@ -11607,10 +11675,10 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   };
 
   const tabs = [
-    { id: 'feed', icon: 'world', label: t('social') },
+    { id: 'feed', icon: 'feed', label: t('social') },
     { id: 'friends', icon: 'users', label: t('following') },
     { id: 'messages', icon: 'mail', label: 'DM' },
-    { id: 'create', icon: 'plusCircle', label: t('share') }
+    { id: 'create', icon: 'shareAlt', label: t('share') }
   ];
   
   // Search for users to follow
@@ -13113,7 +13181,7 @@ const BottomNav = ({ tab, setTab, hasNotifications }) => (
       {[
         { id: 'shop', icon: 'shop', labelKey: 'explore' }, 
         { id: 'closet', icon: 'hanger', labelKey: 'closet' }, 
-        { id: 'social', icon: 'world', labelKey: 'social' },
+        { id: 'social', icon: 'feed', labelKey: 'social' },
         { id: 'profile', icon: 'user', labelKey: 'profile' }
       ].map(item => (
         <button key={item.id} onClick={() => setTab(item.id)} className={`relative flex flex-col items-center gap-1 py-2 px-4 rounded-2xl transition ${tab === item.id ? 'text-brand bg-brand/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
@@ -13926,6 +13994,22 @@ const App = () => {
   // Referral code from URL
   const [pendingReferralCode, setPendingReferralCode] = useState(null);
   
+  // Favicon ayarla - sayfa yüklendiğinde
+  React.useEffect(() => {
+    try {
+      const favicon = document.getElementById('favicon');
+      const appleTouchIcon = document.getElementById('apple-touch-icon');
+      if (favicon) {
+        favicon.href = LOGO_BASE64;
+      }
+      if (appleTouchIcon) {
+        appleTouchIcon.href = LOGO_BASE64;
+      }
+    } catch (e) {
+      console.error('Favicon error:', e);
+    }
+  }, []);
+  
   // URL'den referral kodunu yakala
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -13989,8 +14073,22 @@ const App = () => {
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [dailyWeather, setDailyWeather] = useState(null);
   
-  // Cart & Payment state
-  const [cart, setCart] = useState([]);
+  // Cart & Payment state - localStorage'dan yükle
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem('trai_cart');
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        // Geçerli bir dizi ise döndür
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Cart load error:', e);
+    }
+    return [];
+  });
   const [showCart, setShowCart] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
@@ -13998,6 +14096,15 @@ const App = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [tokenAmount, setTokenAmount] = useState(0);
   const [tokenPrice, setTokenPrice] = useState(0);
+  
+  // Cart değiştiğinde localStorage'a kaydet
+  useEffect(() => {
+    try {
+      localStorage.setItem('trai_cart', JSON.stringify(cart));
+    } catch (e) {
+      console.error('Cart save error:', e);
+    }
+  }, [cart]);
   
   // Paywall state
   const [showPaywall, setShowPaywall] = useState(false);
@@ -14878,7 +14985,8 @@ const App = () => {
           
           // CRITICAL FIX: If username is missing, try to fetch from usernames collection
           let resolvedUsername = data.username;
-          let resolvedDisplayName = data.displayName;
+          // displayName: Firestore'dan gelen değer varsa onu kullan, yoksa önceki state'i koru
+          let resolvedDisplayName = data.displayName !== undefined ? data.displayName : null;
           
           if (!resolvedUsername) {
             try {
@@ -15399,15 +15507,18 @@ const App = () => {
         if (user.hairStyle !== undefined) userParams.hairStyle = user.hairStyle;
         if (user.hijab !== undefined) userParams.hijab = user.hijab;
         
-        // Temel kullanıcı verisi
+        // Temel kullanıcı verisi - sadece tanımlı değerleri kaydet
         const userData = {
-          username: user.username || null,
-          usernameLower: user.username ? user.username.toLowerCase() : null,
-          displayName: user.displayName || null,
-          profilePhoto: user.profilePhoto || null,
-          bio: user.bio || null,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+        // Bu alanları sadece tanımlıysa ekle (undefined ise Firestore'daki mevcut değeri koru)
+        if (user.username !== undefined) {
+          userData.username = user.username || null;
+          userData.usernameLower = user.username ? user.username.toLowerCase() : null;
+        }
+        if (user.displayName !== undefined) userData.displayName = user.displayName || null;
+        if (user.profilePhoto !== undefined) userData.profilePhoto = user.profilePhoto || null;
+        if (user.bio !== undefined) userData.bio = user.bio || null;
         
         // params sadece boş değilse ekle
         if (Object.keys(userParams).length > 0) {
