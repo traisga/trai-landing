@@ -8083,6 +8083,9 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat || !authUser?.uid || !db) return;
     
+    const messageText = newMessage.trim();
+    setNewMessage(''); // Hemen temizle
+    
     const myUid = authUser.uid;
     const recipientUid = selectedChat.recipientId || selectedChat.uid;
     
@@ -8091,12 +8094,27 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
       ? selectedChat.id 
       : [myUid, recipientUid].sort().join('_');
     
+    // Optimistic update - aninda goster
+    const tempMsg = {
+      id: 'temp_' + Date.now(),
+      senderId: myUid,
+      senderName: user.displayName || user.username,
+      text: messageText,
+      timestamp: Date.now()
+    };
+    
+    setSelectedChat(prev => prev ? {
+      ...prev,
+      messages: [...(prev.messages || []), tempMsg]
+    } : prev);
+    
     const msg = {
       senderId: myUid,
       senderName: user.displayName || user.username,
       senderPhoto: user.profilePhoto || null,
-      text: newMessage.trim(),
+      text: messageText,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: Date.now(),
       read: false
     };
     
@@ -8107,7 +8125,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         
         // Update group's lastMessage
         await db.collection('groups').doc(chatId).update({
-          lastMessage: newMessage.trim(),
+          lastMessage: messageText,
           lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
           lastMessageBy: myUid
         });
@@ -8122,7 +8140,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             [myUid]: user.displayName || user.username,
             [recipientUid]: selectedChat.name
           },
-          lastMessage: newMessage.trim(),
+          lastMessage: messageText,
           lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
           lastMessageBy: myUid,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -8133,47 +8151,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         
       }
       
-      // Update local state immediately for responsiveness
-      const localMsg = {
-        id: Date.now(),
-        senderId: myUid,
-        senderName: user.displayName || user.username,
-        text: newMessage.trim(),
-        timestamp: Date.now()
-      };
-      
-      if (selectedChat.type === 'group') {
-        setGroups(prev => prev.map(g => 
-          g.id === selectedChat.id 
-            ? { ...g, messages: [...(g.messages || []), localMsg] }
-            : g
-        ));
-      } else {
-        setDmChats(prev => {
-          const existing = prev.find(c => c.id === chatId);
-          if (existing) {
-            return prev.map(c => c.id === chatId 
-              ? { ...c, messages: [...(c.messages || []), localMsg] }
-              : c
-            );
-          } else {
-            return [...prev, { 
-              id: chatId, 
-              recipientId: recipientUid,
-              name: selectedChat.name, 
-              avatar: selectedChat.avatar,
-              messages: [localMsg],
-              approved: true
-            }];
-          }
-        });
-      }
-      
-      setNewMessage('');
-      
     } catch (e) {
-      console.error('❌ Send message error:', e);
-      alert('Mesaj gönderilemedi: ' + e.message);
+      console.error('Send message error:', e);
+      setNewMessage(messageText); // Hata olursa geri koy
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Mesaj gonderilemedi' });
     }
   };
 
@@ -8338,6 +8319,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             });
           });
           
+          // Update selectedChat with loaded messages
+          setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, messages: messagesList } : prev);
           
           // Update dmChats with loaded messages
           setDmChats(prev => prev.map(c => 
@@ -8345,7 +8328,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
           ));
         },
         (error) => {
-          console.error('❌ Message listener error:', error);
+          console.error('Message listener error:', error);
         }
       );
     
@@ -11403,6 +11386,106 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     }
   }, [initialTab]);
   
+  // DM mesajları için real-time listener
+  useEffect(() => {
+    if (!selectedChat || !db || selectedChat.type === 'group') return;
+    
+    const chatId = selectedChat.id;
+    if (!chatId || typeof chatId !== 'string') return;
+    
+    console.log('Setting up DM listener for:', chatId);
+    
+    const unsubscribe = db.collection('chats').doc(chatId).collection('messages')
+      .orderBy('timestamp', 'asc')
+      .limit(100)
+      .onSnapshot(
+        (snapshot) => {
+          const messagesList = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            messagesList.push({
+              id: doc.id,
+              senderId: data.senderId,
+              senderName: data.senderName,
+              text: data.text,
+              type: data.type || 'text',
+              image: data.image || null,
+              items: data.items || [],
+              timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
+              read: data.read
+            });
+          });
+          
+          console.log('DM messages loaded:', messagesList.length);
+          
+          // Update selectedChat with loaded messages
+          setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, messages: messagesList, loading: false } : prev);
+          
+          // Update dmChats with loaded messages
+          setDmChats(prev => prev.map(c => 
+            c.id === chatId ? { ...c, messages: messagesList } : c
+          ));
+        },
+        (error) => {
+          console.error('DM listener error:', error);
+        }
+      );
+    
+    return () => {
+      console.log('Cleaning up DM listener for:', chatId);
+      unsubscribe();
+    };
+  }, [selectedChat?.id, selectedChat?.type]);
+  
+  // Grup mesajları için real-time listener
+  useEffect(() => {
+    if (!selectedChat || !db || selectedChat.type !== 'group') return;
+    
+    const groupId = selectedChat.id;
+    if (!groupId) return;
+    
+    console.log('Setting up Group listener for:', groupId);
+    
+    const unsubscribe = db.collection('groups').doc(String(groupId)).collection('messages')
+      .orderBy('timestamp', 'asc')
+      .limit(100)
+      .onSnapshot(
+        (snapshot) => {
+          const messagesList = [];
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            messagesList.push({
+              id: doc.id,
+              senderId: data.senderId,
+              senderName: data.senderName,
+              text: data.text,
+              type: data.type || 'text',
+              image: data.image || null,
+              timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now()
+            });
+          });
+          
+          console.log('Group messages loaded:', messagesList.length);
+          
+          // Update selectedChat with loaded messages
+          setSelectedChat(prev => prev && prev.id === groupId ? { ...prev, messages: messagesList, loading: false } : prev);
+          
+          // Update groups with loaded messages
+          setGroups(prev => prev.map(g => 
+            g.id === groupId ? { ...g, messages: messagesList } : g
+          ));
+        },
+        (error) => {
+          console.error('Group listener error:', error);
+        }
+      );
+    
+    return () => {
+      console.log('Cleaning up Group listener for:', groupId);
+      unsubscribe();
+    };
+  }, [selectedChat?.id, selectedChat?.type]);
+  
   const [posting, setPosting] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [comment, setComment] = useState('');
@@ -11499,48 +11582,49 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   const sendGroupMessage = async () => {
     if (!newMessage.trim() || !selectedChat || selectedChat.type !== 'group') return;
     
+    const messageText = newMessage.trim();
+    setNewMessage(''); // Hemen temizle (optimistic)
+    
     const msg = {
-      id: Date.now(),
+      id: 'temp_' + Date.now(),
       senderId: authUser?.uid,
       senderName: user.displayName || user.username,
       senderAvatar: user.profilePhoto || user.baseAvatar,
-      text: newMessage.trim(),
+      text: messageText,
       type: 'text',
       timestamp: Date.now()
     };
     
-    // Lokal state güncelle
-    setGroups(prev => prev.map(g => 
-      g.id === selectedChat.id 
-        ? { ...g, messages: [...(g.messages || []), msg] }
-        : g
-    ));
-    
-    // selectedChat'i de güncelle
-    setSelectedChat(prev => ({
+    // Optimistic update - anında göster
+    setSelectedChat(prev => prev ? {
       ...prev,
       messages: [...(prev.messages || []), msg]
-    }));
+    } : prev);
     
     // Firebase'e kaydet
     if (db) {
       try {
         await db.collection('groups').doc(String(selectedChat.id)).collection('messages').add({
-          ...msg,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          senderId: msg.senderId,
+          senderName: msg.senderName,
+          senderAvatar: msg.senderAvatar,
+          text: msg.text,
+          type: msg.type,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt: Date.now()
         });
         
         // Son mesajı grup dokümanına kaydet
         await db.collection('groups').doc(String(selectedChat.id)).update({
-          lastMessage: msg.text,
+          lastMessage: messageText,
           lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
         });
       } catch (e) {
-        console.error('Mesaj gönderme hatası:', e);
+        console.error('Mesaj gonderme hatasi:', e);
+        setNewMessage(messageText); // Hata olursa geri koy
+        setToast({ open: true, type: 'error', title: 'Hata', message: 'Mesaj gonderilemedi' });
       }
     }
-    
-    setNewMessage('');
   };
   
   // Gruptan ayrılma
@@ -12049,34 +12133,40 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat || !db || !authUser?.uid) return;
     
+    const messageText = newMessage.trim();
+    setNewMessage(''); // Hemen temizle (optimistic)
+    
     try {
       const chatId = selectedChat.id;
+      const tempId = 'temp_' + Date.now();
       const messageData = {
         senderId: authUser.uid,
-        senderName: user?.displayName || user?.username || 'Kullanıcı',
-        text: newMessage.trim(),
+        senderName: user?.displayName || user?.username || 'Kullanici',
+        text: messageText,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         createdAt: Date.now()
       };
       
+      // Optimistic update - anında göster
+      const optimisticMessage = { ...messageData, id: tempId, timestamp: Date.now() };
+      setSelectedChat(prev => prev ? { 
+        ...prev, 
+        messages: [...(prev.messages || []), optimisticMessage] 
+      } : prev);
+      
+      // Firebase'e yaz
       await db.collection('chats').doc(chatId).collection('messages').add(messageData);
       await db.collection('chats').doc(chatId).set({
-        lastMessage: newMessage.trim(),
+        lastMessage: messageText,
         lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
         lastMessageBy: authUser.uid,
         updatedAt: Date.now()
       }, { merge: true });
       
-      // Update local state
-      setDmChats(prev => prev.map(c => 
-        c.id === chatId 
-          ? { ...c, messages: [...(c.messages || []), { ...messageData, id: Date.now() }] }
-          : c
-      ));
-      
-      setNewMessage('');
     } catch (err) {
       console.error('Send message error:', err);
+      setNewMessage(messageText); // Hata olursa geri koy
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Mesaj gonderilemedi' });
     }
   };
 
@@ -12737,36 +12827,14 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 dmChats.map(chat => (
                   <button
                     key={chat.id}
-                    onClick={async () => {
-                      // Load messages from Firebase when selecting chat
-                      setSelectedChat({ ...chat, type: 'dm', messages: [], loading: true });
-                      if (db && chat.id) {
-                        try {
-                          const messagesSnap = await db.collection('chats').doc(chat.id)
-                            .collection('messages')
-                            .orderBy('timestamp', 'asc')
-                            .limit(100)
-                            .get();
-                          const messages = messagesSnap.docs.map(doc => {
-                            const data = doc.data();
-                            return {
-                              id: doc.id,
-                              senderId: data.senderId,
-                              senderName: data.senderName,
-                              text: data.text,
-                              type: data.type || 'text',
-                              image: data.image || null,
-                              items: data.items || [],
-                              timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
-                              read: data.read
-                            };
-                          });
-                          setSelectedChat(prev => prev?.id === chat.id ? { ...prev, messages, loading: false } : prev);
-                        } catch(err) {
-                          console.error('Messages load error:', err);
-                          setSelectedChat(prev => prev?.id === chat.id ? { ...prev, loading: false } : prev);
-                        }
-                      }
+                    onClick={() => {
+                      // Mevcut mesajları koru, listener yükleyecek
+                      setSelectedChat({ 
+                        ...chat, 
+                        type: 'dm', 
+                        messages: chat.messages || [], 
+                        loading: !chat.messages || chat.messages.length === 0 
+                      });
                     }}
                     className="w-full flex items-center gap-3 p-3 glass rounded-xl text-left hover:bg-slate-100"
                   >
@@ -12989,13 +13057,16 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                         key={friend.id}
                         onClick={() => {
                           const chatId = [authUser?.uid, friend.id].sort().join('_');
+                          // Mevcut chat varsa mesajlarını koru
+                          const existingChat = dmChats?.find(c => c.id === chatId);
                           setSelectedChat({ 
                             id: chatId, 
                             type: 'dm', 
                             recipientId: friend.id, 
                             name: friend.displayName || friend.username,
                             avatar: friend.profilePhoto || friend.avatar,
-                            messages: [] 
+                            messages: existingChat?.messages || [],
+                            loading: !existingChat?.messages || existingChat?.messages?.length === 0
                           });
                           setShowNewChat(false);
                         }}
@@ -15631,7 +15702,7 @@ const App = () => {
                 const userData = userDoc.data();
                 userAvatars[uid] = {
                   avatar: userData.profilePhoto || userData.baseAvatarStorageUrl || null,
-                  displayName: userData.displayName || userData.username || 'Kullanıcı'
+                  displayName: userData.displayName || userData.username || 'Kullanici'
                 };
               }
             } catch (e) {
@@ -15646,12 +15717,11 @@ const App = () => {
             chatsList.push({
               id: doc.id,
               recipientId: otherUserId,
-              name: otherUserInfo.displayName || data.participantNames?.[otherUserId] || 'Kullanıcı',
+              name: otherUserInfo.displayName || data.participantNames?.[otherUserId] || 'Kullanici',
               avatar: otherUserInfo.avatar || null,
               lastMessage: data.lastMessage,
               lastMessageTime: data.lastMessageTime?.toMillis?.() || data.updatedAt || Date.now(),
               lastMessageBy: data.lastMessageBy,
-              messages: [], // Will be loaded when chat is opened
               approved: true
             });
           });
@@ -15663,12 +15733,16 @@ const App = () => {
           setDmChats(prev => {
             return chatsList.map(chat => {
               const existing = prev.find(c => c.id === chat.id);
-              return existing ? { ...chat, messages: existing.messages, avatar: chat.avatar || existing.avatar } : chat;
+              // Mevcut mesajları MUTLAKA koru
+              if (existing && existing.messages && existing.messages.length > 0) {
+                return { ...chat, messages: existing.messages };
+              }
+              return { ...chat, messages: existing?.messages || [] };
             });
           });
         },
         (error) => {
-          console.error('❌ Chats load error:', error);
+          console.error('Chats load error:', error);
         }
       );
     
