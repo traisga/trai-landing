@@ -5311,7 +5311,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
   return (
     <div className="h-full flex flex-col overflow-hidden relative">
       {/* Logo & Slogan Header with Cart/Premium - SABİT */}
-      <div className="flex-shrink-0 px-4 pt-2 pb-1 flex items-center justify-between bg-white/95 backdrop-blur-sm z-10 safe-top">
+      <div className="flex-shrink-0 px-4 pb-1 flex items-center justify-between bg-white/95 backdrop-blur-sm z-10" style={{paddingTop: 'max(env(safe-area-inset-top, 60px), 60px)'}}>
         <button 
           onClick={() => {
             // Ana sayfaya (keşfet) git
