@@ -7610,11 +7610,20 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 };
 
 // ============ PROFILE (EXPANDED) ============
-const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab, setPendingViewPostId, setToast, stylistApplication, onOpenStylistApplication, isAdmin, onOpenAdminPanel, posts, likedPosts, repostedPosts }) => {
-  const [tab, setTab] = useState('profile'); // profile, avatar, friends, notifications, settings
+const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab, setPendingViewPostId, setToast, stylistApplication, onOpenStylistApplication, isAdmin, onOpenAdminPanel, posts, likedPosts, repostedPosts, initialTab, setInitialTab }) => {
+  const [tab, setTab] = useState('profile'); // profile, avatar, friends, notifications, settings, messages
   const [profileSubTab, setProfileSubTab] = useState('posts'); // posts, likes, reposts
   const [showAddFriend, setShowAddFriend] = useState(false);
   const profilePhotoRef = useRef(null);
+  
+  // Bildirimden gelen yönlendirme - initialTab değiştiğinde sekmeyi değiştir
+  useEffect(() => {
+    if (initialTab) {
+      setTab(initialTab);
+      // Kullanıldıktan sonra sıfırla
+      if (setInitialTab) setInitialTab(null);
+    }
+  }, [initialTab]);
   
   // Okunmamış bildirim sayısı
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
@@ -11355,7 +11364,7 @@ const AdviceModal = ({ open, item, advice, loading, onClose }) => {
 };
 
 // ============ SOCIAL FEED ============
-const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, groups, setGroups, notifications, setNotifications, onViewUserProfile, favorites, setFavorites, settings, pendingViewPostId, setPendingViewPostId }) => {
+const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, groups, setGroups, notifications, setNotifications, onViewUserProfile, favorites, setFavorites, settings, pendingViewPostId, setPendingViewPostId, initialTab, setInitialTab }) => {
   const [tab, setTab] = useState('feed'); // feed, myPosts, create, friends, messages
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState('');
@@ -11385,6 +11394,14 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       if (setPendingViewPostId) setPendingViewPostId(null);
     }
   }, [pendingViewPostId, posts]);
+  
+  // Bildirimden gelen sekme yönlendirmesi
+  useEffect(() => {
+    if (initialTab) {
+      setTab(initialTab);
+      if (setInitialTab) setInitialTab(null);
+    }
+  }, [initialTab]);
   
   const [posting, setPosting] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -14219,19 +14236,25 @@ const App = () => {
       const data = event.detail;
       if (!data) return;
       
-      // Bildirim tipine göre yönlendirme
+      console.log('Push tap data:', data);
+      
+      // Bildirim tipine göre yönlendirme - hepsi Social sayfasında
       switch (data.type) {
         case 'follow_request':
         case 'follow_accept':
-          setTab('profile');
+          setTab('social');
+          setSocialInitialTab('friends');
           break;
         case 'like':
         case 'comment':
           setTab('social');
+          setSocialInitialTab('feed');
           if (data.postId) setPendingViewPostId(data.postId);
           break;
         case 'new_message':
-          setTab('profile');
+        case 'group_message':
+          setTab('social');
+          setSocialInitialTab('messages');
           break;
         default:
           break;
@@ -14250,6 +14273,9 @@ const App = () => {
     setLanguage(newLang);
     setLang(newLang);
   };
+  
+  // Social internal tab state - bildirimden yönlendirme için
+  const [socialInitialTab, setSocialInitialTab] = useState(null);
   
   // Social features state
   const [friends, setFriends] = useState([]);
@@ -16583,6 +16609,8 @@ const App = () => {
               authUser={authUser}
               friends={friends}
               setFriends={setFriends}
+              initialTab={socialInitialTab}
+              setInitialTab={setSocialInitialTab}
               posts={posts}
               setPosts={setPosts}
               setToast={setToast}
@@ -16789,6 +16817,8 @@ const App = () => {
               authUser={authUser}
               friends={friends}
               setFriends={setFriends}
+              initialTab={socialInitialTab}
+              setInitialTab={setSocialInitialTab}
               posts={posts}
               setPosts={setPosts}
               setToast={setToast}
