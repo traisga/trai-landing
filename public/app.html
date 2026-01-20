@@ -44,12 +44,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   
-<!-- Favicon -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="/site.webmanifest">
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="manifest" href="/site.webmanifest">
   
   <!-- Security: Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="
@@ -5244,14 +5244,15 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
     // Sıralama
     if (sortBy === 'priceAsc') {
       f.sort((a, b) => {
-        const priceA = parseFloat(String(a.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-        const priceB = parseFloat(String(b.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        // Sadece rakamları al (1.299 TL -> 1299, 200 TL -> 200)
+        const priceA = parseInt(String(a.price || '0').replace(/\D/g, ''), 10) || 0;
+        const priceB = parseInt(String(b.price || '0').replace(/\D/g, ''), 10) || 0;
         return priceA - priceB;
       });
     } else if (sortBy === 'priceDesc') {
       f.sort((a, b) => {
-        const priceA = parseFloat(String(a.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-        const priceB = parseFloat(String(b.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        const priceA = parseInt(String(a.price || '0').replace(/\D/g, ''), 10) || 0;
+        const priceB = parseInt(String(b.price || '0').replace(/\D/g, ''), 10) || 0;
         return priceB - priceA;
       });
     } else if (sortBy === 'nameAsc') {
@@ -14032,22 +14033,6 @@ const App = () => {
   
   // Referral code from URL
   const [pendingReferralCode, setPendingReferralCode] = useState(null);
-  
-  // Favicon ayarla - sayfa yüklendiğinde
-  React.useEffect(() => {
-    try {
-      const favicon = document.getElementById('favicon');
-      const appleTouchIcon = document.getElementById('apple-touch-icon');
-      if (favicon) {
-        favicon.href = LOGO_BASE64;
-      }
-      if (appleTouchIcon) {
-        appleTouchIcon.href = LOGO_BASE64;
-      }
-    } catch (e) {
-      console.error('Favicon error:', e);
-    }
-  }, []);
   
   // URL'den referral kodunu yakala
   React.useEffect(() => {
