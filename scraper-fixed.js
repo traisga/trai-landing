@@ -149,7 +149,7 @@ function mergeProducts(existing, newProducts) {
 }
 
 // ==========================================
-// EKRAN GÖRÜNTÜSÜ ALMA (YENİ FONKSİYON)
+// DEBUG & SCREENSHOT
 // ==========================================
 async function takeDebugScreenshot(page, name) {
     try {
@@ -158,144 +158,387 @@ async function takeDebugScreenshot(page, name) {
         
         const cleanName = name.replace(/[^a-z0-9]/gi, '_');
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const screenPath = path.join(debugDir, `error_${cleanName}_${timestamp}.jpg`);
+        const screenPath = path.join(debugDir, `${cleanName}_${timestamp}.jpg`);
         
-        await page.screenshot({ path: screenPath, fullPage: true });
-        console.log(`   📸 Hata görüntüsü kaydedildi: ${screenPath}`);
+        await page.screenshot({ path: screenPath, fullPage: false, type: 'jpeg', quality: 70 });
+        console.log(`   📸 Screenshot: ${cleanName}`);
+        
+        // HTML'i de kaydet (debug için)
+        const html = await page.content();
+        const htmlPath = path.join(debugDir, `${cleanName}_${timestamp}.html`);
+        fs.writeFileSync(htmlPath, html.substring(0, 50000)); // İlk 50KB
+        
     } catch (e) {
         console.log(`   ⚠️ Screenshot alınamadı: ${e.message}`);
     }
 }
 
 // ==========================================
-// SCRAPER (GÜNCELLENMİŞ)
+// COOKIE CONSENT & POPUP HANDLER
+// ==========================================
+async function handleCookieConsent(page) {
+    const cookieSelectors = [
+        '#onetrust-accept-btn-handler',
+        '.onetrust-accept-btn-handler', 
+        '[data-testid="accept-cookies"]',
+        'button[id*="accept"]',
+        'button[class*="accept"]',
+        '.cookie-accept',
+        '#cookieUsagePopIn .btn',
+        '.modal-close',
+        '[aria-label="Kapat"]',
+        '[aria-label="Close"]',
+        'button:has-text("Kabul")',
+        'button:has-text("Accept")',
+        'button:has-text("Tamam")',
+    ];
+    
+    for (const selector of cookieSelectors) {
+        try {
+            const btn = await page.$(selector);
+            if (btn) {
+                await btn.click();
+                console.log(`   🍪 Cookie popup kapatıldı: ${selector}`);
+                await delay(500);
+                return true;
+            }
+        } catch (e) { }
+    }
+    
+    // JavaScript ile popup'ları kapat
+    await page.evaluate(() => {
+        // OneTrust
+        if (window.OneTrust) {
+            try { window.OneTrust.AllowAll(); } catch(e) {}
+        }
+        // Genel modal kapatma
+        document.querySelectorAll('[class*="modal"], [class*="popup"], [class*="overlay"]').forEach(el => {
+            if (el.style.display !== 'none' && el.offsetParent !== null) {
+                const closeBtn = el.querySelector('button, [class*="close"], [aria-label*="kapat"], [aria-label*="close"]');
+                if (closeBtn) closeBtn.click();
+            }
+        });
+    });
+    
+    return false;
+}
+
+// ==========================================
+// TRENDYOL SPECİFİK POPUP HANDLER
+// ==========================================
+async function handleTrendyolPopups(page) {
+    try {
+        // Gender selection popup
+        await page.evaluate(() => {
+            const genderPopup = document.querySelector('.gender-popup, [data-testid="gender-popup"]');
+            if (genderPopup) {
+                const closeBtn = genderPopup.querySelector('.close, button');
+                if (closeBtn) closeBtn.click();
+            }
+        });
+        
+        // App download popup
+        await page.evaluate(() => {
+            const appPopup = document.querySelector('[class*="app-download"], [class*="mobile-app"]');
+            if (appPopup) {
+                const closeBtn = appPopup.querySelector('.close, button, [class*="close"]');
+                if (closeBtn) closeBtn.click();
+            }
+        });
+        
+        // Newsletter popup
+        await page.evaluate(() => {
+            document.querySelectorAll('[class*="newsletter"], [class*="email-popup"]').forEach(el => {
+                const closeBtn = el.querySelector('.close, button[class*="close"]');
+                if (closeBtn) closeBtn.click();
+            });
+        });
+        
+        // ESC tuşu ile kapatmayı dene
+        await page.keyboard.press('Escape');
+        await delay(300);
+        await page.keyboard.press('Escape');
+        
+    } catch (e) { }
+}
+
+// ==========================================
+// RANDOM USER AGENT
+// ==========================================
+function getRandomUserAgent() {
+    const agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+    ];
+    return agents[Math.floor(Math.random() * agents.length)];
+}
+
+// ==========================================
+// DELAY & SCROLL
 // ==========================================
 async function delay(ms) {
-    return new Promise(r => setTimeout(r, ms));
+    return new Promise(r => setTimeout(r, ms + Math.random() * 500));
+}
+
+async function humanDelay() {
+    // İnsan benzeri rastgele bekleme
+    return delay(1500 + Math.random() * 2000);
 }
 
 async function autoScroll(page) {
     await page.evaluate(async () => {
         await new Promise((resolve) => {
-            let totalHeight = 0, distance = 250;
+            let totalHeight = 0;
+            const distance = 200 + Math.floor(Math.random() * 100);
             const timer = setInterval(() => {
                 const scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
                 totalHeight += distance;
-                if (totalHeight >= scrollHeight || totalHeight > 15000) {
+                if (totalHeight >= scrollHeight || totalHeight > 12000) {
                     clearInterval(timer);
                     resolve();
                 }
-            }, 250);
+            }, 200 + Math.floor(Math.random() * 150));
         });
     });
 }
 
+// ==========================================
+// ANA SCRAPER
+// ==========================================
 async function scrapeCategory(page, config, retryCount = 0) {
     console.log(`➡️  ${config.name}`);
     
     try {
-        await delay(2000 + Math.random() * 2000);
+        await humanDelay();
         
-        // Timeout 30 saniyeye düşürüldü (Çok beklememek için)
-        await page.goto(config.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        // Sayfaya git
+        const response = await page.goto(config.url, { 
+            waitUntil: 'domcontentloaded', 
+            timeout: 45000 
+        });
         
-        const pageTitle = await page.title();
-        if (pageTitle.includes("Robot") || pageTitle.includes("Security")) {
-             console.log("   ⛔ BOT TESPİT EDİLDİ");
-             await takeDebugScreenshot(page, "BOT_DETECTED_" + config.name);
-             throw new Error("Bot Detected");
+        // HTTP status kontrolü
+        if (!response || response.status() >= 400) {
+            console.log(`   ⚠️ HTTP ${response?.status() || 'N/A'}`);
+            return [];
         }
-
-        const selectors = ['.p-card-wrppr', '.product-card', '[data-testid="product-card"]', '.prdct-cntnr-wrppr'];
-        let found = false;
         
-        for (const sel of selectors) {
+        // Ekstra bekleme
+        await delay(2000);
+        
+        // Popup'ları kapat
+        await handleCookieConsent(page);
+        await handleTrendyolPopups(page);
+        
+        // Bot detection kontrolü
+        const pageTitle = await page.title();
+        const pageUrl = page.url();
+        
+        if (pageTitle.includes("Robot") || pageTitle.includes("Security") || 
+            pageTitle.includes("Captcha") || pageTitle.includes("blocked") ||
+            pageUrl.includes("captcha") || pageUrl.includes("challenge")) {
+            console.log(`   ⛔ BOT TESPİT EDİLDİ: ${pageTitle}`);
+            await takeDebugScreenshot(page, `BOT_${config.name}`);
+            
+            // 403/bot durumunda tüm scraping'i durdur
+            throw new Error("BOT_DETECTED");
+        }
+        
+        // Ürün kartlarını bekle - birden fazla selector dene
+        const cardSelectors = [
+            '.p-card-wrppr',
+            '.p-card-chldrn-cntnr',
+            '.prdct-cntnr-wrppr .p-card-wrppr',
+            '[data-testid="product-card"]',
+            '.product-card',
+            'div[class*="p-card"]'
+        ];
+        
+        let foundSelector = null;
+        
+        for (const sel of cardSelectors) {
             try {
-                await page.waitForSelector(sel, { timeout: 8000 });
-                found = true;
-                break;
+                await page.waitForSelector(sel, { timeout: 10000 });
+                const count = await page.$$eval(sel, els => els.length);
+                if (count > 0) {
+                    foundSelector = sel;
+                    console.log(`   🎯 Selector bulundu: ${sel} (${count} adet)`);
+                    break;
+                }
             } catch (e) { continue; }
         }
         
-        if (!found) {
-            console.log(`   ⚠️ Ürün bulunamadı (Selector timeout)`);
-            await takeDebugScreenshot(page, "NOT_FOUND_" + config.name);
-
-            if (retryCount < 1) {
-                console.log(`   ⏳ Tekrar deneniyor...`);
-                await delay(3000);
+        if (!foundSelector) {
+            console.log(`   ⚠️ Ürün bulunamadı`);
+            await takeDebugScreenshot(page, `NO_PRODUCTS_${config.name}`);
+            
+            // Retry
+            if (retryCount < 2) {
+                console.log(`   ⏳ Tekrar deneniyor (${retryCount + 1}/2)...`);
+                await delay(5000);
                 return await scrapeCategory(page, config, retryCount + 1);
             }
             return [];
         }
         
+        // Sayfayı scroll et (lazy loading için)
         await autoScroll(page);
         await delay(1500);
-
-        const products = await page.evaluate((gender, keyword) => {
-            const banned = ['saat', 'terlik', 'eldiven', 'çorap', 'boxer', 'külot', 'kemer', 'cüzdan', 'parfüm', 'gözlük', 'kolye', 'küpe', 'şapka', 'bere', 'ayakkabı', 'bot', 'çizme', 'kılıf', 'çanta', 'cüzdan'];
+        
+        // Tekrar popup kontrol
+        await handleTrendyolPopups(page);
+        
+        // Ürünleri çek
+        const products = await page.evaluate((gender, keyword, selector) => {
+            const banned = ['saat', 'terlik', 'eldiven', 'çorap', 'boxer', 'külot', 'kemer', 'cüzdan', 'parfüm', 'gözlük', 'kolye', 'küpe', 'şapka', 'bere', 'ayakkabı', 'bot', 'çizme', 'kılıf', 'çanta'];
             const data = [];
-            const cards = document.querySelectorAll('.p-card-wrppr, .product-card, [data-testid="product-card"]');
+            
+            // Tüm olası card selector'ları dene
+            const cards = document.querySelectorAll('.p-card-wrppr, .p-card-chldrn-cntnr > div, [data-testid="product-card"]');
             
             cards.forEach(n => {
                 try {
-                    if (n.innerText.length < 5) return;
+                    if (!n || n.innerText.length < 10) return;
                     
-                    const brand = (n.querySelector('.prdct-desc-cntnr-ttl, .brand, [data-testid="brand"]')?.innerText || '').trim();
-                    const title = (n.querySelector('.prdct-desc-cntnr-name, .name, [data-testid="product-name"]')?.innerText || '').trim();
-                    if (!title) return;
+                    // Brand
+                    const brandEl = n.querySelector('.prdct-desc-cntnr-ttl, .prdct-desc-cntnr-ttl-w, span[class*="brand"], [data-testid="brand"]');
+                    let brand = brandEl?.innerText?.trim() || '';
+                    
+                    // Title  
+                    const titleEl = n.querySelector('.prdct-desc-cntnr-name, span[class*="name"], .product-name, [data-testid="product-name"]');
+                    let title = titleEl?.innerText?.trim() || '';
+                    
+                    // Alternatif: tüm text'den çıkar
+                    if (!title && n.innerText) {
+                        const lines = n.innerText.split('\n').filter(l => l.trim().length > 5);
+                        if (lines.length >= 2) {
+                            brand = brand || lines[0].trim();
+                            title = lines[1].trim();
+                        }
+                    }
+                    
+                    if (!title || title.length < 5) return;
                     
                     const lowerT = title.toLowerCase();
                     if (banned.some(b => lowerT.includes(b))) return;
                     if (gender === 'male' && lowerT.includes('kadın')) return;
                     if (gender === 'female' && !lowerT.includes('tesettür') && lowerT.includes('erkek')) return;
 
-                    let finalBrand = brand;
-                    if (!finalBrand || finalBrand.length < 2) {
-                        finalBrand = title.split(' ')[0].length > 2 ? title.split(' ')[0] : 'Genel';
+                    // Brand fallback
+                    if (!brand || brand.length < 2) {
+                        brand = title.split(' ')[0].length > 2 ? title.split(' ')[0] : 'Genel';
                     }
 
+                    // Link
                     let link = n.tagName === 'A' ? n.getAttribute('href') : n.querySelector('a')?.getAttribute('href');
                     if (!link) return;
                     if (!link.startsWith('http')) link = 'https://www.trendyol.com' + link;
                     
-                    let img = n.querySelector('img')?.src || n.querySelector('img')?.getAttribute('data-src');
-                    if (!img || img.includes('placeholder') || img.includes('data:image')) return;
+                    // Image
+                    const imgEl = n.querySelector('img');
+                    let img = imgEl?.src || imgEl?.getAttribute('data-src') || imgEl?.getAttribute('data-original');
+                    if (!img || img.includes('placeholder') || img.includes('data:image') || img.includes('blank')) {
+                        // Lazy load src kontrol
+                        img = imgEl?.dataset?.src || imgEl?.dataset?.original;
+                    }
+                    if (!img) return;
                     if (img.startsWith('//')) img = 'https:' + img;
 
+                    // Price
                     let price = '0 TL';
-                    const priceSelectors = ['.prc-box-dscntd', '.prc-box-sllng', '[data-testid="price-current-price"]', '.product-price'];
-                    for (const sel of priceSelectors) {
-                        const pEl = n.querySelector(sel);
-                        if (pEl && pEl.innerText.includes('TL')) {
-                            price = pEl.innerText;
+                    const priceSelectors = [
+                        '.prc-box-dscntd',
+                        '.prc-box-sllng', 
+                        '.prdct-desc-cntnr-fiyat .prc-box-dscntd',
+                        '[data-testid="price-current-price"]',
+                        'div[class*="price"] span',
+                        '.product-price'
+                    ];
+                    
+                    for (const psel of priceSelectors) {
+                        const pEl = n.querySelector(psel);
+                        if (pEl && pEl.innerText && pEl.innerText.includes('TL')) {
+                            price = pEl.innerText.trim();
                             break;
                         }
                     }
+                    
+                    // Fallback price search
                     if (price === '0 TL') {
-                        const all = n.querySelectorAll('span, div');
-                        for (let s of all) {
-                            if (s.innerText.includes('TL') && /\d/.test(s.innerText)) {
-                                price = s.innerText; break;
+                        const allSpans = n.querySelectorAll('span, div');
+                        for (let s of allSpans) {
+                            const txt = s.innerText?.trim() || '';
+                            if (txt.includes('TL') && /\d/.test(txt) && txt.length < 30) {
+                                price = txt;
+                                break;
                             }
                         }
                     }
 
-                    data.push({ brand: finalBrand, title, price, link, image: img, gender, keyword });
+                    data.push({ brand, title, price, link, image: img, gender, keyword });
                 } catch (e) {}
             });
+            
             return data;
-        }, config.gender, config.keyword);
+        }, config.gender, config.keyword, foundSelector);
         
         console.log(`   ✓ ${products.length} ürün bulundu`);
         return products;
         
     } catch (e) {
-        console.log(`   ❌ Hata (${config.name}): ${e.message}`);
-        // BURASI ÇOK ÖNEMLİ: HATA ANINDA DA FOTOĞRAF ÇEK
-        await takeDebugScreenshot(page, "CRASH_" + config.name);
+        if (e.message === "BOT_DETECTED") {
+            throw e; // Yukarıya fırlat
+        }
+        console.log(`   ❌ Hata: ${e.message}`);
+        await takeDebugScreenshot(page, `ERROR_${config.name}`);
         return [];
+    }
+}
+
+// ==========================================
+// INITIAL SETUP - ANA SAYFAYA GİT
+// ==========================================
+async function initializeBrowser(page) {
+    console.log('🌐 Trendyol ana sayfası yükleniyor...');
+    
+    try {
+        await page.goto('https://www.trendyol.com', { 
+            waitUntil: 'domcontentloaded', 
+            timeout: 30000 
+        });
+        
+        await delay(3000);
+        
+        // Cookie consent
+        await handleCookieConsent(page);
+        await delay(1000);
+        
+        // Popup'ları kapat
+        await handleTrendyolPopups(page);
+        
+        // Cinsiyet seçimi popup - Kadın seç (daha fazla kategori)
+        await page.evaluate(() => {
+            const femaleBtn = document.querySelector('[data-value="female"], .gender-female, button:has-text("Kadın")');
+            if (femaleBtn) femaleBtn.click();
+        });
+        
+        await delay(2000);
+        
+        // Screenshot al
+        await takeDebugScreenshot(page, 'INITIAL_PAGE');
+        
+        console.log('✅ Başlangıç sayfası hazır\n');
+        return true;
+        
+    } catch (e) {
+        console.log(`❌ Başlangıç hatası: ${e.message}`);
+        await takeDebugScreenshot(page, 'INIT_ERROR');
+        return false;
     }
 }
 
@@ -303,8 +546,8 @@ async function scrapeCategory(page, config, retryCount = 0) {
 // ANA FONKSİYON
 // ==========================================
 (async () => {
-    console.log('🚀 TRENDYOL SCRAPER BAŞLIYOR (DEBUG MODE)...');
-    console.log(`\n📅 Tarih: ${new Date().toLocaleString('tr-TR')}\n`);
+    console.log('🚀 TRENDYOL SCRAPER BAŞLIYOR...');
+    console.log(`📅 Tarih: ${new Date().toLocaleString('tr-TR')}\n`);
     
     const existingProducts = loadExistingProducts();
     
@@ -318,32 +561,87 @@ async function scrapeCategory(page, config, retryCount = 0) {
             '--disable-gpu',
             '--window-size=1920,1080',
             '--disable-blink-features=AutomationControlled',
-            '--disable-features=IsolateOrigins,site-per-process'
+            '--disable-features=IsolateOrigins,site-per-process',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--lang=tr-TR,tr',
         ],
         ignoreDefaultArgs: ['--enable-automation']
     });
     
     const page = await browser.newPage();
     
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    // Random user agent
+    const userAgent = getRandomUserAgent();
+    await page.setUserAgent(userAgent);
+    console.log(`🔧 User-Agent: ${userAgent.substring(0, 50)}...`);
+    
     await page.setViewport({ width: 1920, height: 1080 });
     
+    // Extra headers
+    await page.setExtraHTTPHeaders({
+        'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+    });
+    
+    // Webdriver gizle
     await page.evaluateOnNewDocument(() => {
         Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+        Object.defineProperty(navigator, 'languages', { get: () => ['tr-TR', 'tr', 'en-US', 'en'] });
+        
+        // Chrome detection
+        window.chrome = { runtime: {} };
+        
+        // Permissions
+        const originalQuery = window.navigator.permissions.query;
+        window.navigator.permissions.query = (parameters) => (
+            parameters.name === 'notifications' ?
+                Promise.resolve({ state: Notification.permission }) :
+                originalQuery(parameters)
+        );
     });
+
+    // Önce ana sayfaya git ve cookie/popup'ları handle et
+    const initialized = await initializeBrowser(page);
+    
+    if (!initialized) {
+        console.log('⚠️ Başlatma başarısız, devam ediliyor...');
+    }
 
     let allNewProducts = [];
     let successCount = 0;
+    let botDetected = false;
     
-    for (const cat of CATEGORY_LIST) {
+    // Kategorileri shuffle et (pattern detection'ı zorlaştır)
+    const shuffledCategories = [...CATEGORY_LIST].sort(() => Math.random() - 0.5);
+    
+    for (const cat of shuffledCategories) {
+        if (botDetected) {
+            console.log('⛔ Bot tespit edildi, scraping durduruluyor!');
+            break;
+        }
+        
         try {
             const products = await scrapeCategory(page, cat);
             if (products.length > 0) {
                 allNewProducts = [...allNewProducts, ...products];
                 successCount++;
             }
+            
+            // Her 10 kategoride bir uzun mola
+            if (successCount > 0 && successCount % 10 === 0) {
+                console.log(`   ⏸️ Mola veriliyor...`);
+                await delay(5000 + Math.random() * 5000);
+            }
+            
         } catch (e) {
-            console.log(`   ❌ Kritik Kategori Hatası: ${cat.name}`);
+            if (e.message === "BOT_DETECTED") {
+                botDetected = true;
+            }
+            console.log(`   ❌ Kategori hatası: ${cat.name}`);
         }
     }
     
@@ -395,6 +693,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = TRENDYOL_P
         newProducts: newCount,
         priceUpdates: priceUpdates,
         categoriesProcessed: successCount,
+        botDetected: botDetected,
         byGender: {
             male: merged.filter(p => p.gender === 'male').length,
             female: merged.filter(p => p.gender === 'female').length
@@ -405,11 +704,11 @@ if (typeof module !== 'undefined' && module.exports) module.exports = TRENDYOL_P
             outerwear: merged.filter(p => p.category === 'outerwear').length,
             fullbody: merged.filter(p => p.category === 'fullbody').length
         },
-        priceRange: {
+        priceRange: merged.length > 0 ? {
             min: Math.min(...merged.map(p => p.priceNum)),
             max: Math.max(...merged.map(p => p.priceNum)),
             avg: Math.round(merged.reduce((a, p) => a + p.priceNum, 0) / merged.length)
-        }
+        } : { min: 0, max: 0, avg: 0 }
     };
     fs.writeFileSync(path.join(publicDir, 'products_stats.json'), JSON.stringify(stats, null, 2));
 
@@ -417,6 +716,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = TRENDYOL_P
     console.log(`   • Önceki toplam: ${existingProducts.length} ürün`);
     console.log(`   • Şimdiki toplam: ${merged.length} ürün`);
     console.log(`   • Net artış: +${merged.length - existingProducts.length} ürün`);
+    if (botDetected) {
+        console.log(`   ⚠️ BOT TESPİTİ OLDU - Bazı kategoriler atlandı`);
+    }
 
     console.log(`\n🎉 BİTTİ! Dosyalar 'public' klasörüne kaydedildi.`);
 })();
