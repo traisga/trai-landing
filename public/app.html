@@ -11395,7 +11395,27 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   
   // DM mesajları için real-time listener
   useEffect(() => {
-    if (!selectedChat || !db || selectedChat.type === 'group') return;
+    console.log('DM useEffect triggered:', { 
+      hasSelectedChat: !!selectedChat, 
+      selectedChatId: selectedChat?.id,
+      selectedChatType: selectedChat?.type,
+      dbExists: !!db 
+    });
+    
+    if (!selectedChat) {
+      console.log('No selectedChat, returning');
+      return;
+    }
+    
+    if (!db) {
+      console.log('No db, returning');
+      return;
+    }
+    
+    if (selectedChat.type === 'group') {
+      console.log('Chat is group, returning');
+      return;
+    }
     
     const chatId = selectedChat.id;
     if (!chatId || typeof chatId !== 'string') {
@@ -11404,7 +11424,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       return;
     }
     
-    console.log('Setting up DM listener for:', chatId, 'db exists:', !!db);
+    console.log('Setting up DM listener for:', chatId);
     
     // Timeout fallback - 5 saniye sonra loading false yap
     const timeoutId = setTimeout(() => {
@@ -12900,15 +12920,50 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                 dmChats.map(chat => (
                   <button
                     key={chat.id}
-                    onClick={() => {
+                    onClick={async () => {
                       console.log('Opening chat:', chat.id, 'existing messages:', chat.messages?.length || 0);
-                      // Mevcut mesajları koru, listener yükleyecek
+                      
+                      // Önce chat'i aç, loading göster
                       setSelectedChat({ 
                         ...chat, 
                         type: 'dm', 
                         messages: chat.messages || [], 
-                        loading: !chat.messages || chat.messages.length === 0 
+                        loading: true 
                       });
+                      
+                      // Mesajları direkt yükle
+                      if (db && chat.id) {
+                        try {
+                          console.log('Loading messages for:', chat.id);
+                          const snapshot = await db.collection('chats').doc(chat.id).collection('messages').limit(100).get();
+                          const messagesList = [];
+                          snapshot.forEach(doc => {
+                            const data = doc.data();
+                            messagesList.push({
+                              id: doc.id,
+                              senderId: data.senderId,
+                              senderName: data.senderName,
+                              text: data.text,
+                              type: data.type || 'text',
+                              image: data.image || null,
+                              items: data.items || [],
+                              timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
+                              read: data.read
+                            });
+                          });
+                          messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                          console.log('Messages loaded:', messagesList.length);
+                          
+                          setSelectedChat(prev => prev && prev.id === chat.id ? { ...prev, messages: messagesList, loading: false } : prev);
+                          setDmChats(prev => prev.map(c => c.id === chat.id ? { ...c, messages: messagesList } : c));
+                        } catch (err) {
+                          console.error('Load messages error:', err);
+                          setSelectedChat(prev => prev && prev.id === chat.id ? { ...prev, loading: false } : prev);
+                        }
+                      } else {
+                        console.log('db not available:', !!db);
+                        setSelectedChat(prev => prev ? { ...prev, loading: false } : prev);
+                      }
                     }}
                     className="w-full flex items-center gap-3 p-3 glass rounded-xl text-left hover:bg-slate-100"
                   >
@@ -13129,10 +13184,13 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                     {friends.map(friend => (
                       <button
                         key={friend.id}
-                        onClick={() => {
+                        onClick={async () => {
                           const chatId = [authUser?.uid, friend.id].sort().join('_');
-                          // Mevcut chat varsa mesajlarını koru
                           const existingChat = dmChats?.find(c => c.id === chatId);
+                          
+                          console.log('Opening new chat:', chatId);
+                          
+                          // Önce chat'i aç
                           setSelectedChat({ 
                             id: chatId, 
                             type: 'dm', 
@@ -13140,9 +13198,37 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                             name: friend.displayName || friend.username,
                             avatar: friend.profilePhoto || friend.avatar,
                             messages: existingChat?.messages || [],
-                            loading: !existingChat?.messages || existingChat?.messages?.length === 0
+                            loading: true
                           });
                           setShowNewChat(false);
+                          
+                          // Mesajları yükle
+                          if (db) {
+                            try {
+                              const snapshot = await db.collection('chats').doc(chatId).collection('messages').limit(100).get();
+                              const messagesList = [];
+                              snapshot.forEach(doc => {
+                                const data = doc.data();
+                                messagesList.push({
+                                  id: doc.id,
+                                  senderId: data.senderId,
+                                  senderName: data.senderName,
+                                  text: data.text,
+                                  type: data.type || 'text',
+                                  image: data.image || null,
+                                  timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now()
+                                });
+                              });
+                              messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                              console.log('New chat messages loaded:', messagesList.length);
+                              setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, messages: messagesList, loading: false } : prev);
+                            } catch (err) {
+                              console.error('New chat load error:', err);
+                              setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, loading: false } : prev);
+                            }
+                          } else {
+                            setSelectedChat(prev => prev ? { ...prev, loading: false } : prev);
+                          }
                         }}
                         className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-100"
                       >
