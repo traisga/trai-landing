@@ -8296,8 +8296,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     
     console.log('Profile: Setting up DM listener for:', chatId);
     
+    // orderBy olmadan direkt yükle
     const unsubscribe = db.collection('chats').doc(chatId).collection('messages')
-      .orderBy('createdAt', 'asc')
       .limit(100)
       .onSnapshot(
         (snapshot) => {
@@ -8317,7 +8317,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
             });
           });
           
-          // createdAt'e göre sırala (fallback)
+          // Client-side sorting
           messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
           
           console.log('Profile: DM messages loaded:', messagesList.length);
@@ -8332,33 +8332,6 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         },
         (error) => {
           console.error('Profile: Message listener error:', error);
-          // Index yoksa fallback
-          if (error.code === 'failed-precondition') {
-            db.collection('chats').doc(chatId).collection('messages')
-              .limit(100)
-              .get()
-              .then(snapshot => {
-                const messagesList = [];
-                snapshot.forEach(doc => {
-                  const data = doc.data();
-                  messagesList.push({
-                    id: doc.id,
-                    senderId: data.senderId,
-                    senderName: data.senderName,
-                    text: data.text,
-                    type: data.type || 'text',
-                    image: data.image || null,
-                    items: data.items || [],
-                    timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
-                    read: data.read
-                  });
-                });
-                messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, messages: messagesList } : prev);
-                setDmChats(prev => prev.map(c => c.id === chatId ? { ...c, messages: messagesList } : c));
-              })
-              .catch(e => console.error('Profile: Fallback messages error:', e));
-          }
         }
       );
     
@@ -11425,18 +11398,26 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     if (!selectedChat || !db || selectedChat.type === 'group') return;
     
     const chatId = selectedChat.id;
-    if (!chatId || typeof chatId !== 'string') return;
+    if (!chatId || typeof chatId !== 'string') {
+      console.log('Invalid chatId:', chatId);
+      setSelectedChat(prev => prev ? { ...prev, loading: false, messages: [] } : prev);
+      return;
+    }
     
-    console.log('Setting up DM listener for:', chatId);
+    console.log('Setting up DM listener for:', chatId, 'db exists:', !!db);
     
-    // Önce loading'i true yap
-    setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, loading: true } : prev);
+    // Timeout fallback - 5 saniye sonra loading false yap
+    const timeoutId = setTimeout(() => {
+      console.log('DM load timeout - forcing loading false');
+      setSelectedChat(prev => prev && prev.id === chatId && prev.loading ? { ...prev, loading: false } : prev);
+    }, 5000);
     
+    // orderBy olmadan direkt yükle - index gerektirmez
     const unsubscribe = db.collection('chats').doc(chatId).collection('messages')
-      .orderBy('createdAt', 'asc')
       .limit(100)
       .onSnapshot(
         (snapshot) => {
+          clearTimeout(timeoutId);
           const messagesList = [];
           snapshot.forEach(doc => {
             const data = doc.data();
@@ -11453,7 +11434,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             });
           });
           
-          // createdAt'e göre sırala (fallback)
+          // Client-side sorting
           messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
           
           console.log('DM messages loaded:', messagesList.length);
@@ -11467,44 +11448,14 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
           ));
         },
         (error) => {
+          clearTimeout(timeoutId);
           console.error('DM listener error:', error);
-          // Hata durumunda loading'i kapat ve orderBy olmadan dene
-          if (error.code === 'failed-precondition') {
-            console.log('Index missing, trying without orderBy...');
-            db.collection('chats').doc(chatId).collection('messages')
-              .limit(100)
-              .get()
-              .then(snapshot => {
-                const messagesList = [];
-                snapshot.forEach(doc => {
-                  const data = doc.data();
-                  messagesList.push({
-                    id: doc.id,
-                    senderId: data.senderId,
-                    senderName: data.senderName,
-                    text: data.text,
-                    type: data.type || 'text',
-                    image: data.image || null,
-                    items: data.items || [],
-                    timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now(),
-                    read: data.read
-                  });
-                });
-                messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, messages: messagesList, loading: false } : prev);
-                setDmChats(prev => prev.map(c => c.id === chatId ? { ...c, messages: messagesList } : c));
-              })
-              .catch(e => {
-                console.error('Fallback messages error:', e);
-                setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, loading: false } : prev);
-              });
-          } else {
-            setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, loading: false } : prev);
-          }
+          setSelectedChat(prev => prev && prev.id === chatId ? { ...prev, loading: false, messages: [] } : prev);
         }
       );
     
     return () => {
+      clearTimeout(timeoutId);
       console.log('Cleaning up DM listener for:', chatId);
       unsubscribe();
     };
@@ -11519,11 +11470,8 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     
     console.log('Setting up Group listener for:', groupId);
     
-    // Önce loading'i true yap
-    setSelectedChat(prev => prev && prev.id === groupId ? { ...prev, loading: true } : prev);
-    
+    // orderBy olmadan direkt yükle
     const unsubscribe = db.collection('groups').doc(String(groupId)).collection('messages')
-      .orderBy('createdAt', 'asc')
       .limit(100)
       .onSnapshot(
         (snapshot) => {
@@ -11541,7 +11489,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             });
           });
           
-          // createdAt'e göre sırala (fallback)
+          // Client-side sorting
           messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
           
           console.log('Group messages loaded:', messagesList.length);
@@ -11556,37 +11504,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         },
         (error) => {
           console.error('Group listener error:', error);
-          // Hata durumunda loading'i kapat
-          if (error.code === 'failed-precondition') {
-            console.log('Index missing for groups, trying without orderBy...');
-            db.collection('groups').doc(String(groupId)).collection('messages')
-              .limit(100)
-              .get()
-              .then(snapshot => {
-                const messagesList = [];
-                snapshot.forEach(doc => {
-                  const data = doc.data();
-                  messagesList.push({
-                    id: doc.id,
-                    senderId: data.senderId,
-                    senderName: data.senderName,
-                    text: data.text,
-                    type: data.type || 'text',
-                    image: data.image || null,
-                    timestamp: data.timestamp?.toMillis?.() || data.createdAt || Date.now()
-                  });
-                });
-                messagesList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                setSelectedChat(prev => prev && prev.id === groupId ? { ...prev, messages: messagesList, loading: false } : prev);
-                setGroups(prev => prev.map(g => g.id === groupId ? { ...g, messages: messagesList } : g));
-              })
-              .catch(e => {
-                console.error('Fallback group messages error:', e);
-                setSelectedChat(prev => prev && prev.id === groupId ? { ...prev, loading: false } : prev);
-              });
-          } else {
-            setSelectedChat(prev => prev && prev.id === groupId ? { ...prev, loading: false } : prev);
-          }
+          setSelectedChat(prev => prev && prev.id === groupId ? { ...prev, loading: false, messages: [] } : prev);
         }
       );
     
@@ -12983,6 +12901,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
                   <button
                     key={chat.id}
                     onClick={() => {
+                      console.log('Opening chat:', chat.id, 'existing messages:', chat.messages?.length || 0);
                       // Mevcut mesajları koru, listener yükleyecek
                       setSelectedChat({ 
                         ...chat, 
