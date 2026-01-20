@@ -299,6 +299,10 @@
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-firestore-compat.js"></script>
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-storage-compat.js"></script>
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-functions-compat.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-messaging-compat.js"></script>
+
+<!-- Capacitor Core & Push Notifications -->
+<script src="https://unpkg.com/@capacitor/core@latest/dist/capacitor.js"></script>
 
 <!-- Trendyol Products Database -->
 <script src="trendyol_products.js"></script>
@@ -347,6 +351,123 @@ const CONFIG = {
     messagingSenderId: "651572736872",
     appId: "1:651572736872:web:15e8657d2507a3ffdbdcdd"
   }
+};
+
+// ============ PUSH NOTIFICATIONS ============
+// Capacitor Push Notifications - Native platform detection
+const isNativePlatform = () => {
+  return window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+};
+
+// Push Notification Helper
+const PushNotificationHelper = {
+  // FCM Token'ı Firebase'e kaydet
+  async saveTokenToFirebase(userId, token) {
+    if (!db || !userId || !token) return;
+    
+    try {
+      const platform = window.Capacitor?.getPlatform?.() || 'web';
+      await db.collection('users').doc(userId).update({
+        fcmToken: token,
+        fcmTokenUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        fcmPlatform: platform,
+        notificationsEnabled: true
+      });
+      console.log('✅ FCM Token saved to Firebase');
+    } catch (err) {
+      console.error('❌ FCM Token save error:', err);
+    }
+  },
+
+  // Token'ı sil (logout veya izin iptali)
+  async removeTokenFromFirebase(userId) {
+    if (!db || !userId) return;
+    
+    try {
+      await db.collection('users').doc(userId).update({
+        fcmToken: firebase.firestore.FieldValue.delete(),
+        notificationsEnabled: false
+      });
+      console.log('✅ FCM Token removed');
+    } catch (err) {
+      console.error('❌ FCM Token remove error:', err);
+    }
+  },
+
+  // Native Push Notification başlat (Capacitor)
+  async initNativePush(userId, onNotificationReceived) {
+    if (!isNativePlatform()) {
+      console.log('ℹ️ Not native platform, skipping native push');
+      return null;
+    }
+
+    try {
+      // Capacitor PushNotifications plugin'ini al
+      const { PushNotifications } = window.Capacitor.Plugins;
+      if (!PushNotifications) {
+        console.log('ℹ️ PushNotifications plugin not available');
+        return null;
+      }
+
+      // İzin iste
+      const permResult = await PushNotifications.requestPermissions();
+      console.log('📱 Push permission result:', permResult);
+      
+      if (permResult.receive !== 'granted') {
+        console.log('❌ Push notification permission denied');
+        return null;
+      }
+
+      // Kaydol
+      await PushNotifications.register();
+
+      // Token geldiğinde
+      PushNotifications.addListener('registration', async (token) => {
+        console.log('🔑 FCM Token received:', token.value);
+        await this.saveTokenToFirebase(userId, token.value);
+      });
+
+      // Kayıt hatası
+      PushNotifications.addListener('registrationError', (error) => {
+        console.error('❌ Push registration error:', error);
+      });
+
+      // Bildirim geldiğinde (uygulama açıkken)
+      PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        console.log('📬 Push received:', notification);
+        if (onNotificationReceived) {
+          onNotificationReceived(notification);
+        }
+      });
+
+      // Bildirime tıklandığında
+      PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+        console.log('👆 Push action:', action);
+        const data = action.notification?.data;
+        if (data) {
+          // Bildirim tipine göre yönlendirme
+          handleNotificationNavigation(data);
+        }
+      });
+
+      console.log('✅ Native push notifications initialized');
+      return true;
+    } catch (err) {
+      console.error('❌ Native push init error:', err);
+      return null;
+    }
+  }
+};
+
+// Bildirime tıklandığında yönlendirme
+const handleNotificationNavigation = (data) => {
+  // Bu fonksiyon App component'tan çağrılacak
+  console.log('🧭 Navigation data:', data);
+  // data.type: 'follow_request', 'like', 'comment', 'message' vb.
+  // data.postId, data.chatId, data.userId vb.
+  
+  // Window event ile App'e bildir
+  window.dispatchEvent(new CustomEvent('pushNotificationTap', { detail: data }));
 };
 
 // ============ TRANSLATIONS ============
@@ -14069,6 +14190,57 @@ const App = () => {
       window.history.replaceState({}, '', newUrl);
     }
   }, []);
+  
+  // Push Notification Initialization
+  React.useEffect(() => {
+    if (!authUser?.uid) return;
+    
+    // Native push notification'ları başlat
+    const initPush = async () => {
+      try {
+        await PushNotificationHelper.initNativePush(authUser.uid, (notification) => {
+          // Uygulama açıkken bildirim geldi - toast göster
+          setToast({
+            open: true,
+            type: 'info',
+            title: notification.title || 'Bildirim',
+            message: notification.body || ''
+          });
+        });
+      } catch (err) {
+        console.error('Push init error:', err);
+      }
+    };
+    
+    initPush();
+    
+    // Push notification tap listener
+    const handlePushTap = (event) => {
+      const data = event.detail;
+      if (!data) return;
+      
+      // Bildirim tipine göre yönlendirme
+      switch (data.type) {
+        case 'follow_request':
+        case 'follow_accept':
+          setTab('profile');
+          break;
+        case 'like':
+        case 'comment':
+          setTab('social');
+          if (data.postId) setPendingViewPostId(data.postId);
+          break;
+        case 'new_message':
+          setTab('profile');
+          break;
+        default:
+          break;
+      }
+    };
+    
+    window.addEventListener('pushNotificationTap', handlePushTap);
+    return () => window.removeEventListener('pushNotificationTap', handlePushTap);
+  }, [authUser?.uid]);
   
   // Language state for re-rendering
   const [lang, setLang] = useState(currentLanguage);
