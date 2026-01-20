@@ -4218,17 +4218,19 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
         
         {/* Main Content - Flex layout with footer pinned to bottom */}
         <div className="flex-1 flex flex-col px-6">
-          {/* Top Section - Logo, Slogan, Features */}
-          <div className="flex-1 flex flex-col items-center justify-center text-center" style={{marginTop: '-40px'}}>
-            {/* Logo & Brand */}
+          {/* Top Section - Logo & Brand - positioned higher */}
+          <div className="flex-shrink-0 flex flex-col items-center text-center pt-4">
             <div className="mb-3 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-20 h-20 rounded-2xl shadow-xl shadow-brand/20" /></div>
-            <h1 className="text-2xl font-light tracking-wide text-slate-700 mb-4">TrAi Style</h1>
-            
+            <h1 className="text-2xl font-light tracking-wide text-slate-700">TrAi Style</h1>
+          </div>
+          
+          {/* Middle Section - Slogan & Features - centered */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
             {/* Slogan */}
             <p className="text-sm text-slate-500 mb-6">{t('sloganFull')}</p>
             
             {/* Features */}
-            <div className="flex gap-6 mb-8">
+            <div className="flex gap-6">
               {[{ icon: 'user', label: t('digitalTwin') }, { icon: 'shirt', label: t('virtualTryOn') }, { icon: 'sparkles', label: t('aiStylist') }].map((f, i) => (
                 <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
                   <div className="w-12 h-12 rounded-xl glass flex items-center justify-center mx-auto mb-2">
@@ -4238,19 +4240,22 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
                 </div>
               ))}
             </div>
-            
+          </div>
+          
+          {/* Bottom Section - Buttons & Trust badges - positioned lower */}
+          <div className="flex-shrink-0 flex flex-col items-center pb-2" style={{paddingBottom: 'max(env(safe-area-inset-bottom, 16px), 16px)'}}>
             {/* BUTTONS - Easy thumb reach zone */}
-            <div className="w-full max-w-xs space-y-2">
+            <div className="w-full max-w-xs space-y-2 mb-4">
               <button onClick={() => setMode('register')} className="w-full btn-primary py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand/25">{t('startFree')}<Icon name="chevronRight" size={16} /></button>
               <button onClick={() => setMode('login')} className="w-full glass py-3 rounded-xl font-medium text-sm text-slate-600">{t('alreadyHaveAccount')}</button>
             </div>
-          </div>
-          
-          {/* Trust badges - Pinned to bottom with safe area */}
-          <div className="flex-shrink-0 flex items-center justify-center gap-3 text-slate-400 text-xs pb-2" style={{paddingBottom: 'max(env(safe-area-inset-bottom, 12px), 12px)'}}>
-            <div className="flex items-center gap-1"><Icon name="shield" size={14} /><span>{t('kvkkCompliant')}</span></div>
-            <div className="w-1 h-1 rounded-full bg-slate-300" />
-            <div className="flex items-center gap-1"><Icon name="lock" size={14} /><span>{t('sslSecure')}</span></div>
+            
+            {/* Trust badges */}
+            <div className="flex items-center justify-center gap-3 text-slate-400 text-xs">
+              <div className="flex items-center gap-1"><Icon name="shield" size={14} /><span>{t('kvkkCompliant')}</span></div>
+              <div className="w-1 h-1 rounded-full bg-slate-300" />
+              <div className="flex items-center gap-1"><Icon name="lock" size={14} /><span>{t('sslSecure')}</span></div>
+            </div>
           </div>
         </div>
       </div>
@@ -7484,7 +7489,7 @@ const SmartCloset = ({ user, authUser, closet, onRemove, onTryOnResult, setToast
 };
 
 // ============ PROFILE (EXPANDED) ============
-const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab, setToast, stylistApplication, onOpenStylistApplication, isAdmin, onOpenAdminPanel, posts, likedPosts, repostedPosts }) => {
+const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, friends, setFriends, settings, setSettings, onUpdateUser, onUpdateProfilePhoto, changeLanguage, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, notifications, setNotifications, dmChats, setDmChats, selectedChat, setSelectedChat, groups, setGroups, setMainTab, setPendingViewPostId, setToast, stylistApplication, onOpenStylistApplication, isAdmin, onOpenAdminPanel, posts, likedPosts, repostedPosts }) => {
   const [tab, setTab] = useState('profile'); // profile, avatar, friends, notifications, settings
   const [profileSubTab, setProfileSubTab] = useState('posts'); // posts, likes, reposts
   const [showAddFriend, setShowAddFriend] = useState(false);
@@ -7523,9 +7528,8 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     
     switch (notification.type) {
       case 'follow_request':
-        setTab('friends');
-        break;
       case 'follow_accept':
+        // Takipçiler/Arkadaşlar sekmesine git
         setTab('friends');
         break;
       case 'new_message':
@@ -7545,7 +7549,10 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         break;
       case 'like':
       case 'comment':
-        // Sosyal sekmesine yönlendir
+        // Sosyal sekmesine yönlendir ve ilgili postu aç
+        if (notification.postId && setPendingViewPostId) {
+          setPendingViewPostId(notification.postId);
+        }
         if (setMainTab) setMainTab('social');
         break;
       case 'weather':
@@ -11227,7 +11234,7 @@ const AdviceModal = ({ open, item, advice, loading, onClose }) => {
 };
 
 // ============ SOCIAL FEED ============
-const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, groups, setGroups, notifications, setNotifications, onViewUserProfile, favorites, setFavorites, settings }) => {
+const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setToast, dmChats, setDmChats, followRequests, setFollowRequests, sentFollowRequests, setSentFollowRequests, groups, setGroups, notifications, setNotifications, onViewUserProfile, favorites, setFavorites, settings, pendingViewPostId, setPendingViewPostId }) => {
   const [tab, setTab] = useState('feed'); // feed, myPosts, create, friends, messages
   const [selectedImage, setSelectedImage] = useState(null);
   const [caption, setCaption] = useState('');
@@ -11244,6 +11251,19 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   useEffect(() => {
     setVisibility(getDefaultVisibility());
   }, [settings?.postsVisibility]);
+  
+  // Bildirimden gelen post'u aç
+  useEffect(() => {
+    if (pendingViewPostId && posts.length > 0) {
+      const postToView = posts.find(p => p.id === pendingViewPostId);
+      if (postToView) {
+        setSelectedPost(postToView);
+        setTab('feed'); // Feed sekmesine geç
+      }
+      // Clear pending post
+      if (setPendingViewPostId) setPendingViewPostId(null);
+    }
+  }, [pendingViewPostId, posts]);
   
   const [posting, setPosting] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -14093,6 +14113,9 @@ const App = () => {
   // Social feed state
   const [posts, setPosts] = useState([]);
   
+  // Pending post view from notification - bildirimden posta yönlendirme için
+  const [pendingViewPostId, setPendingViewPostId] = useState(null);
+  
   // DM Share Modal state
   const [dmShareModal, setDmShareModal] = useState({ open: false, image: null, items: [] });
   
@@ -16273,6 +16296,8 @@ const App = () => {
               checkCooldown={checkCooldown}
               setLastTryTime={setLastTryTime}
               settings={settings}
+              pendingViewPostId={pendingViewPostId}
+              setPendingViewPostId={setPendingViewPostId}
               onShowSubscription={() => setShowSubscription(true)}
               onAddCustomClothing={addCustomClothing}
               useCredit={useCredit}
@@ -16333,6 +16358,8 @@ const App = () => {
               
               
               settings={settings}
+              pendingViewPostId={pendingViewPostId}
+              setPendingViewPostId={setPendingViewPostId}
               setSettings={setSettings}
               followRequests={followRequests}
               setFollowRequests={setFollowRequests}
@@ -16347,6 +16374,7 @@ const App = () => {
               groups={groups}
               setGroups={setGroups}
               setMainTab={setTab}
+              setPendingViewPostId={setPendingViewPostId}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -16399,6 +16427,8 @@ const App = () => {
               favorites={favorites}
               setFavorites={setFavorites}
               settings={settings}
+              pendingViewPostId={pendingViewPostId}
+              setPendingViewPostId={setPendingViewPostId}
               onViewUserProfile={(viewUser) => {
                 setViewedUser(viewUser);
                 setShowUserProfile(true);
@@ -16472,6 +16502,8 @@ const App = () => {
               checkCooldown={checkCooldown}
               setLastTryTime={setLastTryTime}
               settings={settings}
+              pendingViewPostId={pendingViewPostId}
+              setPendingViewPostId={setPendingViewPostId}
               onShowSubscription={() => setShowSubscription(true)}
               onAddCustomClothing={addCustomClothing}
               useCredit={useCredit}
@@ -16532,6 +16564,8 @@ const App = () => {
               
               
               settings={settings}
+              pendingViewPostId={pendingViewPostId}
+              setPendingViewPostId={setPendingViewPostId}
               setSettings={setSettings}
               followRequests={followRequests}
               setFollowRequests={setFollowRequests}
@@ -16546,6 +16580,7 @@ const App = () => {
               groups={groups}
               setGroups={setGroups}
               setMainTab={setTab}
+              setPendingViewPostId={setPendingViewPostId}
               onUpdateUser={(newParams) => {
                 setUser(prev => ({ ...prev, ...newParams }));
                 setAvatarCache(null);
@@ -16598,6 +16633,8 @@ const App = () => {
               favorites={favorites}
               setFavorites={setFavorites}
               settings={settings}
+              pendingViewPostId={pendingViewPostId}
+              setPendingViewPostId={setPendingViewPostId}
             />
           )}
         </div>
