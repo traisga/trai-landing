@@ -4320,7 +4320,7 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
     return (
       <div className="h-full bg-gradient-premium flex flex-col overflow-y-auto">
         {/* Language Selector - Fixed top */}
-        <div className="flex-shrink-0 p-3 flex justify-end" style={{paddingTop: 'max(env(safe-area-inset-top, 12px), 12px)'}}>
+        <div className="flex-shrink-0 p-3 flex justify-end" style={{paddingTop: 'max(env(safe-area-inset-top, 8px), 8px)'}}>
           <div className="flex gap-1 glass rounded-full p-1">
             <button 
               onClick={() => changeLanguage('tr')}
@@ -4337,25 +4337,22 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
           </div>
         </div>
         
-        {/* Main Content - Scrollable, min-height ensures buttons visible */}
-        <div className="flex-1 flex flex-col items-center justify-between px-6 py-4 min-h-0">
-          {/* Top spacer for balance */}
-          <div className="flex-shrink-0 h-4" />
-          
-          {/* Logo & Brand */}
-          <div className="flex-shrink-0 flex flex-col items-center text-center">
-            <div className="mb-3 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-20 h-20 rounded-2xl shadow-xl shadow-brand/20" /></div>
-            <h1 className="text-2xl font-light tracking-wide text-slate-700">TrAi Style</h1>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col items-center px-6">
+          {/* Logo & Brand - closer to top */}
+          <div className="flex-shrink-0 flex flex-col items-center text-center mt-2 mb-4">
+            <div className="mb-2 float"><img src={LOGO_BASE64} alt="TrAi Logo" className="w-18 h-18 rounded-2xl shadow-xl shadow-brand/20" style={{width: '72px', height: '72px'}} /></div>
+            <h1 className="text-xl font-light tracking-wide text-slate-700">TrAi Style</h1>
           </div>
           
           {/* Slogan & Features */}
-          <div className="flex-shrink-0 flex flex-col items-center text-center py-6">
-            <p className="text-sm text-slate-500 mb-5">{t('sloganFull')}</p>
-            <div className="flex gap-6">
+          <div className="flex-shrink-0 flex flex-col items-center text-center mb-6">
+            <p className="text-sm text-slate-500 mb-4">{t('sloganFull')}</p>
+            <div className="flex gap-5">
               {[{ icon: 'user', label: t('digitalTwin') }, { icon: 'shirt', label: t('virtualTryOn') }, { icon: 'sparkles', label: t('aiStylist') }].map((f, i) => (
                 <div key={i} className="text-center fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                  <div className="w-12 h-12 rounded-xl glass flex items-center justify-center mx-auto mb-2">
-                    <Icon name={f.icon} size={20} className="text-brand2" />
+                  <div className="w-11 h-11 rounded-xl glass flex items-center justify-center mx-auto mb-1.5">
+                    <Icon name={f.icon} size={18} className="text-brand2" />
                   </div>
                   <span className="text-xs text-slate-500">{f.label}</span>
                 </div>
@@ -4363,9 +4360,12 @@ const AuthScreen = ({ onAuthed, setToast, changeLanguage }) => {
             </div>
           </div>
           
+          {/* Spacer */}
+          <div className="flex-1 min-h-4" />
+          
           {/* Bottom Section - Buttons & Trust badges */}
-          <div className="flex-shrink-0 flex flex-col items-center w-full pb-4" style={{paddingBottom: 'max(env(safe-area-inset-bottom, 20px), 20px)'}}>
-            <div className="w-full max-w-xs space-y-2 mb-4">
+          <div className="flex-shrink-0 flex flex-col items-center w-full pb-6" style={{paddingBottom: 'max(env(safe-area-inset-bottom, 24px), 24px)'}}>
+            <div className="w-full max-w-xs space-y-2 mb-3">
               <button onClick={() => setMode('register')} className="w-full btn-primary py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand/25">{t('startFree')}<Icon name="chevronRight" size={16} /></button>
               <button onClick={() => setMode('login')} className="w-full glass py-3 rounded-xl font-medium text-sm text-slate-600">{t('alreadyHaveAccount')}</button>
             </div>
@@ -7878,7 +7878,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         toUid: targetUid,
         toUsername: foundUser.username,
         status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       };
       
       // Add to target's incoming requests
@@ -7899,7 +7899,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         fromPhoto: user.profilePhoto || null,
         message: `${user.displayName || user.username} seni takip etmek istiyor`,
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
       
       
@@ -7982,7 +7982,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         fromPhoto: user.profilePhoto || null,
         message: `${user.displayName || user.username} takip isteğini kabul etti`,
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
       
       
@@ -11543,7 +11543,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       try {
         await db.collection('groups').doc(String(newGroup.id)).set({
           ...newGroup,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          createdAt: Date.now()
         });
         
         // Üyelere bildirim gönder
@@ -11556,7 +11556,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
             senderName: user.displayName || user.username,
             senderAvatar: user.profilePhoto || user.baseAvatar,
             read: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: Date.now()
           });
         }
       } catch (e) {
@@ -11693,12 +11693,12 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
 
   const createPost = async () => {
     if (!selectedImage) {
-      setToast({ open: true, type: 'error', title: 'Görsel Yok', message: 'Paylaşmak için bir görsel seç' });
+      setToast({ open: true, type: 'error', title: 'Gorsel Yok', message: 'Paylasmak icin bir gorsel sec' });
       return;
     }
     
     if (!authUser?.uid || !db) {
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Giriş yapılmamış veya bağlantı yok' });
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Giris yapilmamis veya baglanti yok' });
       return;
     }
     
@@ -11707,23 +11707,26 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     try {
       const postId = Date.now();
       
-      // Post objesini oluştur (Storage'ı atla - CORS sorunu var)
+      // Post objesini oluştur
       const newPost = {
         id: postId,
         authorId: authUser.uid,
-        authorName: user?.displayName || user?.username || 'Kullanıcı',
+        authorName: user?.displayName || user?.username || 'Kullanici',
         authorUsername: user?.username || '',
         authorAvatar: user?.profilePhoto || user?.baseAvatar || user?.avatar || '',
         authorStylistStatus: user?.stylistStatus || null,
-        image: selectedImage, // Direkt data URL kullan
+        image: selectedImage,
         caption: caption,
         askFeedback: askFeedback,
         visibility: visibility,
         likes: [],
         comments: [],
         reposts: [],
-        createdAt: postId
+        createdAt: postId // Number timestamp - Firestore'da sıralama için
       };
+      
+      // Önce local state'e ekle (optimistic)
+      setPosts(prev => [newPost, ...prev]);
       
       // Firebase'e kaydet
       await db.collection('posts').doc(String(postId)).set(newPost);
@@ -11733,11 +11736,11 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       setCaption('');
       setAskFeedback(false);
       setTab('feed');
-      setToast({ open: true, type: 'success', title: 'Paylaşıldı!', message: 'Gönderin yayınlandı' });
+      setToast({ open: true, type: 'success', title: 'Paylasildi!', message: 'Gonderin yayinlandi' });
       
     } catch (e) {
-      console.error('❌ Post kaydetme hatası:', e);
-      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylaşım yapılamadı: ' + e.message });
+      console.error('Post kaydetme hatasi:', e);
+      setToast({ open: true, type: 'error', title: 'Hata', message: 'Paylasim yapilamadi: ' + e.message });
     }
     
     setPosting(false);
@@ -11763,6 +11766,24 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
     if (db) {
       try {
         await db.collection('posts').doc(String(postId)).update({ likes: newLikes });
+        
+        // Bildirim gonder (yeni like ise ve kendi postu degilse)
+        if (!hasLiked && post.authorId !== authUser?.uid) {
+          console.log('Creating like notification for:', post.authorId);
+          const notifData = {
+            type: 'like',
+            fromUid: authUser?.uid,
+            fromUsername: user?.username || '',
+            fromDisplayName: user?.displayName || user?.username || 'Birisi',
+            fromPhoto: user?.profilePhoto || user?.baseAvatar || '',
+            postId: postId,
+            message: `${user?.displayName || user?.username || 'Birisi'} gonderini begendi`,
+            read: false,
+            createdAt: Date.now()
+          };
+          await db.collection('users').doc(post.authorId).collection('notifications').add(notifData);
+          console.log('Like notification created successfully');
+        }
       } catch (e) {
         console.error('Like update error:', e);
       }
@@ -11804,16 +11825,19 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         
         // Bildirim gönder (yeni repost ise)
         if (!hasReposted && post.authorId !== authUser?.uid) {
+          console.log('Creating repost notification for:', post.authorId);
           await db.collection('users').doc(post.authorId).collection('notifications').add({
             type: 'repost',
             fromUid: authUser?.uid,
-            fromUsername: user.username,
-            fromDisplayName: user.displayName,
+            fromUsername: user?.username || '',
+            fromDisplayName: user?.displayName || user?.username || 'Birisi',
+            fromPhoto: user?.profilePhoto || user?.baseAvatar || '',
             postId: postId,
-            message: `${user.displayName || user.username} gönderini repost etti`,
+            message: `${user?.displayName || user?.username || 'Birisi'} gonderini repost etti`,
             read: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: Date.now()
           });
+          console.log('Repost notification created successfully');
         }
       } catch (e) {
         console.error('Repost update error:', e);
@@ -11824,13 +11848,14 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
   const addComment = async (postId) => {
     if (!comment.trim()) return;
     
+    const commentText = comment.trim();
     const newComment = {
       id: Date.now(),
       authorId: authUser?.uid,
-      authorName: user.displayName || user.username || 'Kullanıcı',
+      authorName: user.displayName || user.username || 'Kullanici',
       authorUsername: user.username,
       authorStylistStatus: user?.stylistStatus || null,
-      text: comment,
+      text: commentText,
       createdAt: Date.now()
     };
     
@@ -11860,6 +11885,23 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
           await db.collection('posts').doc(String(postId)).update({ 
             comments: [...post.comments, newComment] 
           });
+          
+          // Bildirim gonder (kendi postu degilse)
+          if (post.authorId !== authUser?.uid) {
+            console.log('Creating comment notification for:', post.authorId);
+            await db.collection('users').doc(post.authorId).collection('notifications').add({
+              type: 'comment',
+              fromUid: authUser?.uid,
+              fromUsername: user?.username || '',
+              fromDisplayName: user?.displayName || user?.username || 'Birisi',
+              fromPhoto: user?.profilePhoto || user?.baseAvatar || '',
+              postId: postId,
+              message: `${user?.displayName || user?.username || 'Birisi'}: ${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}`,
+              read: false,
+              createdAt: Date.now()
+            });
+            console.log('Comment notification created successfully');
+          }
         }
       } catch (e) {
         console.error('Comment update error:', e);
@@ -12016,7 +12058,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         toUid: targetUid,
         toUsername: targetUser.username,
         status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       };
       
       // Add to target's incoming requests (use doc ID as myUid to prevent duplicates)
@@ -12029,6 +12071,7 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       });
       
       // Create notification
+      console.log('Creating follow_request notification for:', targetUid);
       await db.collection('users').doc(targetUid).collection('notifications').add({
         type: 'follow_request',
         fromUid: myUid,
@@ -12037,8 +12080,9 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
         fromPhoto: user.profilePhoto || null,
         message: `${user.displayName || user.username} seni takip etmek istiyor`,
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
+      console.log('Follow request notification created successfully');
       
       // Local state will be updated by real-time listener
       setToast({ open: true, type: 'success', title: 'İstek Gönderildi', message: `@${targetUser.username}'e takip isteği gönderildi` });
@@ -12106,17 +12150,18 @@ const SocialFeed = ({ user, authUser, friends, setFriends, posts, setPosts, setT
       await db.collection('users').doc(fromUid).collection('sentFollowRequests').doc(myUid).delete().catch(() => {});
       
       // Send notification
+      console.log('Creating follow_accepted notification for:', fromUid);
       await db.collection('users').doc(fromUid).collection('notifications').add({
         type: 'follow_accepted',
         fromUid: myUid,
         fromUsername: user.username,
         fromDisplayName: user.displayName,
         fromPhoto: user.profilePhoto || null,
-        message: `${user.displayName || user.username} takip isteğini kabul etti`,
+        message: `${user.displayName || user.username} takip istegini kabul etti`,
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
-      
+      console.log('Follow accepted notification created successfully');
       
       // Local state will be updated by real-time listeners
       setToast({ open: true, type: 'success', title: 'Kabul Edildi', message: `${request.fromUsername} artık arkadaşın` });
@@ -13926,7 +13971,7 @@ const AdminPanel = ({ authUser, onClose, setToast }) => {
         type: 'stylist_approved',
         message: `🎉 Stilist başvurun onaylandı! ${monthlyCredits} kredi hesabına eklendi.`,
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
       
       setApplications(prev => prev.filter(a => a.id !== app.id));
@@ -13954,7 +13999,7 @@ const AdminPanel = ({ authUser, onClose, setToast }) => {
         type: 'stylist_awaiting_post',
         message: '📸 Başvurun ön onay aldı! Şimdi bir kombin oluştur ve sosyal medyada paylaş.',
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
       
       setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'awaiting_post' } : a));
@@ -13982,7 +14027,7 @@ const AdminPanel = ({ authUser, onClose, setToast }) => {
         type: 'stylist_rejected',
         message: `😔 Stilist başvurun reddedildi: ${rejectReason}`,
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
       
       setApplications(prev => prev.filter(a => a.id !== app.id));
@@ -14867,7 +14912,7 @@ const App = () => {
           senderName: user.displayName || user.username,
           senderAvatar: user.profilePhoto || user.baseAvatar,
           read: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          createdAt: Date.now()
         });
         
       }
@@ -14933,7 +14978,7 @@ const App = () => {
         senderName: user.displayName || user.username,
         senderAvatar: user.profilePhoto || user.baseAvatar,
         read: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now()
       });
       
     } catch (e) {
@@ -15157,46 +15202,38 @@ const App = () => {
   };
 
   // Load data on mount - DON'T load user here, wait for auth
-  useEffect(() => {
-    // Posts'u Firebase'den yükle (herkes için public olanları)
-    const loadPosts = async () => {
-      if (!db) {
-        return;
-      }
-      try {
-        const snapshot = await db.collection('posts')
-          .orderBy('createdAt', 'desc')
-          .limit(100)
-          .get();
-        
-        const loadedPosts = snapshot.docs.map(doc => doc.data());
-        setPosts(loadedPosts);
-      } catch (e) {
-        console.error('❌ Posts load error:', e);
-        // Fallback to localStorage
-        const ps = safeJsonParse(localStorage.getItem('trai_posts_v1'), []);
-        if (Array.isArray(ps)) setPosts(ps);
-      }
-    };
-    
-    // db hazır olduğunda yükle
-    if (db) {
-      loadPosts();
-    }
-  }, [db]);
-  
-  // Posts için realtime listener - diğer kullanıcıların paylaşımlarını anlık görmek için
+  // Posts için realtime listener - tek kaynak
   useEffect(() => {
     if (!db) return;
+    
+    console.log('Setting up posts listener...');
     
     const unsubscribe = db.collection('posts')
       .orderBy('createdAt', 'desc')
       .limit(100)
       .onSnapshot(snapshot => {
-        const loadedPosts = snapshot.docs.map(doc => doc.data());
+        const loadedPosts = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            ...data,
+            id: data.id || doc.id
+          };
+        });
+        console.log('Posts loaded:', loadedPosts.length);
         setPosts(loadedPosts);
       }, error => {
-        console.error('❌ Posts realtime error:', error);
+        console.error('Posts realtime error:', error);
+        // Firestore index hatası olabilir - fallback
+        if (error.code === 'failed-precondition') {
+          console.log('Index missing, trying without orderBy...');
+          db.collection('posts').limit(100).get().then(snapshot => {
+            const loadedPosts = snapshot.docs.map(doc => {
+              const data = doc.data();
+              return { ...data, id: data.id || doc.id };
+            }).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            setPosts(loadedPosts);
+          }).catch(e => console.error('Fallback posts load error:', e));
+        }
       });
     
     return () => unsubscribe();
@@ -15278,7 +15315,7 @@ const App = () => {
       referralActivated: false, // Avatar oluşturulduğunda true olacak
       // Device tracking for abuse prevention
       deviceId: getDeviceId(),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      createdAt: Date.now()
     } : null;
     
     if (!db) {
@@ -15501,7 +15538,7 @@ const App = () => {
               avatarRefreshLimit: 0,
               referralCode: generateReferralCode(authUser.uid),
               deviceId: getDeviceId(),
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              createdAt: Date.now()
             };
             db.collection('users').doc(userId).set(basicProfile)
               .then(() => {
@@ -15638,6 +15675,7 @@ const App = () => {
     if (!authUser?.uid || !db) return;
     
     const userId = authUser.uid;
+    console.log('Setting up notifications listener for:', userId);
     
     const unsubscribe = db.collection('users').doc(userId).collection('notifications')
       .orderBy('createdAt', 'desc')
@@ -15652,16 +15690,49 @@ const App = () => {
               type: data.type,
               fromUid: data.fromUid,
               fromUsername: data.fromUsername,
+              fromDisplayName: data.fromDisplayName,
               fromPhoto: data.fromPhoto,
+              postId: data.postId,
+              chatId: data.chatId,
               message: data.message,
-              read: data.read,
-              createdAt: data.createdAt?.toMillis?.() || Date.now()
+              read: data.read || false,
+              createdAt: data.createdAt?.toMillis?.() || data.createdAt || Date.now()
             });
           });
+          console.log('Notifications loaded:', notifs.length);
           setNotifications(notifs);
         },
         (error) => {
-          console.error('❌ Notifications load error:', error);
+          console.error('Notifications load error:', error);
+          // Index eksikse orderBy olmadan dene
+          if (error.code === 'failed-precondition') {
+            console.log('Trying without orderBy...');
+            db.collection('users').doc(userId).collection('notifications')
+              .limit(50)
+              .get()
+              .then(snapshot => {
+                const notifs = [];
+                snapshot.forEach(doc => {
+                  const data = doc.data();
+                  notifs.push({
+                    id: doc.id,
+                    type: data.type,
+                    fromUid: data.fromUid,
+                    fromUsername: data.fromUsername,
+                    fromDisplayName: data.fromDisplayName,
+                    fromPhoto: data.fromPhoto,
+                    postId: data.postId,
+                    chatId: data.chatId,
+                    message: data.message,
+                    read: data.read || false,
+                    createdAt: data.createdAt?.toMillis?.() || data.createdAt || Date.now()
+                  });
+                });
+                notifs.sort((a, b) => b.createdAt - a.createdAt);
+                setNotifications(notifs);
+              })
+              .catch(e => console.error('Fallback notifications error:', e));
+          }
         }
       );
     
@@ -17579,7 +17650,7 @@ const App = () => {
                             toUid: viewedUser.id,
                             toUsername: viewedUser.username,
                             status: 'pending',
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            createdAt: Date.now()
                           };
                           await db.collection('users').doc(viewedUser.id).collection('followRequests').doc(authUser.uid).set(requestData);
                           await db.collection('users').doc(authUser.uid).collection('sentFollowRequests').doc(viewedUser.id).set({
