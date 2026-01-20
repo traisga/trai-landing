@@ -110,11 +110,11 @@
       contain:layout style paint;
     }
     .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom,0px),16px)}
-    .safe-top{padding-top:max(env(safe-area-inset-top,0px),0px)}
+    .safe-top{padding-top:max(env(safe-area-inset-top,0px),60px)}
     @supports (-webkit-touch-callout: none) {
       /* iOS Safari specific */
       .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom,0px),34px)}
-      .safe-top{padding-top:max(env(safe-area-inset-top,0px),20px)}
+      .safe-top{padding-top:max(env(safe-area-inset-top,0px),60px)}
     }
     @supports (padding-top: constant(safe-area-inset-top)) {
       /* Older iOS versions */
