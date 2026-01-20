@@ -5139,7 +5139,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
   const [sortBy, setSortBy] = useState('default'); // default, priceAsc, priceDesc, nameAsc, nameDesc
   
   // Pagination
-  const [visibleCount, setVisibleCount] = useState(20);
+  const [visibleCount, setVisibleCount] = useState(50);
   const LOAD_MORE_COUNT = 20;
   
   // Aşamalı filtreler
@@ -5240,9 +5240,17 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
     
     // Sıralama
     if (sortBy === 'priceAsc') {
-      f.sort((a, b) => (a.price || 0) - (b.price || 0));
+      f.sort((a, b) => {
+        const priceA = parseFloat(String(a.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        const priceB = parseFloat(String(b.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        return priceA - priceB;
+      });
     } else if (sortBy === 'priceDesc') {
-      f.sort((a, b) => (b.price || 0) - (a.price || 0));
+      f.sort((a, b) => {
+        const priceA = parseFloat(String(a.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        const priceB = parseFloat(String(b.price || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        return priceB - priceA;
+      });
     } else if (sortBy === 'nameAsc') {
       f.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     } else if (sortBy === 'nameDesc') {
@@ -5257,7 +5265,7 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
   
   // Reset pagination when filters change
   useEffect(() => {
-    setVisibleCount(20);
+    setVisibleCount(50);
   }, [genderFilter, brand, categoryFilter, typeFilter, search, sortBy]);
 
   // Kategori listesi (erkek için elbise gösterme)
@@ -5297,9 +5305,9 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* Logo & Slogan Header with Cart/Premium */}
-      <div className="flex-shrink-0 px-4 pt-2 pb-1 flex items-center justify-between">
+    <div className="h-full flex flex-col overflow-hidden relative">
+      {/* Logo & Slogan Header with Cart/Premium - SABİT */}
+      <div className="flex-shrink-0 px-4 pt-2 pb-1 flex items-center justify-between bg-white/95 backdrop-blur-sm z-10">
         <button 
           onClick={() => {
             // Ana sayfaya (keşfet) git
@@ -5334,244 +5342,272 @@ const Shop = ({ user, closet, onTryOn, onAddToCloset, onAdvice, onAddToCart, car
         </div>
       </div>
       
-      {/* Search */}
-      <div className="p-4 pt-2 pb-2">
-        <div className="relative">
-          <Icon name="search" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input 
-            value={search} 
-            onChange={e => setSearch(e.target.value)} 
-            placeholder={t('searchPlaceholder')} 
-            className="pl-11"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-              <Icon name="x" size={16} />
-            </button>
-          )}
-        </div>
-      </div>
-      
-      {/* Featured Collections - 2x2 Grid */}
-      {!search && genderFilter === 'all' && categoryFilter === 'all' && (
-        <div className="px-4 pb-2">
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="text-xs">✨</span>
-            <span className="text-[10px] font-bold text-brand2 uppercase tracking-wide">{t('featuredCollection')}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {/* DeFacto */}
-            <button 
-              onClick={() => setBrand('defacto')}
-              className="glass rounded-xl p-3 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/50 hover:shadow-md transition-all text-left"
-            >
-              <h4 className="text-sm font-black text-slate-800">DeFacto</h4>
-              <p className="text-[9px] text-slate-500 mt-0.5">Günlük Şıklık</p>
-            </button>
-            {/* Mavi */}
-            <button 
-              onClick={() => setBrand('mavi')}
-              className="glass rounded-xl p-3 bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200/50 hover:shadow-md transition-all text-left"
-            >
-              <h4 className="text-sm font-black text-slate-800">Mavi</h4>
-              <p className="text-[9px] text-slate-500 mt-0.5">Jean Tutkunları</p>
-            </button>
-            {/* Koton */}
-            <button 
-              onClick={() => setBrand('koton')}
-              className="glass rounded-xl p-3 bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200/50 hover:shadow-md transition-all text-left"
-            >
-              <h4 className="text-sm font-black text-slate-800">Koton</h4>
-              <p className="text-[9px] text-slate-500 mt-0.5">Trend Koleksiyon</p>
-            </button>
-            {/* LC Waikiki */}
-            <button 
-              onClick={() => setBrand('lc_waikiki')}
-              className="glass rounded-xl p-3 bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200/50 hover:shadow-md transition-all text-left"
-            >
-              <h4 className="text-sm font-black text-slate-800">LC Waikiki</h4>
-              <p className="text-[9px] text-slate-500 mt-0.5">Aile Modası</p>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* === AŞAMALI FİLTRELER === */}
-      <div className="px-4 pb-2 space-y-1.5">
-        
-        {/* 1. AŞAMA: Cinsiyet Filtresi - Her zaman görünür */}
-        <div className="flex gap-2">
-          {[
-            { v: 'all', lKey: 'all' },
-            { v: 'male', lKey: 'male' },
-            { v: 'female', lKey: 'female' }
-          ].map(g => (
-            <button 
-              key={g.v} 
-              onClick={() => handleGenderChange(g.v)} 
-              className={`flex-1 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                genderFilter === g.v 
-                  ? 'bg-brand text-white shadow-md' 
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {t(g.lKey)}
-            </button>
-          ))}
-        </div>
-
-        {/* 2. AŞAMA: Kategori Filtresi (Cinsiyet seçiliyse göster) */}
-        {genderFilter !== 'all' && (
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 fade-in">
-            {categories.map(c => (
-              <button 
-                key={c.v} 
-                onClick={() => handleCategoryChange(c.v)} 
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
-                  categoryFilter === c.v 
-                    ? 'bg-brand2 text-white' 
-                    : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                {t(c.lKey)}
+      {/* Scrollable Content Area */}
+      <div 
+        className="flex-1 overflow-y-auto custom-scroll"
+        onScroll={(e) => {
+          const scrollTop = e.target.scrollTop;
+          const scrollBtn = document.getElementById('scroll-to-top-btn');
+          if (scrollBtn) {
+            scrollBtn.style.display = scrollTop > 300 ? 'flex' : 'none';
+          }
+        }}
+        id="shop-scroll-container"
+      >
+        {/* Search */}
+        <div className="p-4 pt-2 pb-2">
+          <div className="relative">
+            <Icon name="search" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+              placeholder={t('searchPlaceholder')} 
+              className="pl-11"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <Icon name="x" size={16} />
               </button>
-            ))}
+            )}
+          </div>
+        </div>
+        
+        {/* Featured Collections - 2x2 Grid */}
+        {!search && genderFilter === 'all' && categoryFilter === 'all' && (
+          <div className="px-4 pb-2">
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="text-xs">✨</span>
+              <span className="text-[10px] font-bold text-brand2 uppercase tracking-wide">{t('featuredCollection')}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {/* DeFacto */}
+              <button 
+                onClick={() => setBrand('defacto')}
+                className="glass rounded-xl p-3 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/50 hover:shadow-md transition-all text-left"
+              >
+                <h4 className="text-sm font-black text-slate-800">DeFacto</h4>
+                <p className="text-[9px] text-slate-500 mt-0.5">Günlük Şıklık</p>
+              </button>
+              {/* Mavi */}
+              <button 
+                onClick={() => setBrand('mavi')}
+                className="glass rounded-xl p-3 bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200/50 hover:shadow-md transition-all text-left"
+              >
+                <h4 className="text-sm font-black text-slate-800">Mavi</h4>
+                <p className="text-[9px] text-slate-500 mt-0.5">Jean Tutkunları</p>
+              </button>
+              {/* Koton */}
+              <button 
+                onClick={() => setBrand('koton')}
+                className="glass rounded-xl p-3 bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200/50 hover:shadow-md transition-all text-left"
+              >
+                <h4 className="text-sm font-black text-slate-800">Koton</h4>
+                <p className="text-[9px] text-slate-500 mt-0.5">Trend Koleksiyon</p>
+              </button>
+              {/* LC Waikiki */}
+              <button 
+                onClick={() => setBrand('lc_waikiki')}
+                className="glass rounded-xl p-3 bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200/50 hover:shadow-md transition-all text-left"
+              >
+                <h4 className="text-sm font-black text-slate-800">LC Waikiki</h4>
+                <p className="text-[9px] text-slate-500 mt-0.5">Aile Modası</p>
+              </button>
+            </div>
           </div>
         )}
 
-        {/* 3. AŞAMA: Alt Tip Filtresi (Kategori seçiliyse göster) */}
-        {categoryFilter !== 'all' && subTypes.length > 0 && (
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 fade-in">
-            <button 
-              onClick={() => setTypeFilter('all')} 
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all ${
-                typeFilter === 'all' 
-                  ? 'bg-accent text-white' 
-                  : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
-              }`}
-            >
-              {t('all')}
-            </button>
-            {subTypes.map(st => (
+        {/* === AŞAMALI FİLTRELER === */}
+        <div className="px-4 pb-2 space-y-1.5">
+          
+          {/* 1. AŞAMA: Cinsiyet Filtresi - Her zaman görünür */}
+          <div className="flex gap-2">
+            {[
+              { v: 'all', lKey: 'all' },
+              { v: 'male', lKey: 'male' },
+              { v: 'female', lKey: 'female' }
+            ].map(g => (
               <button 
-                key={st} 
-                onClick={() => setTypeFilter(st)} 
+                key={g.v} 
+                onClick={() => handleGenderChange(g.v)} 
+                className={`flex-1 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                  genderFilter === g.v 
+                    ? 'bg-brand text-white shadow-md' 
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {t(g.lKey)}
+              </button>
+            ))}
+          </div>
+
+          {/* 2. AŞAMA: Kategori Filtresi (Cinsiyet seçiliyse göster) */}
+          {genderFilter !== 'all' && (
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 fade-in">
+              {categories.map(c => (
+                <button 
+                  key={c.v} 
+                  onClick={() => handleCategoryChange(c.v)} 
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                    categoryFilter === c.v 
+                      ? 'bg-brand2 text-white' 
+                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  {t(c.lKey)}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 3. AŞAMA: Alt Tip Filtresi (Kategori seçiliyse göster) */}
+          {categoryFilter !== 'all' && subTypes.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 fade-in">
+              <button 
+                onClick={() => setTypeFilter('all')} 
                 className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all ${
-                  typeFilter === st 
+                  typeFilter === 'all' 
                     ? 'bg-accent text-white' 
                     : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
                 }`}
               >
-                {st}
+                {t('all')}
+              </button>
+              {subTypes.map(st => (
+                <button 
+                  key={st} 
+                  onClick={() => setTypeFilter(st)} 
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all ${
+                    typeFilter === st 
+                      ? 'bg-accent text-white' 
+                      : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Marka Filtresi - Tüm markalar, en çok üründen en aza sıralı */}
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
+            <button 
+              onClick={() => setBrand('all')} 
+              className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap flex-shrink-0 ${
+                brand === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}
+            >
+              {t('allBrands')}
+            </button>
+            {BRANDS.map(b => (
+              <button 
+                key={b.id} 
+                onClick={() => setBrand(b.id)} 
+                className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap flex-shrink-0 ${
+                  brand === b.id ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                }`}
+              >
+                {b.name} <span className="opacity-60">({b.count})</span>
               </button>
             ))}
           </div>
-        )}
 
-        {/* Marka Filtresi - Tüm markalar, en çok üründen en aza sıralı */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
-          <button 
-            onClick={() => setBrand('all')} 
-            className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap flex-shrink-0 ${
-              brand === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-            }`}
-          >
-            {t('allBrands')}
-          </button>
-          {BRANDS.map(b => (
-            <button 
-              key={b.id} 
-              onClick={() => setBrand(b.id)} 
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap flex-shrink-0 ${
-                brand === b.id ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
+          {/* Sıralama Filtresi */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-500 font-medium">{t('sortBy') || 'Sırala'}:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="text-[11px] py-1 px-2 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-brand"
             >
-              {b.name} <span className="opacity-60">({b.count})</span>
-            </button>
-          ))}
+              <option value="default">{t('recommended') || 'Önerilen'}</option>
+              <option value="priceAsc">{t('priceLowToHigh') || 'Fiyat: Düşükten Yükseğe'}</option>
+              <option value="priceDesc">{t('priceHighToLow') || 'Fiyat: Yüksekten Düşüğe'}</option>
+              <option value="nameAsc">{t('nameAZ') || 'İsim: A-Z'}</option>
+              <option value="nameDesc">{t('nameZA') || 'İsim: Z-A'}</option>
+            </select>
+          </div>
         </div>
 
-        {/* Sıralama Filtresi */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-500 font-medium">{t('sortBy') || 'Sırala'}:</span>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="text-[11px] py-1 px-2 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-brand"
-          >
-            <option value="default">{t('recommended') || 'Önerilen'}</option>
-            <option value="priceAsc">{t('priceLowToHigh') || 'Fiyat: Düşükten Yükseğe'}</option>
-            <option value="priceDesc">{t('priceHighToLow') || 'Fiyat: Yüksekten Düşüğe'}</option>
-            <option value="nameAsc">{t('nameAZ') || 'İsim: A-Z'}</option>
-            <option value="nameDesc">{t('nameZA') || 'İsim: Z-A'}</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Sonuç Bilgisi & Temizle */}
-      <div className="px-4 pb-2 flex items-center justify-between">
-        <p className="text-xs text-slate-500">
-          <span className="font-bold text-slate-700">{products.length}</span> {t('products')}
-        </p>
-        {activeFilterCount > 0 && (
-          <button 
-            onClick={clearFilters}
-            className="text-xs text-brand font-semibold flex items-center gap-1 hover:text-brand2"
-          >
-            <Icon name="x" size={12} />
-            {t('clearFilters')} ({activeFilterCount})
-          </button>
-        )}
-      </div>
-
-      {/* Products Grid */}
-      <div className="flex-1 overflow-y-auto custom-scroll p-4 pt-0 pb-4 min-h-0">
-        {products.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto mb-4">
-              <Icon name="shop" size={28} className="text-slate-400" />
-            </div>
-            <p className="font-semibold text-slate-500">{t('productNotFound')}</p>
-            <p className="text-sm text-slate-400 mt-1">{t('tryDifferentFilters')}</p>
+        {/* Sonuç Bilgisi & Temizle */}
+        <div className="px-4 pb-2 flex items-center justify-between">
+          <p className="text-xs text-slate-500">
+            <span className="font-bold text-slate-700">{products.length}</span> {t('products')}
+          </p>
+          {activeFilterCount > 0 && (
             <button 
               onClick={clearFilters}
-              className="mt-4 btn-ghost px-4 py-2 rounded-xl text-sm"
+              className="text-xs text-brand font-semibold flex items-center gap-1 hover:text-brand2"
             >
-              {t('clearFilters')}
+              <Icon name="x" size={12} />
+              {t('clearFilters')} ({activeFilterCount})
             </button>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              {visibleProducts.map(p => (
-                <ProductCard key={p.id} product={p} onTryOn={onTryOn} onAddToCloset={onAddToCloset} onAdvice={onAdvice} isInCloset={closetIds.has(p.id)} onAddToCart={onAddToCart} isInCart={cart?.some(c => c.id === p.id)} />
-              ))}
-            </div>
-            
-            {/* Load More Button */}
-            {visibleCount < products.length && (
-              <div className="mt-6 text-center">
-                <button 
-                  onClick={() => setVisibleCount(prev => prev + LOAD_MORE_COUNT)}
-                  className="btn-primary px-8 py-3 rounded-2xl font-semibold"
-                >
-                  Daha Fazla Göster ({visibleCount}/{products.length})
-                </button>
-                <p className="text-xs text-slate-400 mt-2">
-                  {products.length - visibleCount} ürün daha var
-                </p>
+          )}
+        </div>
+
+        {/* Products Grid */}
+        <div className="p-4 pt-0 pb-4">
+          {products.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto mb-4">
+                <Icon name="shop" size={28} className="text-slate-400" />
               </div>
-            )}
-            
-            {/* All loaded indicator */}
-            {visibleCount >= products.length && products.length > 20 && (
-              <p className="text-center text-xs text-slate-400 mt-6">
-                Tüm ürünler gösteriliyor ({products.length})
-              </p>
-            )}
-          </>
-        )}
+              <p className="font-semibold text-slate-500">{t('productNotFound')}</p>
+              <p className="text-sm text-slate-400 mt-1">{t('tryDifferentFilters')}</p>
+              <button 
+                onClick={clearFilters}
+                className="mt-4 btn-ghost px-4 py-2 rounded-xl text-sm"
+              >
+                {t('clearFilters')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                {visibleProducts.map(p => (
+                  <ProductCard key={p.id} product={p} onTryOn={onTryOn} onAddToCloset={onAddToCloset} onAdvice={onAdvice} isInCloset={closetIds.has(p.id)} onAddToCart={onAddToCart} isInCart={cart?.some(c => c.id === p.id)} />
+                ))}
+              </div>
+              
+              {/* Load More Button */}
+              {visibleCount < products.length && (
+                <div className="mt-6 text-center">
+                  <button 
+                    onClick={() => setVisibleCount(prev => prev + LOAD_MORE_COUNT)}
+                    className="btn-primary px-8 py-3 rounded-2xl font-semibold"
+                  >
+                    Daha Fazla Göster ({visibleCount}/{products.length})
+                  </button>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {products.length - visibleCount} ürün daha var
+                  </p>
+                </div>
+              )}
+              
+              {/* All loaded indicator */}
+              {visibleCount >= products.length && products.length > 50 && (
+                <p className="text-center text-xs text-slate-400 mt-6">
+                  Tüm ürünler gösteriliyor ({products.length})
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
+      
+      {/* Scroll to Top Button */}
+      <button
+        id="scroll-to-top-btn"
+        onClick={() => {
+          const container = document.getElementById('shop-scroll-container');
+          if (container) {
+            container.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        className="absolute bottom-6 right-4 w-12 h-12 bg-brand text-white rounded-full shadow-lg items-center justify-center hover:bg-brand2 transition-all z-20"
+        style={{ display: 'none' }}
+      >
+        <Icon name="chevronLeft" size={20} className="rotate-90" />
+      </button>
     </div>
   );
 };
@@ -16164,7 +16200,7 @@ const App = () => {
   const navItems = [
     { id: 'shop', icon: 'shop', label: t('shopTab') || 'Keşfet' },
     { id: 'closet', icon: 'hanger', label: t('closetTab') || 'Dolabım' },
-    { id: 'social', icon: 'users', label: t('socialTab') || 'Sosyal' },
+    { id: 'social', icon: 'feed', label: t('socialTab') || 'Sosyal' },
     { id: 'profile', icon: 'user', label: t('profileTab') || 'Profil' }
   ];
 
