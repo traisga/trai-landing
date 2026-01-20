@@ -7656,19 +7656,25 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
     switch (notification.type) {
       case 'follow_request':
       case 'follow_accept':
+      case 'follow_accepted':
         // Takipçiler/Arkadaşlar sekmesine git
         setTab('friends');
         break;
       case 'new_message':
-        setTab('messages');
+        // Önce Social sekmesine git, sonra DM sekmesini aç
+        if (setMainTab) setMainTab('social');
+        if (setInitialTab) setInitialTab('messages');
         // İlgili chat'i aç
         if (notification.chatId) {
           const chat = dmChats.find(c => c.id === notification.chatId);
-          if (chat) setSelectedChat({ type: 'dm', ...chat });
+          if (chat) {
+            setSelectedChat({ type: 'dm', ...chat, messages: chat.messages || [], loading: true });
+          }
         }
         break;
       case 'group_invite':
-        setTab('messages');
+        if (setMainTab) setMainTab('social');
+        if (setInitialTab) setInitialTab('messages');
         if (notification.groupId && groups) {
           const group = groups.find(g => g.id === notification.groupId);
           if (group) setSelectedChat({ type: 'group', ...group });
@@ -7676,6 +7682,7 @@ const Profile = ({ user, authUser, onResetAvatar, onLogout, onDeleteAccount, fri
         break;
       case 'like':
       case 'comment':
+      case 'repost':
         // Sosyal sekmesine yönlendir ve ilgili postu aç
         if (notification.postId && setPendingViewPostId) {
           setPendingViewPostId(notification.postId);
