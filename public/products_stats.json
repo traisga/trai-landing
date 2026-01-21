@@ -1,0 +1,23 @@
+{
+  "lastUpdated": "2026-01-21T08:05:12.267Z",
+  "totalProducts": 28879,
+  "previousTotal": 20943,
+  "newProducts": 13100,
+  "priceUpdates": 3900,
+  "categoriesProcessed": 78,
+  "byGender": {
+    "male": 10454,
+    "female": 18425
+  },
+  "byCategory": {
+    "top": 9819,
+    "bottom": 5830,
+    "outerwear": 7002,
+    "fullbody": 6228
+  },
+  "priceRange": {
+    "min": 2,
+    "max": 55999,
+    "avg": 1231
+  }
+}
